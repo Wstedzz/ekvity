@@ -239,6 +239,21 @@ a:hover {
     filter: brightness(1.3);
 }
 
+.footer-insta {
+    color: #E1306C;
+    transition: filter 0.3s ease;
+}
+
+.footer-tg {
+    color: #0088cc;
+    transition: filter 0.3s ease;
+}
+
+.footer-insta:hover,
+.footer-tg:hover {
+    filter: brightness(1.3);
+}
+
 
 /* Hero Section */
 .hero {
