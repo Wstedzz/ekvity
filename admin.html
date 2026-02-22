@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін панель | ЄКвіти</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            padding: 30px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-title {
+            font-family: var(--font-logo);
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .admin-subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        /* Tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-tab {
+            padding: 12px 30px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .admin-tab:hover {
+            color: white;
+        }
+
+        .admin-tab.active {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stats */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            color: var(--gold);
+            font-family: var(--font-heading);
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.65rem;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--gold);
+            outline: none;
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-checkbox {
+            margin-right: 8px;
+            accent-color: var(--gold);
+        }
+
+        /* Category list */
+        .cat-list {
+            list-style: none;
+        }
+
+        .cat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+        }
+
+        .cat-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .cat-name {
+            flex: 1;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .cat-count-badge {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 10px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .cat-order {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            width: 30px;
+            text-align: center;
+        }
+
+        .cat-toggle {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 11px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: none;
+        }
+
+        .cat-toggle.on {
+            background: var(--gold);
+        }
+
+        .cat-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .cat-toggle.on::after {
+            transform: translateX(18px);
+        }
+
+        .btn-sm {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-dim);
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .btn-sm:hover {
+            border-color: white;
+            color: white;
+        }
+
+        .btn-sm.danger:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        /* Add category */
+        .add-cat-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-cat-row input {
+            flex: 1;
+        }
+
+        /* Product admin grid */
+        .admin-toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .admin-card {
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .admin-card-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-icon {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .btn-icon.btn-delete:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: var(--gold);
+            color: black;
+            padding: 2px 8px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Login */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: #050505;
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            width: 300px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .admin-tabs {
+                overflow-x: auto;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Auth -->
+    <div id="loginSection" class="login-overlay">
+        <div class="login-box">
+            <h2 class="admin-title" style="margin-bottom: 30px">ЄКвіти</h2>
+            <div class="form-group">
+                <input type="password" id="adminPass" class="form-input" placeholder="Пароль"
+                    onkeydown="if(event.key==='Enter')checkAuth()">
+            </div>
+            <button type="button" onclick="checkAuth()" class="btn-luxury"
+                style="width: 100%; cursor: pointer; background: rgba(255,255,255,0.1); color: white;">Увійти</button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardSection" style="display: none;">
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">Адмін панель</h1>
+                <span class="admin-subtitle">Керування каталогом ЄКвіти</span>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <a href="index.html" class="btn-luxury" style="font-size: 0.7rem; padding: 10px 20px;">На сайт</a>
+                <a href="katalog.html" class="btn-luxury" style="font-size: 0.7rem; padding: 10px 20px;">Каталог</a>
+                <button onclick="logout()" class="btn-luxury"
+                    style="font-size: 0.7rem; padding: 10px 20px; opacity: 0.6;">Вийти</button>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-val" id="statProducts">0</div>
+                <div class="stat-label">Товарів</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="statCategories">0</div>
+                <div class="stat-label">Категорій</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="statFeatured">0</div>
+                <div class="stat-label">Виділених</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchTab('categories')">Категорії</button>
+            <button class="admin-tab" onclick="switchTab('products')">Товари</button>
+            <button class="admin-tab" onclick="switchTab('constructor')">Конструктор</button>
+            <button class="admin-tab" onclick="switchTab('settings')">Налаштування</button>
+        </div>
+
+        <!-- Tab: Categories -->
+        <div id="tabCategories" class="tab-content active">
+            <div class="add-cat-row">
+                <input type="text" id="newCatName" class="form-input" placeholder="Назва нової категорії">
+                <button onclick="addCategory()" class="btn-luxury"
+                    style="white-space: nowrap; padding: 10px 20px;">Додати</button>
+            </div>
+            <ul class="cat-list" id="catList"></ul>
+        </div>
+
+        <!-- Tab: Products -->
+        <div id="tabProducts" class="tab-content">
+            <div class="admin-toolbar">
+                <select id="filterCatSelect" class="form-select" style="width: auto; min-width: 180px;"
+                    onchange="renderAdminProducts()">
+                    <option value="all">Всі категорії</option>
+                </select>
+                <button onclick="openProductModal()" class="btn-luxury" style="padding: 10px 20px;">Додати
+                    товар</button>
+            </div>
+            <div class="grid" id="adminProductGrid"></div>
+        </div>
+
+        <!-- Tab: Constructor -->
+        <div id="tabConstructor" class="tab-content">
+            <div class="admin-toolbar">
+                <button onclick="openConstructorFlowerModal()" class="btn-luxury" style="padding: 10px 20px;">Додати
+                    квітку</button>
+            </div>
+            <div class="grid" id="constructorFlowerGrid"></div>
+        </div>
+
+        <!-- Tab: Settings -->
+        <div id="tabSettings" class="tab-content">
+            <form onsubmit="saveSiteSettings(event)">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+
+                    <!-- Contacts -->
+                    <div class="admin-card" style="padding: 20px;">
+                        <h3 style="color:var(--gold); margin-bottom: 20px; font-family: var(--font-heading);">Загальні
+                            (Контакти)</h3>
+                        <div class="form-group">
+                            <label class="form-label">Телефон</label>
+                            <input type="text" id="setPhone" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telegram (юзернейм або посилання)</label>
+                            <input type="text" id="setTg" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Instagram (посилання)</label>
+                            <input type="text" id="setInsta" class="form-input">
+                        </div>
+                    </div>
+
+                    <!-- Homepage -->
+                    <div class="admin-card" style="padding: 20px;">
+                        <h3 style="color:var(--gold); margin-bottom: 20px; font-family: var(--font-heading);">Головна
+                            сторінка</h3>
+                        <div class="form-group">
+                            <label class="form-label">Головний заголовок (HTML дозволено)</label>
+                            <input type="text" id="setHomeTitle" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Головний підзаголовок (HTML дозволено)</label>
+                            <textarea id="setHomeSub" class="form-textarea form-input"
+                                style="min-height: 60px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Фон головного екрану (URL або Завантаження)</label>
+                            <input type="text" id="setHomeBg" class="form-input"
+                                placeholder="Вставте URL або завантажте файл">
+                            <input type="file" accept="image/*" class="form-input"
+                                style="margin-top: 5px; padding: 5px;" onchange="handleImageUpload(this, 'setHomeBg')">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Заголовок "Про нас"</label>
+                            <input type="text" id="setAboutTitle" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Текст "Про нас"</label>
+                            <textarea id="setAboutText" class="form-textarea form-input"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Constructor -->
+                    <div class="admin-card" style="padding: 20px;">
+                        <h3 style="color:var(--gold); margin-bottom: 20px; font-family: var(--font-heading);">
+                            Конструктор</h3>
+                        <div class="form-group">
+                            <label class="form-label">Заголовок</label>
+                            <input type="text" id="setConstTitle" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Підзаголовок</label>
+                            <textarea id="setConstSub" class="form-textarea form-input"
+                                style="min-height: 60px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Текст-попередження</label>
+                            <textarea id="setConstDisc" class="form-textarea form-input"
+                                style="min-height: 80px;"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="margin-top: 30px; text-align: right;">
+                    <span id="settingsSavedMsg"
+                        style="color: #4caf50; margin-right: 15px; opacity: 0; transition: opacity 0.3s;">✅
+                        Збережено!</span>
+                    <button type="submit" class="btn-luxury"
+                        style="padding: 12px 30px; background: white; color: black;">Зберегти налаштування</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-content" style="text-align: left; max-width: 550px;">
+            <button class="modal-close" onclick="closeProductModal()">&times;</button>
+            <h3 class="modal-title" id="productModalTitle">Новий товар</h3>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <input type="hidden" id="editingId">
+                <div class="form-group">
+                    <label class="form-label">ID товару (напр. EKV-050)</label>
+                    <input type="text" id="prodId" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Назва</label>
+                    <input type="text" id="prodName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Категорія</label>
+                    <select id="prodCat" class="form-select"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ціна (грн)</label>
+                    <input type="number" id="prodPrice" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Зображення</label>
+                    <select id="prodImgSelect" class="form-select"
+                        onchange="if(this.value!=='custom')document.getElementById('prodImg').value=this.value">
+                        <option value="images/bouquet1.jpg">Букет 1</option>
+                        <option value="images/bouquet2.jpg">Букет 2</option>
+                        <option value="images/bouquet3.jpg">Букет 3</option>
+                        <option value="images/bouquet4.jpg">Букет 4</option>
+                        <option value="custom">Власний URL...</option>
+                    </select>
+                    <input type="text" id="prodImg" class="form-input" value="images/bouquet1.jpg"
+                        style="margin-top: 5px;" placeholder="Вставте URL або завантажте файл">
+                    <input type="file" accept="image/*" class="form-input" style="margin-top: 5px; padding: 5px;"
+                        onchange="handleImageUpload(this, 'prodImg')">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Зображення зверху (для конструктора)</label>
+                    <input type="text" id="prodTopView" class="form-input"
+                        placeholder="URL зображення головки квітки зверху">
+                    <input type="file" accept="image/*" class="form-input" style="margin-top: 5px; padding: 5px;"
+                        onchange="handleImageUpload(this, 'prodTopView')">
+                    <small style="color: var(--text-dim); font-size: 0.75rem;">Використовується в конструкторі букетів.
+                        Якщо порожньо — використовується основне зображення.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Опис</label>
+                    <textarea id="prodDesc" class="form-textarea form-input"></textarea>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="prodFeatured" class="form-checkbox"> Виділений на головній</label>
+                </div>
+                <button type="submit" class="btn-luxury"
+                    style="width: 100%; background: white; color: black;">Зберегти</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Constructor Flower Modal -->
+    <div id="constructorFlowerModal" class="modal-overlay">
+        <div class="modal-content" style="text-align: left; max-width: 450px;">
+            <button class="modal-close" onclick="closeConstructorFlowerModal()">&times;</button>
+            <h3 class="modal-title" id="constructorFlowerModalTitle">Нова квітка</h3>
+            <form id="constructorFlowerForm" onsubmit="saveConstructorFlower(event)">
+                <input type="hidden" id="editingConstructorId">
+                <div class="form-group">
+                    <label class="form-label">Назва</label>
+                    <input type="text" id="cFlowerName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ціна за штуку (грн)</label>
+                    <input type="number" id="cFlowerPrice" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Зображення</label>
+                    <select id="cFlowerImgSelect" class="form-select"
+                        onchange="if(this.value!=='custom')document.getElementById('cFlowerImg').value=this.value">
+                        <option value="images/bouquet1.jpg">Букет 1</option>
+                        <option value="images/bouquet2.jpg">Букет 2</option>
+                        <option value="images/bouquet3.jpg">Букет 3</option>
+                        <option value="images/bouquet4.jpg">Букет 4</option>
+                        <option value="custom">Власний URL...</option>
+                    </select>
+                    <input type="text" id="cFlowerImg" class="form-input" value="images/bouquet1.jpg"
+                        style="margin-top: 5px;" placeholder="Вставте URL або завантажте файл">
+                    <input type="file" accept="image/*" class="form-input" style="margin-top: 5px; padding: 5px;"
+                        onchange="handleImageUpload(this, 'cFlowerImg')">
+                </div>
+                <button type="submit" class="btn-luxury"
+                    style="width: 100%; background: white; color: black;">Зберегти</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="settings.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

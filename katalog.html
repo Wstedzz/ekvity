@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог — ЄКвіти</title>
+    <meta name="description" content="Каталог квітів ЄКвіти — букети, композиції, квіти поштучно у Львові.">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Catalog page styles */
+        .catalog-page {
+            padding-top: 120px;
+            min-height: 100vh;
+        }
+
+        .breadcrumbs {
+            padding: 20px 0;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .breadcrumbs a {
+            color: var(--text-dim);
+        }
+
+        .breadcrumbs a:hover {
+            color: white;
+        }
+
+        .breadcrumbs span {
+            margin: 0 8px;
+            opacity: 0.5;
+        }
+
+        .catalog-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 40px;
+            padding-bottom: 80px;
+        }
+
+        /* Sidebar */
+        .catalog-sidebar {
+            position: sticky;
+            top: 120px;
+            align-self: start;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-title {
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-cat {
+            display: block;
+            padding: 8px 0;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: color 0.3s;
+            background: none;
+            border: none;
+            font-family: var(--font-body);
+            text-align: left;
+            width: 100%;
+        }
+
+        .sidebar-cat:hover,
+        .sidebar-cat.active {
+            color: white;
+        }
+
+        .sidebar-cat.active {
+            border-left: 2px solid white;
+            padding-left: 12px;
+        }
+
+        .sidebar-cat .cat-count {
+            float: right;
+            font-size: 0.75rem;
+            opacity: 0.5;
+        }
+
+        .price-range {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .price-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+        }
+
+        .price-input:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        .price-sep {
+            color: var(--text-dim);
+        }
+
+        .sort-select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .sort-select option {
+            background-color: #111;
+            color: white;
+            padding: 10px;
+        }
+
+        .sort-select:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        /* Search bar */
+        .catalog-search {
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .search-input:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+        }
+
+        /* Results info */
+        .results-info {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* Load more */
+        .load-more-wrap {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        /* Mobile tags */
+        .mobile-cat-tags {
+            display: none;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 0;
+            gap: 10px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            margin-bottom: 15px;
+        }
+
+        .mobile-cat-tags::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-tag {
+            display: inline-block;
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            font-family: var(--font-body);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 8px;
+        }
+
+        .cat-tag:hover,
+        .cat-tag.active {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+
+        /* Mobile filter button */
+        .mobile-filter-btn {
+            display: none;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Slide-up filter panel */
+        .filter-panel {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #111;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 20px 40px;
+            z-index: 2000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .filter-panel.open {
+            transform: translateY(0);
+        }
+
+        .filter-panel-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1999;
+        }
+
+        .filter-panel-overlay.open {
+            display: block;
+        }
+
+        .filter-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-panel-title {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .filter-panel-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .filter-apply-btn {
+            width: 100%;
+            padding: 14px;
+            background: white;
+            color: black;
+            border: none;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            font-family: var(--font-body);
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-dim);
+        }
+
+        @media (max-width: 768px) {
+            .catalog-page {
+                padding-top: 90px;
+            }
+
+            .catalog-layout {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .catalog-sidebar {
+                display: none;
+            }
+
+            .mobile-cat-tags {
+                display: flex;
+            }
+
+            .mobile-filter-btn {
+                display: block;
+            }
+
+            .filter-panel {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <button class="menu-btn" onclick="toggleMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="logo">
+                <a href="index.html"><img src="images/logo-full.svg" alt="ЄКвіти" class="logo-img"></a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html#collection">Колекція</a>
+                <a href="katalog.html">Каталог</a>
+                <a href="constructor.html">Конструктор</a>
+                <a href="index.html#about">Про нас</a>
+                <a href="tel:+380980488437" class="nav-contact dyn-phone">+380 98 048 84 37</a>
+            </div>
+            <a href="tel:+380980488437" class="mobile-phone-btn dyn-phone">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="margin-top: 3px;">
+                    <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                    </path>
+                </svg>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <button class="menu-close" onclick="toggleMenu()">&times;</button>
+        <div class="mobile-nav-links">
+            <a href="index.html" onclick="toggleMenu()">Головна</a>
+            <a href="katalog.html" onclick="toggleMenu()">Каталог</a>
+            <a href="constructor.html" onclick="toggleMenu()">Конструктор</a>
+            <a href="index.html#collection" onclick="toggleMenu()">Колекція</a>
+            <a href="index.html#about" onclick="toggleMenu()">Про нас</a>
+            <a href="tel:+380980488437" class="mobile-contact dyn-phone">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                    </path>
+                </svg>
+                +380 98 048 84 37
+            </a>
+            <div class="mobile-socials">
+                <a href="https://instagram.com/ekvity.ua" target="_blank" class="instagram-link dyn-insta">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    Instagram
+                </a>
+                <a href="https://t.me/ekvityua" target="_blank" class="telegram-link dyn-tg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Telegram
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="catalog-page">
+        <div class="container">
+            <!-- Breadcrumbs -->
+            <div class="breadcrumbs">
+                <a href="index.html">Головна</a>
+                <span>→</span>
+                <span id="breadcrumbCurrent">Каталог</span>
+            </div>
+
+            <!-- Search -->
+            <div class="catalog-search">
+                <div class="search-wrapper">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Пошук квітів...">
+                </div>
+            </div>
+
+            <!-- Mobile category tags -->
+            <div class="mobile-cat-tags" id="mobileCatTags"></div>
+
+            <!-- Mobile filter button -->
+            <button class="mobile-filter-btn" onclick="openFilterPanel()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="vertical-align: middle; margin-right: 8px;">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                Фільтри та сортування
+            </button>
+
+            <div class="catalog-layout">
+                <!-- Sidebar (desktop) -->
+                <aside class="catalog-sidebar">
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Категорії</div>
+                        <div id="sidebarCategories"></div>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Ціна (грн)</div>
+                        <div class="price-range">
+                            <input type="number" id="priceMin" class="price-input" placeholder="від">
+                            <span class="price-sep">—</span>
+                            <input type="number" id="priceMax" class="price-input" placeholder="до">
+                        </div>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Сортування</div>
+                        <select id="sortSelect" class="sort-select">
+                            <option value="default">За замовчуванням</option>
+                            <option value="price-asc">За ціною ↑</option>
+                            <option value="price-desc">За ціною ↓</option>
+                            <option value="name">За назвою</option>
+                        </select>
+                    </div>
+                </aside>
+
+                <!-- Products -->
+                <div class="catalog-main">
+                    <div class="results-info" id="resultsInfo"></div>
+                    <div class="grid" id="catalogGrid"></div>
+                    <div class="no-results" id="noResults" style="display:none;">
+                        <h3>Нічого не знайдено</h3>
+                        <p>Спробуйте змінити фільтри або пошуковий запит</p>
+                    </div>
+                    <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+                        <button class="btn-luxury" id="loadMoreBtn">Показати більше</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Panel (mobile) -->
+    <div class="filter-panel-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
+    <div class="filter-panel" id="filterPanel">
+        <div class="filter-panel-header">
+            <span class="filter-panel-title">Фільтри</span>
+            <button class="filter-panel-close" onclick="closeFilterPanel()">&times;</button>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">Ціна (грн)</div>
+            <div class="price-range">
+                <input type="number" id="priceMinMobile" class="price-input" placeholder="від">
+                <span class="price-sep">—</span>
+                <input type="number" id="priceMaxMobile" class="price-input" placeholder="до">
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">Сортування</div>
+            <select id="sortSelectMobile" class="sort-select">
+                <option value="default">За замовчуванням</option>
+                <option value="price-asc">За ціною ↑</option>
+                <option value="price-desc">За ціною ↓</option>
+                <option value="name">За назвою</option>
+            </select>
+        </div>
+        <button class="filter-apply-btn" onclick="applyMobileFilters()">Застосувати</button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <img src="images/logo-mark.svg" alt="ЄКвіти" style="height: 40px; opacity: 0.8; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
+                <a href="tel:+380980488437" class="dyn-phone"
+                    style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                        </path>
+                    </svg>
+                    +380 98 048 84 37
+                </a>
+                <a href="https://instagram.com/ekvity.ua" target="_blank" class="dyn-insta"
+                    style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    @ekvity.ua
+                </a>
+                <a href="https://t.me/ekvityua" target="_blank" class="dyn-tg"
+                    style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                    </svg>
+                    Telegram
+                </a>
+            </div>
+            <p style="font-size: 0.75rem; color: #555;">© 2026 ЄКвіти</p>
+        </div>
+    </footer>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            <h3 class="modal-title">Ваше замовлення</h3>
+            <div id="modalProductDetails" class="modal-product"></div>
+            <p class="modal-text">Оберіть зручний спосіб зв'язку:</p>
+            <div class="modal-actions">
+                <a id="btnTelegram" href="#" target="_blank" class="btn-modal btn-telegram">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                    </svg>
+                    Telegram
+                </a>
+                <a id="btnViber" href="#" target="_blank" class="btn-modal btn-viber">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M21.5 12.1c-.1-1.3-.3-2.5-.7-3.7-.4-1.1-.9-2.2-1.6-3.2-.8-1-1.7-1.8-2.8-2.5-1.1-.6-2.3-1-3.6-1.3-1.6-.3-3.2-.3-4.8 0-1.3.3-2.5.7-3.6 1.3-1 .8-1.9 1.6-2.7 2.6-.7 1-1.2 2.1-1.6 3.2-.4 1.3-.6 2.6-.6 3.9s.2 2.6.6 3.8c.4 1.1.9 2.2 1.6 3.2.8 1 1.7 1.8 2.8 2.5 1.1.6 2.3 1 3.6 1.3.9.2 1.9.2 2.8.2v3.7c3.4-.9 6.4-2.8 8.6-5.4.7-1 1.2-2.1 1.6-3.2.4-1.2.6-2.5.6-3.8zM12 18c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z" />
+                    </svg>
+                    Viber
+                </a>
+            </div>
+            <div class="modal-contact">
+                <p>Або зателефонуйте нам:</p>
+                <a href="tel:+380980488437" class="phone-link dyn-phone">+380 98 048 84 37</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="settings.js"></script>
+    <script src="katalog.js"></script>
+</body>
+
+</html>

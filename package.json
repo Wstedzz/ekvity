@@ -1,0 +1,26 @@
+{
+  "name": "ekvity",
+  "version": "1.0.0",
+  "description": "Квіткова майстерня ЄКвіти - каталог продуктів",
+  "scripts": {
+    "dev": "serve . -l 8000",
+    "start": "serve . -l $PORT"
+  },
+  "keywords": [
+    "flowers",
+    "ukraine",
+    "lviv",
+    "catalog",
+    "supabase"
+  ],
+  "author": "ЄКвіти (@ekvity.ua)",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ekvity.git"
+  },
+  "dependencies": {
+    "puppeteer": "^24.37.5",
+    "serve": "^14.2.5"
+  }
+}

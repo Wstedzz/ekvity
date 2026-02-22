@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор букету — ЄКвіти</title>
+    <meta name="description"
+        content="Створіть свій ідеальний букет власноруч. Конструктор квітів від майстерні ЄКвіти.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Constructor page styles */
+        .constructor-hero {
+            padding: 140px 0 60px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .constructor-hero h1 {
+            font-size: 3rem;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .constructor-hero p {
+            color: var(--text-dim);
+            font-size: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Constructor Layout */
+        .constructor-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 60px;
+            padding: 60px 0 100px;
+            align-items: start;
+        }
+
+        /* Flower Grid */
+        .picker-title {
+            font-family: var(--font-heading);
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            color: var(--text-dim);
+        }
+
+        .flower-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 20px;
+        }
+
+        .flower-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .flower-card.selected {
+            border-color: var(--gold);
+            background: rgba(212, 163, 115, 0.05);
+        }
+
+        .flower-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            filter: grayscale(30%);
+            transition: filter 0.3s;
+        }
+
+        .flower-card:hover img,
+        .flower-card.selected img {
+            filter: grayscale(0%);
+        }
+
+        .flower-card-name {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: white;
+        }
+
+        .flower-card-price {
+            font-size: 0.8rem;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .qty-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        .qty-value {
+            font-size: 1rem;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Summary Panel */
+        .summary-panel {
+            position: sticky;
+            top: 120px;
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .summary-title {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Circle Preview */
+        .circle-preview {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 30px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-preview-border {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .circle-placeholder {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .circle-flower {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(212, 163, 115, 0.5);
+            animation: flowerFadeIn 0.4s ease forwards;
+            transition: all 0.4s ease;
+        }
+
+        @keyframes flowerFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .constructor-disclaimer {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            padding: 0 10px;
+        }
+
+        /* Selected list */
+        .selected-list {
+            margin-bottom: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 20px;
+        }
+
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .selected-item-name {
+            color: white;
+        }
+
+        .selected-item-subtotal {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        /* Wrapping Options */
+        .wrapping-section {
+            margin-bottom: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .wrapping-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .wrap-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .wrap-option:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .wrap-option input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .wrap-option input[type="radio"]:checked {
+            border-color: var(--gold);
+        }
+
+        .wrap-option input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .wrap-price {
+            margin-left: auto;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        /* Card message */
+        .card-message-section {
+            margin-bottom: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .card-message-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        .card-message-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            padding: 12px;
+            resize: vertical;
+            min-height: 70px;
+            transition: border-color 0.3s;
+        }
+
+        .card-message-textarea:focus {
+            outline: none;
+            border-color: rgba(212, 163, 115, 0.5);
+        }
+
+        .card-message-textarea::placeholder {
+            color: #555;
+        }
+
+        /* Total */
+        .total-section {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .total-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .total-price {
+            font-family: var(--font-heading);
+            font-size: 2.2rem;
+            color: var(--gold);
+            font-style: italic;
+            transition: transform 0.3s;
+        }
+
+        .total-price.shimmer {
+            animation: goldShimmer 0.6s ease;
+        }
+
+        @keyframes goldShimmer {
+            0% {
+                text-shadow: 0 0 0 transparent;
+            }
+
+            50% {
+                text-shadow: 0 0 20px rgba(212, 163, 115, 0.6);
+                transform: scale(1.05);
+            }
+
+            100% {
+                text-shadow: 0 0 0 transparent;
+                transform: scale(1);
+            }
+        }
+
+        .btn-order-bouquet {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.4s;
+            font-family: var(--font-body);
+        }
+
+        .btn-order-bouquet:hover {
+            background: white;
+            color: black;
+            letter-spacing: 4px;
+        }
+
+        .btn-order-bouquet:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-order-bouquet:disabled:hover {
+            background: transparent;
+            color: white;
+            letter-spacing: 2px;
+        }
+
+        /* Mobile bottom bar */
+        .mobile-bottom-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            z-index: 999;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-bottom-price {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .mobile-bottom-btn {
+            padding: 12px 24px;
+            background: white;
+            color: black;
+            border: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            font-family: var(--font-body);
+        }
+
+        .mobile-bottom-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Tablet */
+        @media (max-width: 992px) {
+            .constructor-layout {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding-bottom: 60px;
+            }
+
+            .summary-panel {
+                position: static;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .constructor-hero {
+                padding: 110px 0 40px;
+            }
+
+            .constructor-hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .constructor-hero p {
+                font-size: 0.9rem;
+                padding: 0 20px;
+            }
+
+            .constructor-layout {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 0 120px;
+            }
+
+            .flower-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .flower-card {
+                padding: 12px;
+            }
+
+            .flower-card-name {
+                font-size: 0.85rem;
+            }
+
+            .summary-panel {
+                max-width: 100%;
+            }
+
+            .mobile-bottom-bar {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Nav -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <button class="menu-btn" onclick="toggleMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="logo">
+                <a href="index.html"><img src="images/logo-full.svg" alt="ЄКвіти" class="logo-img"></a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html#collection">Колекція</a>
+                <a href="katalog.html">Каталог</a>
+                <a href="constructor.html" style="color: var(--gold);">Конструктор</a>
+                <a href="index.html#about">Про нас</a>
+                <a href="tel:+380980488437" class="nav-contact dyn-phone">+380 98 048 84 37</a>
+            </div>
+            <a href="tel:+380980488437" class="mobile-phone-btn dyn-phone">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="margin-top: 3px;">
+                    <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                    </path>
+                </svg>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <button class="menu-close" onclick="toggleMenu()">&times;</button>
+        <div class="mobile-nav-links">
+            <a href="index.html#collection" onclick="toggleMenu()">Колекція</a>
+            <a href="katalog.html" onclick="toggleMenu()">Каталог</a>
+            <a href="constructor.html" onclick="toggleMenu()" style="color: var(--gold);">Конструктор</a>
+            <a href="index.html#about" onclick="toggleMenu()">Про нас</a>
+            <a href="tel:+380980488437" class="mobile-contact dyn-phone">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                    </path>
+                </svg>
+                +380 98 048 84 37
+            </a>
+            <div class="mobile-socials">
+                <a href="https://instagram.com/ekvity.ua" target="_blank" class="instagram-link dyn-insta">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    Instagram
+                </a>
+                <a href="https://t.me/ekvityua" target="_blank" class="telegram-link dyn-tg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Telegram
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="constructor-hero">
+        <div class="container">
+            <span class="hero-label fade-in">Bouquet Builder</span>
+            <h1 class="fade-in-up" id="dyn-const-hero-title">Створи свій букет</h1>
+            <p class="fade-in-up delay-1" id="dyn-const-hero-subtitle">Обирай квіти, упаковку та створюй унікальну
+                композицію на свій смак</p>
+        </div>
+    </section>
+
+    <!-- Constructor -->
+    <section class="container">
+        <div class="constructor-layout">
+            <!-- Left: Flower Picker -->
+            <div>
+                <p class="picker-title">Оберіть квіти</p>
+                <div class="flower-grid" id="flowerGrid"></div>
+            </div>
+
+            <!-- Right: Summary -->
+            <div class="summary-panel" id="summaryPanel">
+                <h3 class="summary-title">Ваш букет</h3>
+                <div class="circle-preview" id="circlePreview">
+                    <div class="circle-preview-border"></div>
+                    <p class="circle-placeholder" id="circlePlaceholder">Оберіть квіти<br>для букету</p>
+                </div>
+                <p class="constructor-disclaimer" id="dyn-const-disclaimer">Конструктор має ознайомчий характер. Наш
+                    флорист збере букет у
+                    вибраній кольоровій гамі та пропорціях так, щоб він виглядав ідеально.</p>
+                <div class="selected-list" id="selectedList"></div>
+
+                <div class="wrapping-section">
+                    <p class="wrapping-label">Упаковка</p>
+                    <label class="wrap-option">
+                        <input type="radio" name="wrapping" value="0" data-name="Крафт папір" checked>
+                        <span>Крафт папір</span>
+                        <span class="wrap-price">+0 грн</span>
+                    </label>
+                    <label class="wrap-option">
+                        <input type="radio" name="wrapping" value="50" data-name="Атласна стрічка">
+                        <span>Атласна стрічка</span>
+                        <span class="wrap-price">+50 грн</span>
+                    </label>
+                    <label class="wrap-option">
+                        <input type="radio" name="wrapping" value="150" data-name="Преміум упаковка">
+                        <span>Преміум упаковка</span>
+                        <span class="wrap-price">+150 грн</span>
+                    </label>
+                </div>
+
+                <div class="card-message-section">
+                    <p class="card-message-label">Текст листівки (необов'язково)</p>
+                    <textarea class="card-message-textarea" id="cardMessage"
+                        placeholder="Напишіть побажання..."></textarea>
+                </div>
+
+                <div class="total-section">
+                    <p class="total-label">Разом</p>
+                    <p class="total-price" id="totalPrice">0 грн</p>
+                    <p class="limit-warning" id="limitWarning"
+                        style="display: none; color: #ff6b6b; font-size: 0.8rem; margin-top: 10px;"></p>
+                </div>
+
+                <button class="btn-order-bouquet" id="btnOrderBouquet" disabled onclick="orderBouquet()">
+                    Замовити букет
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Bottom Bar -->
+    <div class="mobile-bottom-bar" id="mobileBottomBar">
+        <div style="display: flex; flex-direction: column;">
+            <span class="mobile-bottom-price" id="mobileTotalPrice">0 грн</span>
+            <span class="limit-warning-mobile" id="mobileLimitWarning"
+                style="display: none; color: #ff6b6b; font-size: 0.7rem; margin-top: 2px;"></span>
+        </div>
+        <button class="mobile-bottom-btn" id="mobileBtnOrder" disabled onclick="orderBouquet()">Замовити</button>
+    </div>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 class="modal-title">Ваше замовлення</h3>
+            <div id="modalProductDetails" class="modal-product"></div>
+            <p class="modal-text">Оберіть зручний спосіб зв'язку:</p>
+            <div class="modal-actions">
+                <a id="btnTelegram" href="#" target="_blank" class="btn-modal btn-telegram">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                    </svg>
+                    Telegram
+                </a>
+                <a id="btnViber" href="#" target="_blank" class="btn-modal btn-viber">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.183 16.236c-.593.86-1.83 1.296-3.317 1.296-.93 0-1.97-.15-3.065-.445l-.22-.058c-.187-.05-.38-.1-.57-.154-.31-.09-.63-.09-.94 0l-.003.001c-.396.117-.8.253-1.2.39-.497.168-1.01.34-1.51.48-.224.062-.453.093-.68.093-.365 0-.727-.092-1.056-.272-.536-.294-.902-.795-1.006-1.372-.055-.304-.027-.62.08-.918.247-.687.745-1.254 1.39-1.566.18-.087.37-.132.563-.132.246 0 .49.07.702.2l.17.106c.34.21.7.417 1.05.6.33.176.68.265 1.04.265.26 0 .52-.05.77-.15.2-.08.4-.18.59-.28l.18-.1c.47-.26 1-.55 1.56-.78 1.14-.47 2.32-.71 3.5-.71.85 0 1.62.14 2.23.4.73.31 1.24.8 1.46 1.4.14.39.14.81.01 1.2-.12.36-.35.68-.67.95z" />
+                    </svg>
+                    Viber
+                </a>
+            </div>
+            <div class="modal-contact">
+                <p>Або зателефонуйте нам:</p>
+                <a href="tel:+380980488437" class="phone-link dyn-phone">+380 98 048 84 37</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <img src="images/logo-mark.svg" alt="ЄКвіти" style="height: 40px; opacity: 0.8; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
+                <a href="tel:+380980488437" class="dyn-phone"
+                    style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                        </path>
+                    </svg>
+                    +380 98 048 84 37
+                </a>
+                <a href="https://instagram.com/ekvity.ua" target="_blank" class="dyn-insta"
+                    style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    @ekvity.ua
+                </a>
+                <a href="https://t.me/ekvityua" target="_blank" class="dyn-tg"
+                    style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                    </svg>
+                    Telegram
+                </a>
+            </div>
+            <p style="font-size: 0.75rem; color: #555;">© 2026 ЄКвіти</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="settings.js"></script>
+    <script src="constructor.js"></script>
+</body>
+
+</html>
