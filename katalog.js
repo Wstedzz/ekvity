@@ -167,7 +167,7 @@ function updateBreadcrumbs() {
         el.textContent = 'Каталог';
     } else {
         const catName = getCategoryName(currentCategory);
-        el.innerHTML = `<a href="katalog.html">Каталог</a> <span>→</span> ${catName}`;
+        el.innerHTML = `<a href="/katalog">Каталог</a> <span>→</span> ${catName}`;
     }
 }
 
