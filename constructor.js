@@ -59,7 +59,7 @@ function renderFlowerGrid() {
     });
 }
 
-function changeQty(id, delta) {
+window.changeQty = function (id, delta) {
     if (delta > 0) {
         const currentTotal = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
         if (currentTotal >= 85) {
@@ -694,7 +694,7 @@ function updateSummary() {
     console.log('Total individual flowers:', numRealFlowers, 'Total hexagons:', flowerPositions.length);
 }
 
-function orderBouquet() {
+window.orderBouquet = function () {
     const selected = getSelected();
     if (selected.length === 0) return;
 
