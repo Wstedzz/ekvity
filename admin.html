@@ -348,11 +348,16 @@
     <div id="loginSection" class="login-overlay">
         <div class="login-box">
             <h2 class="admin-title" style="margin-bottom: 30px">ЄКвіти</h2>
+            <div id="loginError" style="color: #ff4444; margin-bottom: 15px; display: none; font-size: 0.85rem;"></div>
+            <div class="form-group">
+                <input type="email" id="adminEmail" class="form-input" placeholder="Емейл"
+                    onkeydown="if(event.key==='Enter')checkAuth()">
+            </div>
             <div class="form-group">
                 <input type="password" id="adminPass" class="form-input" placeholder="Пароль"
                     onkeydown="if(event.key==='Enter')checkAuth()">
             </div>
-            <button type="button" onclick="checkAuth()" class="btn-luxury"
+            <button type="button" id="loginBtn" onclick="checkAuth()" class="btn-luxury"
                 style="width: 100%; cursor: pointer; background: rgba(255,255,255,0.1); color: white;">Увійти</button>
         </div>
     </div>

@@ -1,5 +1,4 @@
 // Admin Panel Logic - ЄКвіти
-const AUTH_PASS = 'admin123';
 
 const DEFAULT_CATEGORIES = [
     { id: 'cat-1', name: 'Букети', order: 0, showOnMain: true },
@@ -140,20 +139,76 @@ async function saveConstructorFlowers() {
 }
 
 // Auth
-document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('adminAuth')) showDashboard();
+document.addEventListener('DOMContentLoaded', async () => {
+    if (window.supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            showDashboard();
+        } else {
+            // Check for auth state changes (e.g., successful login)
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN') {
+                    showDashboard();
+                } else if (event === 'SIGNED_OUT') {
+                    document.getElementById('loginSection').style.display = 'flex';
+                    document.getElementById('dashboardSection').style.display = 'none';
+                }
+            });
+        }
+    } else if (localStorage.getItem('adminAuth')) {
+        // Fallback if supabase isn't loaded (not recommended for production)
+        showDashboard();
+    }
 });
 
-window.checkAuth = function () {
-    if (document.getElementById('adminPass').value === AUTH_PASS) {
-        localStorage.setItem('adminAuth', 'true');
-        showDashboard();
+window.checkAuth = async function () {
+    const errorEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+    errorEl.style.display = 'none';
+    
+    if (window.supabase) {
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPass').value;
+        
+        if (!email || !password) {
+            errorEl.textContent = 'Введіть email та пароль';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        btn.textContent = 'Завантаження...';
+        btn.disabled = true;
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        btn.textContent = 'Увійти';
+        btn.disabled = false;
+
+        if (error) {
+            errorEl.textContent = 'Помилка входу: ' + error.message;
+            errorEl.style.display = 'block';
+        } else {
+            // The onAuthStateChange listener will handle showing the dashboard
+        }
     } else {
-        alert('Невірний пароль');
+        // Obsolete fallback - should ideally be removed if full Supabase migration
+        if (document.getElementById('adminPass').value === 'admin123') {
+            localStorage.setItem('adminAuth', 'true');
+            showDashboard();
+        } else {
+            errorEl.textContent = 'Невірний пароль';
+            errorEl.style.display = 'block';
+        }
     }
 };
 
-window.logout = function () {
+window.logout = async function () {
+    if (window.supabase) {
+        await supabase.auth.signOut();
+    }
     localStorage.removeItem('adminAuth');
     location.reload();
 };

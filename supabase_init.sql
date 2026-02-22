@@ -5,11 +5,24 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('images', 'images', true)
 ON CONFLICT (id) DO NOTHING;
 
+-- Storage Policies for 'images' bucket
 -- Allow public access to read the images bucket
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'images');
+CREATE POLICY "Public Read Access" 
+ON storage.objects FOR SELECT 
+USING (bucket_id = 'images');
 
--- Allow authenticated (and anon, since we use anon for now) to upload
-CREATE POLICY "Anon Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'images');
+-- Allow ONLY authenticated (admin) users to upload, update, or delete images
+CREATE POLICY "Admin Insert Access" 
+ON storage.objects FOR INSERT 
+TO authenticated WITH CHECK (bucket_id = 'images');
+
+CREATE POLICY "Admin Update Access" 
+ON storage.objects FOR UPDATE 
+TO authenticated USING (bucket_id = 'images');
+
+CREATE POLICY "Admin Delete Access" 
+ON storage.objects FOR DELETE 
+TO authenticated USING (bucket_id = 'images');
 
 -- 2. Create tables
 CREATE TABLE IF NOT EXISTS public.categories (
@@ -42,8 +55,31 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
     value text
 );
 
--- 3. Turn off RLS temporarily for easy prototyping (WARNING: In production, configure proper RLS rules!)
-ALTER TABLE public.categories DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.products DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.constructor_flowers DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.site_settings DISABLE ROW LEVEL SECURITY;
+-- 3. Enable RLS (Row Level Security)
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.constructor_flowers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+-- 4. Create Policies for Public Read (anon + authenticated)
+CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Public Read Products" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Public Read Constructor Flowers" ON public.constructor_flowers FOR SELECT USING (true);
+CREATE POLICY "Public Read Site Settings" ON public.site_settings FOR SELECT USING (true);
+
+-- 5. Create Policies for Admin Edit (authenticated ONLY)
+CREATE POLICY "Admin Insert Categories" ON public.categories FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Admin Update Categories" ON public.categories FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Admin Delete Categories" ON public.categories FOR DELETE TO authenticated USING (true);
+
+CREATE POLICY "Admin Insert Products" ON public.products FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Admin Update Products" ON public.products FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Admin Delete Products" ON public.products FOR DELETE TO authenticated USING (true);
+
+CREATE POLICY "Admin Insert Constructor Flowers" ON public.constructor_flowers FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Admin Update Constructor Flowers" ON public.constructor_flowers FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Admin Delete Constructor Flowers" ON public.constructor_flowers FOR DELETE TO authenticated USING (true);
+
+CREATE POLICY "Admin Insert Site Settings" ON public.site_settings FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Admin Update Site Settings" ON public.site_settings FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Admin Delete Site Settings" ON public.site_settings FOR DELETE TO authenticated USING (true);
