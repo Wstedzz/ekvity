@@ -111,16 +111,42 @@ function getFilteredProducts() {
     return filtered;
 }
 
-function renderProducts() {
+function createProductCard(p, animIndex) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.dataset.productId = p.id;
+    card.style.transitionDelay = `${animIndex * 0.08}s`;
+    const catName = getCategoryName(p.categoryId);
+    card.innerHTML = `
+        <div class="card-image-wrapper">
+            <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
+            <div class="card-meta-overlay">
+                <span class="product-id">${p.id}</span>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="product-category">${catName}</div>
+            <h3 class="product-name">${p.name}</h3>
+            <p class="product-price">${p.price} <span>UAH</span></p>
+            <div class="card-actions">
+                <button class="btn-order" onclick="orderProduct('${p.id}','${p.name.replace(/'/g, "\\'")}',${p.price})">Замовити</button>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
+function renderProducts(appendOnly = false) {
     const grid = document.getElementById('catalogGrid');
     const noResults = document.getElementById('noResults');
     const loadMoreWrap = document.getElementById('loadMoreWrap');
     const resultsInfo = document.getElementById('resultsInfo');
 
     const filtered = getFilteredProducts();
+    const prevCount = appendOnly ? (currentPage - 1) * PAGE_SIZE : 0;
     const toShow = filtered.slice(0, currentPage * PAGE_SIZE);
 
-    grid.innerHTML = '';
+    if (!appendOnly) grid.innerHTML = '';
 
     if (filtered.length === 0) {
         noResults.style.display = 'block';
@@ -132,27 +158,11 @@ function renderProducts() {
     noResults.style.display = 'none';
     resultsInfo.textContent = `Знайдено: ${filtered.length}`;
 
-    toShow.forEach((p, i) => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.style.transitionDelay = `${(i % PAGE_SIZE) * 0.08}s`;
-        const catName = getCategoryName(p.categoryId);
-        card.innerHTML = `
-            <div class="card-image-wrapper">
-                <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
-                <div class="card-meta-overlay">
-                    <span class="product-id">${p.id}</span>
-                </div>
-            </div>
-            <div class="card-content">
-                <div class="product-category">${catName}</div>
-                <h3 class="product-name">${p.name}</h3>
-                <p class="product-price">${p.price} <span>UAH</span></p>
-                <div class="card-actions">
-                    <button class="btn-order" onclick="orderProduct('${p.id}','${p.name.replace(/'/g, "\\'")}',${p.price})">Замовити</button>
-                </div>
-            </div>
-        `;
+    // Only render new items when appending
+    const itemsToRender = appendOnly ? toShow.slice(prevCount) : toShow;
+
+    itemsToRender.forEach((p, i) => {
+        const card = createProductCard(p, i);
         grid.appendChild(card);
         setTimeout(() => card.classList.add('visible'), 50);
     });
@@ -272,6 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load more
     document.getElementById('loadMoreBtn').addEventListener('click', () => {
         currentPage++;
-        renderProducts();
+        renderProducts(true); // appendOnly — only animate new cards
     });
 });
