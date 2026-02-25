@@ -8,7 +8,8 @@ export default defineConfig({
                 main: resolve(__dirname, 'index.html'),
                 katalog: resolve(__dirname, 'katalog.html'),
                 constructor: resolve(__dirname, 'constructor.html'),
-                admin: resolve(__dirname, 'admin.html')
+                admin: resolve(__dirname, 'admin.html'),
+                blog: resolve(__dirname, 'blog.html')
             }
         }
     }

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Блог про квіти — ЄКвіти Львів</title>
+    <meta name="description" content="Поради з догляду за квітами, ідеї букетів, тренди флористики. Блог квіткової майстерні ЄКвіти у Львові.">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Блог про квіти — ЄКвіти Львів">
+    <meta property="og:description" content="Поради з догляду за квітами, ідеї букетів, тренди флористики.">
+    <meta property="og:image" content="https://ekvity.co.ua/og-image-v3.jpg">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        .blog-hero {
+            padding: 140px 0 80px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .blog-hero h1 {
+            font-family: var(--font-heading);
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            font-weight: 400;
+            margin: 16px 0 20px;
+        }
+        .blog-hero p {
+            color: var(--text-dim);
+            font-size: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 40px;
+            padding: 80px 0 100px;
+        }
+        .blog-card {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid rgba(255,255,255,0.07);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .blog-card:hover {
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-4px);
+        }
+        .blog-card-img {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+            filter: brightness(0.9);
+            transition: filter 0.3s;
+        }
+        .blog-card:hover .blog-card-img {
+            filter: brightness(1);
+        }
+        .blog-card-body {
+            padding: 28px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .blog-card-tag {
+            font-family: var(--font-body);
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+        .blog-card-title {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin: 0 0 14px;
+            line-height: 1.3;
+        }
+        .blog-card-excerpt {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            flex: 1;
+            margin-bottom: 24px;
+        }
+        .blog-card-meta {
+            font-size: 0.75rem;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
+        .blog-card-read {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <button class="menu-btn" onclick="toggleMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="logo">
+                <a href="/"><img src="images/logo-full.svg" alt="ЄКвіти" class="logo-img"></a>
+            </div>
+            <div class="nav-links">
+                <a href="/#collection">Колекція</a>
+                <a href="/katalog">Каталог</a>
+                <a href="/blog">Блог</a>
+                <a href="/#about">Про нас</a>
+                <a href="tel:+380980488437" class="nav-contact">+380 98 048 84 37</a>
+            </div>
+            <a href="tel:+380980488437" class="mobile-phone-btn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+            </a>
+        </div>
+    </nav>
+
+    <div id="mobileMenu" class="mobile-menu">
+        <button class="menu-close" onclick="toggleMenu()">&times;</button>
+        <div class="mobile-nav-links">
+            <a href="/" onclick="toggleMenu()">Головна</a>
+            <a href="/katalog" onclick="toggleMenu()">Каталог</a>
+            <a href="/blog" onclick="toggleMenu()">Блог</a>
+            <a href="/#about" onclick="toggleMenu()">Про нас</a>
+            <a href="tel:+380980488437" class="mobile-contact">+380 98 048 84 37</a>
+        </div>
+    </div>
+
+    <section class="blog-hero">
+        <div class="container">
+            <span class="section-label">Блог</span>
+            <h1>Про квіти</h1>
+            <p>Поради, натхнення та все про світ флористики від майстерні ЄКвіти.</p>
+        </div>
+    </section>
+
+    <main class="container">
+        <div class="blog-grid">
+
+            <a href="/blog/tulpany-lviv" class="blog-card">
+                <img src="images/prod-bouquet3.jpg" alt="Тюльпани Львів" class="blog-card-img">
+                <div class="blog-card-body">
+                    <div class="blog-card-tag">Тюльпани</div>
+                    <h2 class="blog-card-title">Тюльпани у Львові: як обрати свіжий букет і зберегти його довше</h2>
+                    <p class="blog-card-excerpt">Тюльпани — найпопулярніша квітка навесні. Розповідаємо як відрізнити свіжі від залежалих, які сорти найдовше стоять у вазі та де купити тюльпани у Львові.</p>
+                    <div class="blog-card-meta">
+                        <span>Лютий 2026</span>
+                        <span class="blog-card-read">5 хв читання →</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/blog/yak-zberegty-buket" class="blog-card">
+                <img src="images/prod-bouquet4.jpg" alt="Як зберегти букет" class="blog-card-img">
+                <div class="blog-card-body">
+                    <div class="blog-card-tag">Поради</div>
+                    <h2 class="blog-card-title">Як зберегти букет свіжим до 2 тижнів: 7 правил від флориста</h2>
+                    <p class="blog-card-excerpt">Правильна вода, температура, підрізка стебел і ще 4 прості правила які подвоять термін життя вашого букета.</p>
+                    <div class="blog-card-meta">
+                        <span>Лютий 2026</span>
+                        <span class="blog-card-read">4 хв читання →</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/blog/pionovidni-troyand" class="blog-card">
+                <img src="images/prod-bouquet8.jpg" alt="Піоновидні троянди" class="blog-card-img">
+                <div class="blog-card-body">
+                    <div class="blog-card-tag">Троянди</div>
+                    <h2 class="blog-card-title">Піоновидні троянди: чому вони коштують дорожче і чи варто це того</h2>
+                    <p class="blog-card-excerpt">Пояснюємо що таке піоновидна троянда, чим вона відрізняється від звичайної і чому її так люблять флористи по всьому світу.</p>
+                    <div class="blog-card-meta">
+                        <span>Лютий 2026</span>
+                        <span class="blog-card-read">3 хв читання →</span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <img src="images/logo-mark.svg" alt="ЄКвіти" style="height: 40px; opacity: 0.8; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
+                <a href="tel:+380980488437" style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    +380 98 048 84 37
+                </a>
+                <a href="https://instagram.com/ekvity.ua" target="_blank" style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    @ekvity.ua
+                </a>
+            </div>
+            <p style="font-size: 0.75rem; color: #555;">© 2026 ЄКвіти</p>
+        </div>
+    </footer>
+
+    <script src="settings.js"></script>
+    <script>
+        window.toggleMenu = function () {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('open');
+            document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+        };
+        const dot = document.querySelector('.cursor-dot');
+        const outline = document.querySelector('.cursor-outline');
+        if (!window.matchMedia("(hover: none)").matches) {
+            window.addEventListener('mousemove', (e) => {
+                dot.style.left = e.clientX + 'px';
+                dot.style.top = e.clientY + 'px';
+                outline.animate({ left: e.clientX + 'px', top: e.clientY + 'px' }, { duration: 500, fill: "forwards" });
+            });
+        }
+    </script>
+</body>
+</html>
