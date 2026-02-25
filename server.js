@@ -7,6 +7,7 @@ const url = require('url');
 const PORT = process.env.PORT || 8080;
 const APIFY_TOKEN = process.env.APIFY_TOKEN || '';
 const DIST = path.join(__dirname, 'dist');
+const PUBLIC = path.join(__dirname, 'public');
 const CACHE_FILE = path.join(__dirname, 'instagram-cache.json');
 const IMG_CACHE_DIR = path.join(__dirname, 'instagram-images');
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
@@ -74,7 +75,20 @@ const server = http.createServer(async (req, res) => {
     '/katalog': '/katalog.html',
     '/constructor': '/constructor.html',
     '/admin': '/admin.html',
+    // serve raw CSS/fonts for blog pages (blog uses /style.css directly)
+    '/style.css': null, // handled below
   };
+
+  // Special: serve style.css directly from root (blog pages need it)
+  if (pathname === '/style.css') {
+    fs.readFile(path.join(__dirname, 'style.css'), (err, data) => {
+      if (err) { res.writeHead(404); res.end('not found'); return; }
+      res.setHeader('Content-Type', 'text/css');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.end(data);
+    });
+    return;
+  }
 
   const rewritten = rewrites[pathname] || pathname;
   let filePath = path.join(DIST, rewritten === '/' ? 'index.html' : rewritten);
@@ -89,17 +103,30 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  fs.readFile(filePath, (err, data) => {
+  const serveFile = (fp, cb) => fs.readFile(fp, (err, data) => cb(err, data, fp));
+
+  serveFile(filePath, (err, data, fp) => {
     if (err) {
-      // Try index.html as final fallback
-      fs.readFile(path.join(DIST, 'index.html'), (err2, data2) => {
-        if (err2) { res.writeHead(404); res.end('Not found'); return; }
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      // Fallback 1: try same path in public/ (for style.css, blog files, images)
+      const publicPath = path.join(PUBLIC, path.relative(DIST, fp));
+      serveFile(publicPath, (err2, data2, fp2) => {
+        if (err2) {
+          // Fallback 2: SPA index.html
+          fs.readFile(path.join(DIST, 'index.html'), (err3, data3) => {
+            if (err3) { res.writeHead(404); res.end('Not found'); return; }
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.end(data3);
+          });
+          return;
+        }
+        const ext = path.extname(fp2);
+        res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
+        if (ext !== '.html') res.setHeader('Cache-Control', 'public, max-age=3600');
         res.end(data2);
       });
       return;
     }
-    const ext = path.extname(filePath);
+    const ext = path.extname(fp);
     res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
     if (ext !== '.html') res.setHeader('Cache-Control', 'public, max-age=31536000');
     res.end(data);
