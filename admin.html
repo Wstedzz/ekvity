@@ -410,6 +410,22 @@
         }
         .content-editor:focus { border-color: var(--gold); outline: none; }
 
+        /* TinyMCE dark skin overrides */
+        .tox-tinymce { border: 1px solid var(--border) !important; border-radius: 4px !important; }
+        .tox .tox-edit-area__iframe { background: #0d0d0d !important; }
+        .tox .tox-toolbar__primary, .tox .tox-toolbar__overflow,
+        .tox .tox-menubar, .tox .tox-statusbar {
+            background: #111 !important; border-color: var(--border) !important;
+        }
+        .tox .tox-tbtn, .tox .tox-mbtn { color: rgba(255,255,255,0.7) !important; }
+        .tox .tox-tbtn:hover, .tox .tox-mbtn:hover { background: rgba(255,255,255,0.08) !important; }
+        .tox .tox-tbtn--enabled, .tox .tox-tbtn--enabled:hover {
+            background: rgba(200,169,110,0.2) !important; color: var(--gold) !important;
+        }
+        .tox .tox-statusbar { color: var(--text-dim) !important; }
+        .tox .tox-statusbar__text-container { color: var(--text-dim) !important; }
+        .tox .tox-toolbar__group:not(:last-of-type) { border-right-color: var(--border) !important; }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 900px) {
             .sidebar { transform: translateX(-100%); }
@@ -755,7 +771,7 @@
 
     <!-- ==================== BLOG MODAL ==================== -->
     <div id="blogModal" class="modal-overlay">
-        <div class="modal-box" style="max-width:750px;">
+        <div class="modal-box" style="max-width:900px;">
             <div class="modal-header">
                 <h3 id="blogModalTitle">Нова стаття</h3>
                 <button class="modal-close" onclick="closeBlogModal()">&times;</button>
@@ -790,8 +806,9 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Контент (HTML)</label>
-                        <textarea id="blogContent" class="content-editor" placeholder="Вміст статті в HTML..."></textarea>
+                        <label class="form-label">Контент</label>
+                        <textarea id="blogContent" class="content-editor" style="display:none;"></textarea>
+                        <div id="blogEditorWrap"></div>
                     </div>
                     <div class="form-group">
                         <label><input type="checkbox" id="blogPublished" class="form-checkbox" checked> Опубліковано</label>
@@ -882,6 +899,7 @@
     <!-- Toast container -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="settings.js"></script>

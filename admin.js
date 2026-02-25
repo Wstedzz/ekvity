@@ -602,8 +602,85 @@ window.openBlogModal = function () {
     document.getElementById('blogPublished').checked = true;
     document.getElementById('blogModalTitle').textContent = 'Нова стаття';
     document.getElementById('blogModal').classList.add('open');
+    initBlogEditor('');
 };
-window.closeBlogModal = function () { document.getElementById('blogModal').classList.remove('open'); };
+window.closeBlogModal = function () {
+    destroyBlogEditor();
+    document.getElementById('blogModal').classList.remove('open');
+};
+
+// ---- TinyMCE Blog Editor ----
+let blogEditorInstance = null;
+
+function initBlogEditor(content) {
+    destroyBlogEditor();
+    const wrap = document.getElementById('blogEditorWrap');
+    // Create a fresh element for TinyMCE
+    wrap.innerHTML = '<textarea id="blogEditorArea"></textarea>';
+
+    if (typeof tinymce === 'undefined') {
+        // Fallback: show plain textarea
+        const ta = document.getElementById('blogEditorArea');
+        ta.className = 'content-editor';
+        ta.style.display = 'block';
+        ta.value = content || '';
+        return;
+    }
+
+    tinymce.init({
+        target: document.getElementById('blogEditorArea'),
+        height: 420,
+        skin: 'oxide-dark',
+        content_css: 'dark',
+        promotion: false,
+        branding: false,
+        menubar: 'file edit insert format',
+        plugins: 'lists link image table code hr fullscreen media autolink',
+        toolbar: 'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link image media | table hr | code fullscreen',
+        content_style: `
+            body {
+                font-family: 'Montserrat', sans-serif;
+                font-size: 15px;
+                line-height: 1.8;
+                color: #e0e0e0;
+                background: #0d0d0d;
+                padding: 12px;
+            }
+            a { color: #c8a96e; }
+            h1,h2,h3,h4 { font-family: 'Playfair Display', serif; color: #fff; }
+            img { max-width: 100%; height: auto; border-radius: 6px; }
+            blockquote { border-left: 3px solid #c8a96e; padding-left: 16px; color: #aaa; }
+        `,
+        setup: (editor) => {
+            blogEditorInstance = editor;
+            editor.on('init', () => {
+                editor.setContent(content || '');
+            });
+        },
+        // Image upload via Supabase storage
+        images_upload_handler: async (blobInfo) => {
+            if (!window.supabase) return blobInfo.blobUri();
+            const ext = blobInfo.filename().split('.').pop() || 'jpg';
+            const fileName = `blog-${Date.now()}-${Math.random().toString(36).substring(2,7)}.${ext}`;
+            const { data, error } = await supabase.storage.from('images').upload(fileName, blobInfo.blob());
+            if (error) { toast('Помилка завантаження: ' + error.message, 'error'); throw error; }
+            return supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+        }
+    });
+}
+
+function destroyBlogEditor() {
+    if (blogEditorInstance) {
+        try { blogEditorInstance.destroy(); } catch(e) {}
+        blogEditorInstance = null;
+    }
+}
+
+function getBlogEditorContent() {
+    if (blogEditorInstance) return blogEditorInstance.getContent();
+    const ta = document.getElementById('blogEditorArea');
+    return ta ? ta.value.trim() : '';
+}
 
 window.autoGenerateSlug = function () {
     const titleEl = document.getElementById('blogTitle');
@@ -627,7 +704,7 @@ window.saveBlogPost = async function (e) {
         slug: document.getElementById('blogSlug').value.trim(),
         title: document.getElementById('blogTitle').value.trim(),
         description: document.getElementById('blogDesc').value.trim(),
-        content: document.getElementById('blogContent').value.trim(),
+        content: getBlogEditorContent(),
         image: document.getElementById('blogImage').value.trim(),
         meta: document.getElementById('blogMeta').value.trim(),
         published: document.getElementById('blogPublished').checked,
@@ -660,10 +737,10 @@ window.editBlogPost = function (id) {
     document.getElementById('blogDesc').value = p.description || '';
     document.getElementById('blogImage').value = p.image || '';
     document.getElementById('blogMeta').value = p.meta || '';
-    document.getElementById('blogContent').value = p.content || '';
     document.getElementById('blogPublished').checked = !!p.published;
     document.getElementById('blogModalTitle').textContent = 'Редагувати статтю';
     document.getElementById('blogModal').classList.add('open');
+    initBlogEditor(p.content || '');
 };
 
 window.deleteBlogPost = async function (id) {
