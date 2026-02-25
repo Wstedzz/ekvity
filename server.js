@@ -8,7 +8,11 @@ const PORT = process.env.PORT || 8080;
 const APIFY_TOKEN = process.env.APIFY_TOKEN || '';
 const DIST = path.join(__dirname, 'dist');
 const CACHE_FILE = path.join(__dirname, 'instagram-cache.json');
+const IMG_CACHE_DIR = path.join(__dirname, 'instagram-images');
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+
+// Ensure image cache dir exists
+if (!fs.existsSync(IMG_CACHE_DIR)) fs.mkdirSync(IMG_CACHE_DIR);
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -38,29 +42,16 @@ const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url);
   const pathname = parsed.pathname;
 
-  // Image proxy endpoint
-  if (pathname === '/api/proxy') {
-    const imgUrl = parsed.query ? new URLSearchParams(parsed.query).get('url') : null;
-    if (!imgUrl || !imgUrl.startsWith('https://')) {
-      res.writeHead(400); res.end('Bad request'); return;
-    }
-    try {
-      const proxyReq = https.get(imgUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
-          'Referer': 'https://www.instagram.com/',
-        }
-      }, proxyRes => {
-        res.writeHead(200, {
-          'Content-Type': proxyRes.headers['content-type'] || 'image/jpeg',
-          'Cache-Control': 'public, max-age=86400',
-        });
-        proxyRes.pipe(res);
-      });
-      proxyReq.on('error', () => { res.writeHead(502); res.end(); });
-    } catch (e) {
-      res.writeHead(502); res.end();
-    }
+  // Cached image endpoint
+  if (pathname.startsWith('/api/ig-img/')) {
+    const filename = path.basename(pathname);
+    const filePath = path.join(IMG_CACHE_DIR, filename);
+    fs.readFile(filePath, (err, data) => {
+      if (err) { res.writeHead(404); res.end(); return; }
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=604800'); // 7 days
+      res.end(data);
+    });
     return;
   }
 
@@ -142,18 +133,56 @@ async function getInstagramPosts() {
   // Fetch items
   const items = await apifyGet(`/v2/datasets/${datasetId}/items?limit=9`);
 
-  const posts = items
+  const sorted = items
     .filter(i => i.displayUrl)
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .map(i => ({
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  // Download images locally
+  const posts = await Promise.all(sorted.map(async (i, idx) => {
+    const filename = `ig_${idx}.jpg`;
+    const filePath = path.join(IMG_CACHE_DIR, filename);
+    try {
+      await downloadImage(i.displayUrl, filePath);
+    } catch (e) {
+      console.error('Image download failed:', e.message);
+    }
+    return {
       url: i.url,
-      displayUrl: i.displayUrl,
+      localImg: `/api/ig-img/${filename}`,
       caption: i.caption ? i.caption.slice(0, 120) : '',
       timestamp: i.timestamp,
-    }));
+    };
+  }));
 
   fs.writeFileSync(CACHE_FILE, JSON.stringify({ timestamp: Date.now(), posts }));
   return { posts, cached: false };
+}
+
+// ===== Image downloader =====
+
+function downloadImage(url, destPath) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const req = https.get({
+      hostname: u.hostname,
+      path: u.pathname + u.search,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
+        'Referer': 'https://www.instagram.com/',
+      }
+    }, res => {
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`HTTP ${res.statusCode}`));
+      }
+      const file = fs.createWriteStream(destPath);
+      res.pipe(file);
+      file.on('finish', () => file.close(resolve));
+      file.on('error', reject);
+    });
+    req.on('error', reject);
+    req.setTimeout(15000, () => { req.destroy(); reject(new Error('timeout')); });
+  });
 }
 
 // ===== Apify helpers (pure node:https) =====
