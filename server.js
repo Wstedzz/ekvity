@@ -20,6 +20,7 @@ const MIME = {
   '.js':   'application/javascript',
   '.css':  'text/css',
   '.json': 'application/json',
+  '.xml':  'application/xml; charset=utf-8',
   '.svg':  'image/svg+xml',
   '.jpg':  'image/jpeg',
   '.jpeg': 'image/jpeg',
