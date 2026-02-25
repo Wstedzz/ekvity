@@ -366,8 +366,8 @@ a:hover {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     position: sticky;
-    top: 100px;
-    /* Precise alignment below navbar */
+    top: 88px;
+    /* Precise alignment below navbar (logo 58px + padding 2×15px) */
     z-index: 900;
     transition: top 0.3s;
 }
@@ -820,7 +820,7 @@ a:hover {
 
     /* Sticky categories mobile adjustments */
     .categories-bar {
-        top: 75px;
+        top: 68px;
         padding: 0;
         height: auto;
     }
