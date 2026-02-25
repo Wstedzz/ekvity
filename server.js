@@ -29,6 +29,32 @@ const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url);
   const pathname = parsed.pathname;
 
+  // Image proxy endpoint
+  if (pathname === '/api/proxy') {
+    const imgUrl = parsed.query ? new URLSearchParams(parsed.query).get('url') : null;
+    if (!imgUrl || !imgUrl.startsWith('https://')) {
+      res.writeHead(400); res.end('Bad request'); return;
+    }
+    try {
+      const proxyReq = https.get(imgUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
+          'Referer': 'https://www.instagram.com/',
+        }
+      }, proxyRes => {
+        res.writeHead(200, {
+          'Content-Type': proxyRes.headers['content-type'] || 'image/jpeg',
+          'Cache-Control': 'public, max-age=86400',
+        });
+        proxyRes.pipe(res);
+      });
+      proxyReq.on('error', () => { res.writeHead(502); res.end(); });
+    } catch (e) {
+      res.writeHead(502); res.end();
+    }
+    return;
+  }
+
   // API endpoint
   if (pathname === '/api/instagram') {
     res.setHeader('Content-Type', 'application/json');

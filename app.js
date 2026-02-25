@@ -309,7 +309,7 @@ async function loadInstagramFeed() {
 
         grid.innerHTML = data.posts.map(post => `
             <a class="ig-post" href="${post.url}" target="_blank" rel="noopener">
-                <img src="${post.displayUrl}" alt="${post.caption ? post.caption.slice(0, 50) : 'ekvity.ua'}" loading="lazy">
+                <img src="/api/proxy?url=${encodeURIComponent(post.displayUrl)}" alt="${post.caption ? post.caption.slice(0, 50) : 'ekvity.ua'}" loading="lazy">
                 <div class="ig-post-overlay">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
