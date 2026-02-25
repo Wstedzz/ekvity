@@ -287,7 +287,7 @@ a:hover {
     position: absolute;
     inset: 0;
     z-index: 3;
-    background: radial-gradient(circle at center, transparent 0%, rgba(5, 5, 5, 0.6) 100%),
+    background: radial-gradient(circle at center, transparent 0%, rgba(5, 5, 5, 0.3) 100%),
         linear-gradient(to top, var(--bg-color) 0%, transparent 60%);
     pointer-events: none;
 }
@@ -1170,6 +1170,7 @@ a:hover {
   opacity: 0;
   transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 0;
+  filter: brightness(0.55) contrast(1.05);
 }
 
 .hero-slide.active {
@@ -1196,8 +1197,5 @@ a:hover {
   object-fit: cover;
   object-position: center 30%;
   transform: scale(1.05);
-}
-
-#heroSlideshow {
-  filter: brightness(0.4) contrast(1.1);
+  will-change: opacity;
 }
