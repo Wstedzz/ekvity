@@ -42,6 +42,33 @@ window.handleImageUpload = async function (fileInput, targetId) {
         reader.onload = (e) => { targetInput.value = e.target.result; };
         reader.readAsDataURL(file);
     }
+
+    // Update image preview if present
+    const previewId = targetId + 'Preview';
+    const preview = document.getElementById(previewId);
+    if (preview) {
+        setTimeout(() => {
+            const url = targetInput.value;
+            if (url && !url.startsWith('Завантаження')) {
+                preview.src = url;
+                preview.classList.add('visible');
+            }
+        }, 500);
+    }
+};
+
+// ---- IMAGE PREVIEW HELPER ----
+window.updateImgPreview = function (input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (!preview) return;
+    const url = input.value.trim();
+    if (url && !url.startsWith('data:') && url.length > 5) {
+        preview.src = url;
+        preview.classList.add('visible');
+        preview.onerror = () => { preview.classList.remove('visible'); };
+    } else {
+        preview.classList.remove('visible');
+    }
 };
 
 // ---- DATA LOADING ----
@@ -441,6 +468,9 @@ window.openProductModal = function () {
     document.getElementById('editingId').value = '';
     document.getElementById('prodImg').value = '';
     document.getElementById('productModalTitle').textContent = 'Новий товар';
+    // Reset image preview
+    const preview = document.getElementById('prodImgPreview');
+    if (preview) { preview.classList.remove('visible'); preview.src = ''; }
     populateCatDropdowns();
     document.getElementById('productModal').classList.add('open');
 };
@@ -491,6 +521,10 @@ window.editProduct = function (id) {
     document.getElementById('prodDesc').value = p.desc || '';
     document.getElementById('prodFeatured').checked = !!p.featured;
     document.getElementById('productModalTitle').textContent = 'Редагувати товар';
+    // Show image preview
+    const preview = document.getElementById('prodImgPreview');
+    if (preview && p.image) { preview.src = p.image; preview.classList.add('visible'); }
+    else if (preview) { preview.classList.remove('visible'); }
     document.getElementById('productModal').classList.add('open');
 };
 
