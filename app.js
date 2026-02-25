@@ -14,18 +14,18 @@ const DEFAULT_CATEGORIES = [
 ];
 
 const DEFAULT_PRODUCTS = [
-    { id: 'EKV-001', name: 'Velvet Noir', categoryId: 'cat-1', price: 2362, image: 'images/bouquet1.jpg', desc: 'Dark red roses, eucalyptus, mystery.', featured: true },
-    { id: 'EKV-002', name: 'Opulence', categoryId: 'cat-1', price: 6760, image: 'images/bouquet3.jpg', desc: 'Premium selection, gold wrapping.', featured: true },
-    { id: 'EKV-003', name: 'Ethereal Mist', categoryId: 'cat-1', price: 5800, image: 'images/bouquet1.jpg', desc: 'Rare white blooms, silk ribbon.', featured: false },
-    { id: 'EKV-004', name: 'Pastel Dream', categoryId: 'cat-1', price: 3140, image: 'images/bouquet3.jpg', desc: 'Soft pinks, creamy textures.', featured: false },
-    { id: 'EKV-005', name: 'Classic Elegance', categoryId: 'cat-1', price: 1990, image: 'images/bouquet1.jpg', desc: 'Timeless red roses.', featured: false },
-    { id: 'EKV-006', name: 'Midnight Garden', categoryId: 'cat-1', price: 2200, image: 'images/bouquet3.jpg', desc: 'Deep purples and shadows.', featured: false },
-    { id: 'EKV-010', name: 'Athena Royal', categoryId: 'cat-2', price: 100, image: 'images/bouquet2.jpg', desc: 'Single stem, 60cm.', featured: true },
-    { id: 'EKV-011', name: 'Genista Gold', categoryId: 'cat-2', price: 40, image: 'images/bouquet2.jpg', desc: 'Bright accent.', featured: false },
-    { id: 'EKV-012', name: 'Lilac Essence', categoryId: 'cat-2', price: 290, image: 'images/bouquet2.jpg', desc: 'Fragrant luxury.', featured: false },
-    { id: 'EKV-013', name: 'Chamelaucium', categoryId: 'cat-2', price: 80, image: 'images/bouquet2.jpg', desc: 'Delicate wax flower.', featured: false },
-    { id: 'EKV-014', name: 'Oxypetalum Blue', categoryId: 'cat-2', price: 160, image: 'images/bouquet2.jpg', desc: 'Rare blue hue.', featured: false },
-    { id: 'EKV-020', name: 'Sculptural White', categoryId: 'cat-3', price: 4500, image: 'images/bouquet4.jpg', desc: 'Modern vase arrangement.', featured: true }
+    { id: 'EKV-001', name: 'Тюльпани мікс', categoryId: 'cat-1', price: 2800, image: 'images/prod-bouquet1.jpg', desc: 'Три кольори, три настрої. Букет у фірмовому пакуванні.', featured: true },
+    { id: 'EKV-002', name: 'Персикові тюльпани', categoryId: 'cat-1', price: 3200, image: 'images/prod-bouquet2.jpg', desc: 'Ніжний персиковий відтінок, 51 шт.', featured: true },
+    { id: 'EKV-003', name: 'Бордові тюльпани', categoryId: 'cat-1', price: 2600, image: 'images/prod-bouquet3.jpg', desc: 'Темно-бордові, насичені. 101 шт.', featured: false },
+    { id: 'EKV-004', name: 'Піоновидні рожеві', categoryId: 'cat-1', price: 4800, image: 'images/prod-bouquet4.jpg', desc: 'Розкішні піоновидні тюльпани, 101 шт.', featured: false },
+    { id: 'EKV-005', name: 'Білі піоновидні', categoryId: 'cat-1', price: 3800, image: 'images/prod-bouquet5.jpg', desc: 'Сніжно-білі, кремові. Витонченість у кожній пелюстці.', featured: false },
+    { id: 'EKV-006', name: 'Букет на замовлення', categoryId: 'cat-1', price: 1500, image: 'images/prod-bouquet1.jpg', desc: 'Обираєш колір, кількість, пакування — ми створюємо.', featured: false },
+    { id: 'EKV-010', name: 'Тюльпан поштучно', categoryId: 'cat-2', price: 55, image: 'images/prod-bouquet3.jpg', desc: 'Один стебло, 60 см.', featured: true },
+    { id: 'EKV-011', name: 'Піоновидний поштучно', categoryId: 'cat-2', price: 80, image: 'images/prod-bouquet4.jpg', desc: 'Піоновидний тюльпан, преміум.', featured: false },
+    { id: 'EKV-012', name: 'Білий тюльпан', categoryId: 'cat-2', price: 60, image: 'images/prod-bouquet5.jpg', desc: 'Білий або кремовий, 60 см.', featured: false },
+    { id: 'EKV-013', name: 'Бордовий тюльпан', categoryId: 'cat-2', price: 55, image: 'images/prod-bouquet3.jpg', desc: 'Темно-бордовий, виразний.', featured: false },
+    { id: 'EKV-020', name: 'Кошик з тюльпанів', categoryId: 'cat-3', price: 4500, image: 'images/hero-5.jpg', desc: 'Плетений кошик, 51 тюльпан, стрічка.', featured: true },
+    { id: 'EKV-021', name: 'Кошик преміум', categoryId: 'cat-3', price: 8500, image: 'images/hero-4.jpg', desc: 'Великий кошик 101 троянд з персоналізацією.', featured: false }
 ];
 
 // State
@@ -34,7 +34,16 @@ let products = [];
 let category = 'all';
 
 // Seed data if needed
+const SEED_VERSION = 'v4';
+
 function seedData() {
+    // Reset if seed version changed
+    if (localStorage.getItem('ekvity_seed_version') !== SEED_VERSION) {
+        localStorage.removeItem('ekvity_categories');
+        localStorage.removeItem('ekvity_products');
+        localStorage.setItem('ekvity_seed_version', SEED_VERSION);
+    }
+
     if (!localStorage.getItem('ekvity_categories')) {
         localStorage.setItem('ekvity_categories', JSON.stringify(DEFAULT_CATEGORIES));
     }
