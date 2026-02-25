@@ -301,7 +301,6 @@ window.populateSettingsForm = function () {
     document.getElementById('setConstTitle').value = window.SITE_SETTINGS.constHeroTitle || '';
     document.getElementById('setConstSub').value = window.SITE_SETTINGS.constHeroSubtitle || '';
     document.getElementById('setConstDisc').value = window.SITE_SETTINGS.constDisclaimer || '';
-    document.getElementById('setGooglePlaceId').value = window.SITE_SETTINGS.googlePlaceId || '';
 };
 
 window.saveSiteSettings = async function (e) {
@@ -317,8 +316,7 @@ window.saveSiteSettings = async function (e) {
         homeAboutText: document.getElementById('setAboutText').value.trim(),
         constHeroTitle: document.getElementById('setConstTitle').value.trim(),
         constHeroSubtitle: document.getElementById('setConstSub').value.trim(),
-        constDisclaimer: document.getElementById('setConstDisc').value.trim(),
-        googlePlaceId: document.getElementById('setGooglePlaceId').value.trim()
+        constDisclaimer: document.getElementById('setConstDisc').value.trim()
     };
 
     window.SITE_SETTINGS = { ...window.SITE_SETTINGS, ...s };
@@ -615,20 +613,22 @@ let blogEditorInstance = null;
 function initBlogEditor(content) {
     destroyBlogEditor();
     const wrap = document.getElementById('blogEditorWrap');
-    // Create a fresh element for TinyMCE
-    wrap.innerHTML = '<textarea id="blogEditorArea"></textarea>';
+    // Create a fresh element with unique ID to avoid TinyMCE registry conflicts
+    const editorId = 'blogEditor_' + Date.now();
+    wrap.innerHTML = `<textarea id="${editorId}"></textarea>`;
 
     if (typeof tinymce === 'undefined') {
         // Fallback: show plain textarea
-        const ta = document.getElementById('blogEditorArea');
+        const ta = document.getElementById(editorId);
         ta.className = 'content-editor';
         ta.style.display = 'block';
         ta.value = content || '';
+        ta.id = 'blogEditorArea'; // keep stable id for fallback getter
         return;
     }
 
     tinymce.init({
-        target: document.getElementById('blogEditorArea'),
+        selector: '#' + editorId,
         height: 420,
         skin: 'oxide-dark',
         content_css: 'dark',
@@ -671,14 +671,19 @@ function initBlogEditor(content) {
 
 function destroyBlogEditor() {
     if (blogEditorInstance) {
-        try { blogEditorInstance.destroy(); } catch(e) {}
+        try { tinymce.remove(blogEditorInstance); } catch(e) {}
         blogEditorInstance = null;
+    }
+    // Also remove any orphaned TinyMCE editors in the wrap
+    if (typeof tinymce !== 'undefined') {
+        try { tinymce.get().forEach(ed => { if (ed.id && ed.id.startsWith('blogEditor_')) tinymce.remove(ed); }); } catch(e) {}
     }
 }
 
 function getBlogEditorContent() {
     if (blogEditorInstance) return blogEditorInstance.getContent();
-    const ta = document.getElementById('blogEditorArea');
+    // Fallback textarea
+    const ta = document.getElementById('blogEditorArea') || document.querySelector('#blogEditorWrap textarea');
     return ta ? ta.value.trim() : '';
 }
 
@@ -861,43 +866,112 @@ window.deleteReview = async function (id) {
 
 // ---- GOOGLE REVIEWS IMPORT ----
 let _googleFetchedReviews = [];
+let _googleSelectedPlaceId = '';
 
-window.fetchGoogleReviews = async function () {
-    const placeId = (window.SITE_SETTINGS && window.SITE_SETTINGS.googlePlaceId) || '';
-    if (!placeId) {
-        toast('Спочатку вкажіть Google Place ID у Налаштуваннях → Google Maps', 'error');
-        return;
-    }
-
-    // Show modal with loading state
-    document.getElementById('googleReviewsStatus').style.display = '';
-    document.getElementById('googleReviewsList').style.display = 'none';
-    document.getElementById('googleReviewsModal').classList.add('open');
+window.fetchGoogleReviews = function () {
+    // Reset modal to step 1 (search)
+    document.getElementById('googleStep1').style.display = '';
+    document.getElementById('googleStep2').style.display = 'none';
+    document.getElementById('googleStep3').style.display = 'none';
+    document.getElementById('googlePlaceResults').innerHTML = '';
+    document.getElementById('googleModalTitle').textContent = 'Імпорт відгуків з Google Maps';
     _googleFetchedReviews = [];
+    _googleSelectedPlaceId = '';
+
+    // Pre-fill saved placeId query or default
+    const savedId = (window.SITE_SETTINGS && window.SITE_SETTINGS.googlePlaceId) || '';
+    document.getElementById('googlePlaceQuery').value = savedId ? '' : 'ЄКвіти Львів';
+
+    document.getElementById('googleReviewsModal').classList.add('open');
+
+    // If we have a saved Place ID, skip search and go straight to reviews
+    if (savedId) {
+        loadReviewsForPlace(savedId, '');
+    }
+};
+
+window.searchGooglePlace = async function () {
+    const query = document.getElementById('googlePlaceQuery').value.trim();
+    if (!query) { toast('Введіть назву або адресу', 'error'); return; }
+
+    const results = document.getElementById('googlePlaceResults');
+    results.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-dim);">Пошук...</div>';
+
+    try {
+        const resp = await fetch(`/api/google-place-search?q=${encodeURIComponent(query)}`);
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Server error');
+        if (!data.places || data.places.length === 0) {
+            results.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:12px;">Нічого не знайдено. Спробуйте іншу назву.</p>';
+            return;
+        }
+
+        results.innerHTML = data.places.slice(0, 5).map(p => `
+            <div class="g-place-card" onclick="selectGooglePlace('${p.placeId}', '${(p.name || '').replace(/'/g, "\\'")}')">
+                <div class="g-place-name">${p.name}</div>
+                <div class="g-place-addr">${p.address}</div>
+                ${p.rating ? `<div class="g-place-rating">${'★'.repeat(Math.round(p.rating))} ${p.rating} (${p.totalReviews} відгуків)</div>` : ''}
+            </div>
+        `).join('');
+    } catch (err) {
+        results.innerHTML = `<p style="color:var(--danger);text-align:center;padding:12px;">Помилка: ${err.message}</p>`;
+    }
+};
+
+window.selectGooglePlace = function (placeId, placeName) {
+    loadReviewsForPlace(placeId, placeName);
+};
+
+async function loadReviewsForPlace(placeId, placeName) {
+    _googleSelectedPlaceId = placeId;
+
+    // Show loading
+    document.getElementById('googleStep1').style.display = 'none';
+    document.getElementById('googleStep2').style.display = '';
+    document.getElementById('googleStep3').style.display = 'none';
+    if (placeName) {
+        document.getElementById('googleModalTitle').textContent = `Відгуки — ${placeName}`;
+    }
 
     try {
         const resp = await fetch(`/api/google-reviews?placeId=${encodeURIComponent(placeId)}`);
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'Server error');
         if (!data.reviews || data.reviews.length === 0) {
-            document.getElementById('googleReviewsStatus').innerHTML =
-                '<p style="color:var(--text-dim);">Google не повернув жодного відгуку для цього Place ID.</p>' +
-                '<button class="btn" onclick="closeGoogleReviewsModal()" style="margin-top:12px;">Закрити</button>';
+            document.getElementById('googleStep2').innerHTML =
+                '<p style="color:var(--text-dim);padding:20px;text-align:center;">Google не повернув жодного відгуку.</p>' +
+                '<div style="text-align:center;"><button class="btn" onclick="googleBackToSearch()">← Назад</button></div>';
             return;
         }
 
         _googleFetchedReviews = data.reviews;
+
+        // Save Place ID for next time
+        if (window.SITE_SETTINGS) {
+            window.SITE_SETTINGS.googlePlaceId = placeId;
+            localStorage.setItem('ekvity_site_settings', JSON.stringify(window.SITE_SETTINGS));
+            if (window.supabase) {
+                supabase.from('site_settings').upsert([{ key: 'googlePlaceId', value: placeId }]);
+            }
+        }
+
         renderGoogleReviewCards();
     } catch (err) {
-        document.getElementById('googleReviewsStatus').innerHTML =
-            `<p style="color:var(--danger);">Помилка: ${err.message}</p>` +
-            '<button class="btn" onclick="closeGoogleReviewsModal()" style="margin-top:12px;">Закрити</button>';
+        document.getElementById('googleStep2').innerHTML =
+            `<p style="color:var(--danger);padding:20px;text-align:center;">Помилка: ${err.message}</p>` +
+            '<div style="text-align:center;"><button class="btn" onclick="googleBackToSearch()">← Назад</button></div>';
     }
+}
+
+window.googleBackToSearch = function () {
+    document.getElementById('googleStep1').style.display = '';
+    document.getElementById('googleStep2').style.display = 'none';
+    document.getElementById('googleStep3').style.display = 'none';
+    document.getElementById('googleModalTitle').textContent = 'Імпорт відгуків з Google Maps';
 };
 
 function renderGoogleReviewCards() {
     const container = document.getElementById('googleReviewsItems');
-    // Check which reviews already exist (by author + first 40 chars of text)
     const existingKeys = new Set(reviews.map(r => `${r.author_name}::${(r.text || '').substring(0, 40)}`));
 
     container.innerHTML = _googleFetchedReviews.map((r, i) => {
@@ -916,12 +990,13 @@ function renderGoogleReviewCards() {
     }).join('');
 
     const total = _googleFetchedReviews.length;
-    const selected = container.querySelectorAll('.g-review-check:checked').length;
     document.getElementById('googleReviewsCount').textContent = `${total} відгуків знайдено`;
-    document.getElementById('googleSelectAll').checked = selected === total;
+    document.getElementById('googleSelectAll').checked = true;
 
-    document.getElementById('googleReviewsStatus').style.display = 'none';
-    document.getElementById('googleReviewsList').style.display = '';
+    // Switch to step 3
+    document.getElementById('googleStep1').style.display = 'none';
+    document.getElementById('googleStep2').style.display = 'none';
+    document.getElementById('googleStep3').style.display = '';
 }
 
 window.toggleGoogleReview = function (card) {

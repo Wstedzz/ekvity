@@ -98,6 +98,32 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Google Place Search endpoint
+  if (pathname === '/api/google-place-search') {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const qs = new URLSearchParams(parsed.query || '');
+    const query = qs.get('q');
+    if (!query) {
+      res.writeHead(400);
+      res.end(JSON.stringify({ error: 'q (search query) is required' }));
+      return;
+    }
+    if (!GOOGLE_API_KEY) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: 'GOOGLE_API_KEY not configured on server' }));
+      return;
+    }
+    try {
+      const places = await searchGooglePlaces(query);
+      res.end(JSON.stringify({ places }));
+    } catch (err) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
   // Static files
   const rewrites = {
     '/katalog': '/katalog.html',
@@ -111,6 +137,19 @@ const server = http.createServer(async (req, res) => {
     fs.readFile(path.join(__dirname, 'style.css'), (err, data) => {
       if (err) { res.writeHead(404); res.end('not found'); return; }
       res.setHeader('Content-Type', 'text/css');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.end(data);
+    });
+    return;
+  }
+
+  // Serve sitemap.xml and robots.txt from public/
+  if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
+    const pubFile = path.join(PUBLIC, pathname);
+    fs.readFile(pubFile, (err, data) => {
+      if (err) { res.writeHead(404); res.end('not found'); return; }
+      const ext = path.extname(pathname);
+      res.setHeader('Content-Type', MIME[ext] || 'text/plain');
       res.setHeader('Cache-Control', 'public, max-age=3600');
       res.end(data);
     });
@@ -326,6 +365,50 @@ function fetchGoogleReviews(placeId) {
     });
 
     req.on('error', reject);
+    req.end();
+  });
+}
+
+function searchGooglePlaces(query) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ textQuery: query });
+    const options = {
+      hostname: 'places.googleapis.com',
+      path: '/v1/places:searchText',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_API_KEY,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount'
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => {
+        try {
+          const data = JSON.parse(raw);
+          if (data.error) {
+            reject(new Error(`Google API error: ${data.error.message || JSON.stringify(data.error)}`));
+            return;
+          }
+          const places = (data.places || []).map(p => ({
+            placeId: p.id || '',
+            name: p.displayName?.text || '',
+            address: p.formattedAddress || '',
+            rating: p.rating || 0,
+            totalReviews: p.userRatingCount || 0
+          }));
+          resolve(places);
+        } catch (e) {
+          reject(new Error('Failed to parse Google response: ' + raw.slice(0, 200)));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(body);
     req.end();
   });
 }

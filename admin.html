@@ -405,6 +405,15 @@
             display: inline-block; margin-top: 6px; font-size: 0.72rem;
             color: var(--gold-dim); opacity: 0.7;
         }
+        .g-place-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 12px 16px; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .g-place-card:hover { border-color: var(--gold); background: rgba(200,169,110,0.06); }
+        .g-place-card .g-place-name { font-weight: 600; color: var(--gold); font-size: 0.9rem; }
+        .g-place-card .g-place-addr { color: var(--text-dim); font-size: 0.8rem; margin-top: 2px; }
+        .g-place-card .g-place-rating { color: var(--text-mid); font-size: 0.8rem; margin-top: 4px; }
         .settings-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
             gap: 20px;
@@ -713,15 +722,6 @@
                             </div>
 
                             <div class="settings-card">
-                                <h4>Google Maps</h4>
-                                <div class="form-group">
-                                    <label class="form-label">Google Place ID</label>
-                                    <input type="text" id="setGooglePlaceId" class="form-input" placeholder="ChIJ...">
-                                    <div class="form-hint">Знайдіть свій Place ID на <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" style="color:var(--gold);">Google Place ID Finder</a>. Використовується для імпорту відгуків.</div>
-                                </div>
-                            </div>
-
-                            <div class="settings-card">
                                 <h4>Конструктор букетів</h4>
                                 <div class="form-group">
                                     <label class="form-label">Заголовок</label>
@@ -900,21 +900,38 @@
     <div id="googleReviewsModal" class="modal-overlay">
         <div class="modal-box" style="max-width:700px;">
             <div class="modal-header">
-                <h3>Імпорт відгуків з Google Maps</h3>
+                <h3 id="googleModalTitle">Імпорт відгуків з Google Maps</h3>
                 <button class="modal-close" onclick="closeGoogleReviewsModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div id="googleReviewsStatus" style="text-align:center;padding:30px;color:var(--text-dim);">
-                    <div class="spinner" style="margin:0 auto 12px;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-                    Завантаження відгуків з Google Maps...
+
+                <!-- STEP 1: Search for place -->
+                <div id="googleStep1">
+                    <p style="color:var(--text-mid);font-size:0.85rem;margin-bottom:12px;">Знайдіть свій бізнес на Google Maps:</p>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="googlePlaceQuery" class="form-input" placeholder="ЄКвіти Львів" style="flex:1;">
+                        <button class="btn btn-primary" onclick="searchGooglePlace()">Шукати</button>
+                    </div>
+                    <div id="googlePlaceResults" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
                 </div>
-                <div id="googleReviewsList" style="display:none;">
+
+                <!-- STEP 2: Loading reviews -->
+                <div id="googleStep2" style="display:none;text-align:center;padding:30px;color:var(--text-dim);">
+                    <div class="spinner" style="margin:0 auto 12px;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                    Завантаження відгуків...
+                </div>
+
+                <!-- STEP 3: Select reviews -->
+                <div id="googleStep3" style="display:none;">
                     <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
                         <label style="color:var(--text-mid);font-size:0.85rem;">
                             <input type="checkbox" id="googleSelectAll" onchange="toggleAllGoogleReviews(this.checked)" style="margin-right:6px;">
                             Обрати всі
                         </label>
-                        <span id="googleReviewsCount" style="color:var(--text-dim);font-size:0.8rem;"></span>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <span id="googleReviewsCount" style="color:var(--text-dim);font-size:0.8rem;"></span>
+                            <button class="btn" onclick="googleBackToSearch()" style="font-size:0.78rem;padding:4px 10px;">← Інше місце</button>
+                        </div>
                     </div>
                     <div id="googleReviewsItems" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
                     <div class="modal-footer" style="padding:16px 0 0;border:none;margin-top:16px;">
@@ -922,6 +939,7 @@
                         <button type="button" class="btn btn-primary" onclick="importSelectedGoogleReviews()">Імпортувати обрані</button>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
