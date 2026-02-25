@@ -266,49 +266,60 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="settings.js"></script>
     <script>
-        // Blog articles data
-        const ARTICLES = [
-            { slug: 'tulpany-lviv', title: 'Тюльпани у Львові: як обрати свіжий букет і зберегти його довше', desc: 'Як відрізнити свіжі тюльпани, які сорти найдовше стоять та як доглядати за букетом.', img: 'images/prod-bouquet3.jpg', meta: 'Тюльпани · Лютий 2026 · 5 хв' },
-            { slug: 'troyandy-lviv', title: 'Троянди у Львові: де купити свіжі та як обрати сорт', desc: 'Де купити свіжі троянди, які сорти найдовше стоять та як відрізнити якісний букет.', img: 'images/prod-bouquet1.jpg', meta: 'Троянди · Лютий 2026 · 6 хв' },
-            { slug: 'kvity-na-den-narodzhennya', title: 'Квіти на день народження: що подарувати у 2025', desc: 'Тренди, ідеї та поради — які квіти обрати для особливого подарунка.', img: 'images/prod-bouquet2.jpg', meta: 'День народження · Лютий 2026 · 5 хв' },
-            { slug: 'bukety-na-vesillya-lviv', title: 'Весільні букети у Львові: тренди та ціни 2025', desc: 'Весільні букети 2025: стилі, ціни та як замовити букет нареченої у Львові.', img: 'images/prod-bouquet4.jpg', meta: 'Весілля · Лютий 2026 · 7 хв' },
-            { slug: 'kvity-na-8-bereznya-lviv', title: 'Квіти на 8 березня у Львові: де замовити заздалегідь', desc: 'Як не залишитися без квітів у пік попиту — тюльпани, мімоза, троянди.', img: 'images/prod-bouquet5.jpg', meta: '8 березня · Лютий 2026 · 4 хв' },
-            { slug: 'pivonii-lviv', title: 'Півонії у Львові: сезон, ціни та найкращі букети', desc: 'Коли купити, скільки коштують та як зберегти букет з півоній.', img: 'images/prod-bouquet6.jpg', meta: 'Півонії · Лютий 2026 · 5 хв' },
-            { slug: 'avtorski-bukety-lviv', title: 'Авторські букети у Львові: що це і скільки коштує', desc: 'Чим відрізняється авторський букет від звичайного та як замовити у ЄКвіти.', img: 'images/prod-bouquet7.jpg', meta: 'Флористика · Лютий 2026 · 5 хв' },
-            { slug: 'yak-zberehty-buket-dovshe', title: 'Як зберегти букет довше: 10 порад флориста', desc: '10 практичних порад від флористів ЄКвіти — від підрізки до температури.', img: 'images/hero-4.jpg', meta: 'Догляд · Лютий 2026 · 5 хв' },
-            { slug: 'monobuket-lviv', title: 'Монобукет: тренд чи класика? Де замовити у Львові', desc: 'Монобукет з тюльпанів, троянд або піоній — сміливо та сучасно.', img: 'images/prod-bouquet1.jpg', meta: 'Тренди · Лютий 2026 · 4 хв' },
-            { slug: 'kvity-dlya-kohanoi', title: 'Квіти для коханої: що обрати і як здивувати', desc: 'Романтичні варіанти та як організувати сюрприз з квітами у Львові.', img: 'images/prod-bouquet2.jpg', meta: 'Романтика · Лютий 2026 · 5 хв' },
-            { slug: 'kvity-dlya-mamy', title: 'Які квіти подарувати мамі: поради флориста', desc: 'Класика та сучасні ідеї — як обрати ідеальний букет для мами.', img: 'images/hero-3.jpg', meta: 'Для мами · Лютий 2026 · 5 хв' },
-            { slug: 'bili-kvity-buket', title: 'Білі квіти для букету: символіка та кращі поєднання', desc: 'Все про білу флористику — значення, найкращі квіти та поєднання.', img: 'images/hero-1.jpg', meta: 'Флористика · Лютий 2026 · 5 хв' },
-            { slug: 'ranunkulus-lviv', title: 'Ранункулюс у Львові: де купити і як доглядати', desc: 'Найніжніша весняна квітка — сезон, кольори та догляд у вазі.', img: 'images/prod-bouquet5.jpg', meta: 'Ранункулюс · Лютий 2026 · 5 хв' },
-            { slug: 'orkhideyi-lviv', title: 'Орхідеї у Львові: купити, доглядати, дарувати', desc: 'Все про орхідеї — сорти, догляд та де купити у Львові.', img: 'images/prod-bouquet6.jpg', meta: 'Орхідеї · Лютий 2026 · 6 хв' },
-            { slug: 'sukhi-kvity-kompozytsiyi', title: 'Сухоцвіти та сухі квіти: сучасні композиції', desc: 'Памас-трава, лаванда, бавовна — тренд який не в\'яне.', img: 'images/prod-bouquet3.jpg', meta: 'Сухоцвіти · Лютий 2026 · 5 хв' },
-            { slug: 'kvity-na-vypusknyi-lviv', title: 'Квіти на випускний у Львові: ідеї та ціни', desc: 'Які квіти купити вчителям та випускникам — ідеї та бюджети.', img: 'images/hero-5.jpg', meta: 'Випускний · Лютий 2026 · 4 хв' },
-            { slug: 'kvity-korporatyvni-lviv', title: 'Корпоративні квіти у Львові: оформлення офісу та подій', desc: 'Регулярна підписка, оформлення заходів та корпоративні подарунки.', img: 'images/prod-bouquet4.jpg', meta: 'Корпоративне · Лютий 2026 · 4 хв' },
-            { slug: 'kvity-lviv-nedorogo', title: 'Квіти у Львові недорого: гарний букет за розумну ціну', desc: 'Які квіти виглядають дорого але коштують недорого — поради для економних.', img: 'images/prod-bouquet8.jpg', meta: 'Бюджет · Лютий 2026 · 4 хв' },
-            { slug: 'litni-kvity-lviv', title: 'Літні квіти у Львові: соняшники, далії, цинії', desc: 'Найкращі літні квіти та ідеї для яскравих сезонних букетів.', img: 'images/prod-bouquet7.jpg', meta: 'Літо · Лютий 2026 · 5 хв' },
-            { slug: 'yak-vybrats-floryst-lviv', title: 'Як обрати флориста у Львові: на що звернути увагу', desc: 'Портфоліо, свіжість квітів, відгуки — чек-лист для правильного вибору.', img: 'images/prod-bouquet8.jpg', meta: 'Поради · Лютий 2026 · 5 хв' },
-        ];
+        // Load blog posts from Supabase (with localStorage cache fallback)
+        let articles = [];
+
+        async function loadArticles() {
+            // Try localStorage cache first for instant render
+            const cached = localStorage.getItem('ekvity_blog_posts');
+            if (cached) {
+                articles = JSON.parse(cached).filter(a => a.published !== false);
+                renderGrid();
+            }
+
+            // Fetch from Supabase
+            if (window.supabase) {
+                try {
+                    const { data, error } = await supabase
+                        .from('blog_posts')
+                        .select('*')
+                        .eq('published', true)
+                        .order('created_at', { ascending: false });
+                    if (!error && data && data.length > 0) {
+                        articles = data;
+                        localStorage.setItem('ekvity_blog_posts', JSON.stringify(data));
+                        renderGrid();
+                    }
+                } catch (e) {
+                    console.error('Blog fetch error:', e);
+                }
+            }
+        }
 
         function renderGrid() {
             const grid = document.getElementById('blogGrid');
-            grid.innerHTML = ARTICLES.map(a => `
+            if (!articles.length) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:rgba(255,255,255,0.4);font-size:0.95rem;">Статті скоро з\'являться...</div>';
+                return;
+            }
+            grid.innerHTML = articles.map(a => `
                 <div class="blog-article-card" onclick="window.location='/blog/${a.slug}'">
-                    <img src="${a.img}" alt="${a.title}" class="blog-article-img" loading="lazy">
+                    <img src="${a.image || a.img || ''}" alt="${a.title}" class="blog-article-img" loading="lazy">
                     <div class="blog-article-body">
-                        <div class="blog-article-meta">${a.meta}</div>
+                        <div class="blog-article-meta">${a.meta || ''}</div>
                         <div class="blog-article-title">${a.title}</div>
-                        <div class="blog-article-desc">${a.desc}</div>
+                        <div class="blog-article-desc">${a.description || a.desc || ''}</div>
                         <span class="blog-article-link">Читати →</span>
                     </div>
                 </div>
             `).join('');
         }
 
-        renderGrid();
+        loadArticles();
 
         // Cursor
         window.toggleMenu = function() {

@@ -6,65 +6,15 @@ const CONFIG = {
     demoMode: true
 };
 
-// Default seed data
-const DEFAULT_CATEGORIES = [
-    { id: 'cat-1', name: 'Букети', order: 0, showOnMain: true },
-    { id: 'cat-2', name: 'Квіти поштучно', order: 1, showOnMain: true },
-    { id: 'cat-3', name: 'Композиції', order: 2, showOnMain: true }
-];
-
-const DEFAULT_PRODUCTS = [
-    { id: 'EKV-001', name: 'Тюльпани мікс', categoryId: 'cat-1', price: 2800, image: 'images/prod-bouquet1.jpg', desc: 'Три кольори, три настрої. Букет у фірмовому пакуванні.', featured: true },
-    { id: 'EKV-002', name: 'Бордові тюльпани', categoryId: 'cat-1', price: 2600, image: 'images/prod-bouquet3.jpg', desc: 'Темно-бордові, насичені. 101 шт.', featured: true },
-    { id: 'EKV-003', name: 'Піоновидні рожеві', categoryId: 'cat-1', price: 4800, image: 'images/prod-bouquet4.jpg', desc: 'Розкішні піоновидні тюльпани, 101 шт.', featured: false },
-    { id: 'EKV-004', name: 'Рожеві троянди', categoryId: 'cat-1', price: 5200, image: 'images/prod-bouquet6.jpg', desc: 'Кущові рожеві троянди. Пишний букет.', featured: false },
-    { id: 'EKV-005', name: 'Білі троянди', categoryId: 'cat-1', price: 4900, image: 'images/prod-bouquet7.jpg', desc: 'Кремово-білі піоновидні троянди.', featured: false },
-    { id: 'EKV-006', name: 'Пудрові троянди', categoryId: 'cat-1', price: 4600, image: 'images/prod-bouquet8.jpg', desc: 'Пудровий відтінок, ніжна текстура. 101 шт.', featured: false },
-    { id: 'EKV-010', name: 'Тюльпан поштучно', categoryId: 'cat-2', price: 55, image: 'images/prod-bouquet3.jpg', desc: 'Одне стебло, 60 см.', featured: true },
-    { id: 'EKV-011', name: 'Піоновидний тюльпан', categoryId: 'cat-2', price: 80, image: 'images/prod-bouquet4.jpg', desc: 'Піоновидний тюльпан, преміум.', featured: false },
-    { id: 'EKV-012', name: 'Троянда кущова', categoryId: 'cat-2', price: 90, image: 'images/prod-bouquet6.jpg', desc: 'Кущова троянда, гілка.', featured: false },
-    { id: 'EKV-013', name: 'Піоновидна троянда', categoryId: 'cat-2', price: 110, image: 'images/prod-bouquet8.jpg', desc: 'Одна піоновидна троянда.', featured: false },
-    { id: 'EKV-020', name: 'Кошик з тюльпанів', categoryId: 'cat-3', price: 4500, image: 'images/hero-5.jpg', desc: 'Плетений кошик, 51 тюльпан, стрічка.', featured: true },
-    { id: 'EKV-021', name: 'Кошик преміум', categoryId: 'cat-3', price: 8500, image: 'images/hero-4.jpg', desc: 'Великий кошик 101 троянд з персоналізацією.', featured: false }
-];
-
 // State
 let categories = [];
 let products = [];
 let category = 'all';
 
-// Seed data if needed
-const SEED_VERSION = 'v5';
-
-function seedData() {
-    // Reset if seed version changed
-    if (localStorage.getItem('ekvity_seed_version') !== SEED_VERSION) {
-        localStorage.removeItem('ekvity_categories');
-        localStorage.removeItem('ekvity_products');
-        localStorage.setItem('ekvity_seed_version', SEED_VERSION);
-    }
-
-    if (!localStorage.getItem('ekvity_categories')) {
-        localStorage.setItem('ekvity_categories', JSON.stringify(DEFAULT_CATEGORIES));
-    }
-    if (!localStorage.getItem('ekvity_products')) {
-        // Migrate old 'products' key
-        const old = localStorage.getItem('products');
-        if (old) {
-            const oldProducts = JSON.parse(old);
-            const catMap = { 'Букети': 'cat-1', 'Квіти поштучно': 'cat-2', 'Композиції': 'cat-3' };
-            const migrated = oldProducts.map(p => ({
-                id: p.id, name: p.name,
-                categoryId: catMap[p.category] || 'cat-1',
-                price: Number(p.price), image: p.image,
-                desc: p.desc || '', featured: p.featured || false
-            }));
-            localStorage.setItem('ekvity_products', JSON.stringify(migrated));
-            localStorage.removeItem('products');
-        } else {
-            localStorage.setItem('ekvity_products', JSON.stringify(DEFAULT_PRODUCTS));
-        }
-    }
+function loadData() {
+    categories = JSON.parse(localStorage.getItem('ekvity_categories') || '[]');
+    products = JSON.parse(localStorage.getItem('ekvity_products') || '[]');
+    categories.sort((a, b) => a.order - b.order);
 }
 
 // Initialize
@@ -79,15 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeroSlideshow();
 
     fetchSupabaseData();
+    fetchReviewsFromDB();
     loadInstagramFeed();
 });
-
-function loadData() {
-    seedData();
-    categories = JSON.parse(localStorage.getItem('ekvity_categories')) || [];
-    products = JSON.parse(localStorage.getItem('ekvity_products')) || [];
-    categories.sort((a, b) => a.order - b.order);
-}
 
 async function fetchSupabaseData() {
     if (!window.supabase) return;
@@ -405,3 +349,60 @@ initStatCounters();
 
     cards.forEach(card => observer.observe(card));
 })();
+
+// ===== LOAD REVIEWS FROM DB =====
+async function fetchReviewsFromDB() {
+    const grid = document.querySelector('.reviews-grid');
+    if (!grid) return;
+
+    // Try localStorage cache
+    const cached = localStorage.getItem('ekvity_reviews');
+    if (cached) {
+        const cachedReviews = JSON.parse(cached).filter(r => r.visible !== false);
+        if (cachedReviews.length > 0) renderReviews(grid, cachedReviews);
+    }
+
+    // Fetch from Supabase
+    if (!window.supabase) return;
+    try {
+        const { data, error } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('visible', true)
+            .order('order');
+        if (!error && data && data.length > 0) {
+            localStorage.setItem('ekvity_reviews', JSON.stringify(data));
+            renderReviews(grid, data);
+        }
+    } catch (e) {
+        console.error('Reviews fetch error:', e);
+    }
+}
+
+function renderReviews(grid, reviews) {
+    grid.innerHTML = reviews.map(r => `
+        <div class="review-card">
+            <div class="review-stars">${'★'.repeat(r.rating || 5)}</div>
+            <p class="review-text">"${r.text}"</p>
+            <div class="review-author">
+                <div class="review-avatar">${r.author_initial || r.author_name.charAt(0)}</div>
+                <div>
+                    <div class="review-name">${r.author_name}</div>
+                    <div class="review-source">${r.source || 'Google Maps'}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    // Re-init fade-in animation
+    const cards = grid.querySelectorAll('.review-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('visible'), i * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15 });
+    cards.forEach(card => observer.observe(card));
+}

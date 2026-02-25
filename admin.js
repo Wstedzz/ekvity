@@ -1,130 +1,94 @@
-// Admin Panel Logic - ЄКвіти
+// ============================================================
+// Admin Panel Logic — ЄКвіти (Full CMS)
+// ============================================================
 
-const DEFAULT_CATEGORIES = [
-    { id: 'cat-1', name: 'Букети', order: 0, showOnMain: true },
-    { id: 'cat-2', name: 'Квіти поштучно', order: 1, showOnMain: true },
-    { id: 'cat-3', name: 'Композиції', order: 2, showOnMain: true }
-];
-
-const DEFAULT_PRODUCTS = [
-    { id: 'EKV-001', name: 'Velvet Noir', categoryId: 'cat-1', price: 2362, image: 'images/bouquet1.jpg', desc: 'Dark red roses, eucalyptus, mystery.', featured: true },
-    { id: 'EKV-002', name: 'Opulence', categoryId: 'cat-1', price: 6760, image: 'images/bouquet3.jpg', desc: 'Premium selection, gold wrapping.', featured: true },
-    { id: 'EKV-003', name: 'Ethereal Mist', categoryId: 'cat-1', price: 5800, image: 'images/bouquet1.jpg', desc: 'Rare white blooms, silk ribbon.', featured: false },
-    { id: 'EKV-004', name: 'Pastel Dream', categoryId: 'cat-1', price: 3140, image: 'images/bouquet3.jpg', desc: 'Soft pinks, creamy textures.', featured: false },
-    { id: 'EKV-005', name: 'Classic Elegance', categoryId: 'cat-1', price: 1990, image: 'images/bouquet1.jpg', desc: 'Timeless red roses.', featured: false },
-    { id: 'EKV-006', name: 'Midnight Garden', categoryId: 'cat-1', price: 2200, image: 'images/bouquet3.jpg', desc: 'Deep purples and shadows.', featured: false },
-    { id: 'EKV-010', name: 'Athena Royal', categoryId: 'cat-2', price: 100, image: 'images/bouquet2.jpg', desc: 'Single stem, 60cm.', featured: true },
-    { id: 'EKV-011', name: 'Genista Gold', categoryId: 'cat-2', price: 40, image: 'images/bouquet2.jpg', desc: 'Bright accent.', featured: false },
-    { id: 'EKV-012', name: 'Lilac Essence', categoryId: 'cat-2', price: 290, image: 'images/bouquet2.jpg', desc: 'Fragrant luxury.', featured: false },
-    { id: 'EKV-013', name: 'Chamelaucium', categoryId: 'cat-2', price: 80, image: 'images/bouquet2.jpg', desc: 'Delicate wax flower.', featured: false },
-    { id: 'EKV-014', name: 'Oxypetalum Blue', categoryId: 'cat-2', price: 160, image: 'images/bouquet2.jpg', desc: 'Rare blue hue.', featured: false },
-    { id: 'EKV-020', name: 'Sculptural White', categoryId: 'cat-3', price: 4500, image: 'images/bouquet4.jpg', desc: 'Modern vase arrangement.', featured: true }
-];
-
+// ---- STATE ----
 let categories = [];
 let products = [];
 let constructorFlowers = [];
+let blogPosts = [];
+let reviews = [];
 
+// ---- TOAST NOTIFICATIONS ----
+function toast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; }, 2500);
+    setTimeout(() => el.remove(), 3000);
+}
+
+// ---- IMAGE UPLOAD ----
 window.handleImageUpload = async function (fileInput, targetId) {
     const file = fileInput.files[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Завантажте зображення (JPG, PNG)', 'error'); return; }
 
-    if (!file.type.startsWith('image/')) {
-        alert('Будь ласка, завантажте зображення (JPG, PNG, тощо).');
-        return;
-    }
+    const targetInput = document.getElementById(targetId);
 
     if (window.supabase) {
         const ext = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
-
-        const targetInput = document.getElementById(targetId);
         targetInput.value = 'Завантаження...';
-
         const { data, error } = await supabase.storage.from('images').upload(fileName, file);
-        if (error) {
-            console.error('Upload error', error);
-            alert('Помилка завантаження: ' + error.message);
-            targetInput.value = '';
-            return;
-        }
-
-        const publicUrl = supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
-        targetInput.value = publicUrl;
+        if (error) { toast('Помилка: ' + error.message, 'error'); targetInput.value = ''; return; }
+        targetInput.value = supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+        toast('Зображення завантажено');
     } else {
-        // Optional: add a tiny filesize check here if needed, but for localStorage 
-        // we should be careful about large files. ~2MB limit is a good idea.
-        if (file.size > 2 * 1024 * 1024) {
-            alert('Файл занадто великий! Рекомендується розмір до 2MB.');
-            return;
-        }
-
+        if (file.size > 2 * 1024 * 1024) { toast('Файл > 2MB', 'error'); return; }
         const reader = new FileReader();
-        reader.onload = function (e) {
-            document.getElementById(targetId).value = e.target.result;
-        };
-        reader.onerror = function () {
-            alert('Помилка читання файлу.');
-        }
+        reader.onload = (e) => { targetInput.value = e.target.result; };
         reader.readAsDataURL(file);
     }
 };
 
-// Seed
-function seedData() {
-    if (!localStorage.getItem('ekvity_categories')) {
-        localStorage.setItem('ekvity_categories', JSON.stringify(DEFAULT_CATEGORIES));
-    }
-    if (!localStorage.getItem('ekvity_products')) {
-        // Also migrate old 'products' key if present
-        const old = localStorage.getItem('products');
-        if (old) {
-            const oldProducts = JSON.parse(old);
-            const catMap = { 'Букети': 'cat-1', 'Квіти поштучно': 'cat-2', 'Композиції': 'cat-3' };
-            const migrated = oldProducts.map(p => ({
-                id: p.id,
-                name: p.name,
-                categoryId: catMap[p.category] || 'cat-1',
-                price: Number(p.price),
-                image: p.image,
-                desc: p.desc || '',
-                featured: p.featured || false
-            }));
-            localStorage.setItem('ekvity_products', JSON.stringify(migrated));
-            localStorage.removeItem('products');
-        } else {
-            localStorage.setItem('ekvity_products', JSON.stringify(DEFAULT_PRODUCTS));
-        }
-    }
-}
-
+// ---- DATA LOADING ----
 async function loadData() {
-    seedData();
-    categories = JSON.parse(localStorage.getItem('ekvity_categories')) || [];
-    products = JSON.parse(localStorage.getItem('ekvity_products')) || [];
-    constructorFlowers = JSON.parse(localStorage.getItem('ekvity_constructor_flowers')) || [];
-    categories.sort((a, b) => a.order - b.order);
-
     if (window.supabase) {
         try {
-            const [cRes, pRes, fRes] = await Promise.all([
+            const [cRes, pRes, fRes, bRes, rRes] = await Promise.all([
                 supabase.from('categories').select('*').order('order'),
                 supabase.from('products').select('*'),
-                supabase.from('constructor_flowers').select('*')
+                supabase.from('constructor_flowers').select('*'),
+                supabase.from('blog_posts').select('*').order('created_at', { ascending: false }),
+                supabase.from('reviews').select('*').order('order')
             ]);
             if (!cRes.error && cRes.data) categories = cRes.data;
             if (!pRes.error && pRes.data) products = pRes.data;
             if (!fRes.error && fRes.data) constructorFlowers = fRes.data;
+            if (!bRes.error && bRes.data) blogPosts = bRes.data;
+            if (!rRes.error && rRes.data) reviews = rRes.data;
 
+            // Cache locally
             localStorage.setItem('ekvity_categories', JSON.stringify(categories));
             localStorage.setItem('ekvity_products', JSON.stringify(products));
             localStorage.setItem('ekvity_constructor_flowers', JSON.stringify(constructorFlowers));
+            localStorage.setItem('ekvity_blog_posts', JSON.stringify(blogPosts));
+            localStorage.setItem('ekvity_reviews', JSON.stringify(reviews));
+
+            document.getElementById('lastSyncTime').textContent = 'Синхронізовано: ' + new Date().toLocaleTimeString('uk');
         } catch (e) {
-            console.error('Failed to load admin data from Supabase', e);
+            console.error('Load error:', e);
+            toast('Помилка завантаження даних', 'error');
+            loadFromLocalStorage();
         }
+    } else {
+        loadFromLocalStorage();
     }
 }
 
+function loadFromLocalStorage() {
+    categories = JSON.parse(localStorage.getItem('ekvity_categories') || '[]');
+    products = JSON.parse(localStorage.getItem('ekvity_products') || '[]');
+    constructorFlowers = JSON.parse(localStorage.getItem('ekvity_constructor_flowers') || '[]');
+    blogPosts = JSON.parse(localStorage.getItem('ekvity_blog_posts') || '[]');
+    reviews = JSON.parse(localStorage.getItem('ekvity_reviews') || '[]');
+    categories.sort((a, b) => a.order - b.order);
+}
+
+// ---- SAVE HELPERS ----
 async function saveCategories() {
     localStorage.setItem('ekvity_categories', JSON.stringify(categories));
     if (window.supabase) await supabase.from('categories').upsert(categories);
@@ -137,26 +101,31 @@ async function saveConstructorFlowers() {
     localStorage.setItem('ekvity_constructor_flowers', JSON.stringify(constructorFlowers));
     if (window.supabase) await supabase.from('constructor_flowers').upsert(constructorFlowers);
 }
+async function saveBlogPosts() {
+    localStorage.setItem('ekvity_blog_posts', JSON.stringify(blogPosts));
+    if (window.supabase) await supabase.from('blog_posts').upsert(blogPosts);
+}
+async function saveReviews() {
+    localStorage.setItem('ekvity_reviews', JSON.stringify(reviews));
+    if (window.supabase) await supabase.from('reviews').upsert(reviews);
+}
 
-// Auth
+// ---- AUTH ----
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.supabase) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
             showDashboard();
         } else {
-            // Check for auth state changes (e.g., successful login)
-            supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN') {
-                    showDashboard();
-                } else if (event === 'SIGNED_OUT') {
+            supabase.auth.onAuthStateChange((event) => {
+                if (event === 'SIGNED_IN') showDashboard();
+                else if (event === 'SIGNED_OUT') {
                     document.getElementById('loginSection').style.display = 'flex';
                     document.getElementById('dashboardSection').style.display = 'none';
                 }
             });
         }
     } else if (localStorage.getItem('adminAuth')) {
-        // Fallback if supabase isn't loaded (not recommended for production)
         showDashboard();
     }
 });
@@ -165,104 +134,143 @@ window.checkAuth = async function () {
     const errorEl = document.getElementById('loginError');
     const btn = document.getElementById('loginBtn');
     errorEl.style.display = 'none';
-    
+
     if (window.supabase) {
         const email = document.getElementById('adminEmail').value.trim();
         const password = document.getElementById('adminPass').value;
-        
-        if (!email || !password) {
-            errorEl.textContent = 'Введіть email та пароль';
-            errorEl.style.display = 'block';
-            return;
-        }
+        if (!email || !password) { errorEl.textContent = 'Введіть email та пароль'; errorEl.style.display = 'block'; return; }
 
-        btn.textContent = 'Завантаження...';
-        btn.disabled = true;
+        btn.textContent = 'Завантаження...'; btn.disabled = true;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        btn.textContent = 'Увійти'; btn.disabled = false;
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        btn.textContent = 'Увійти';
-        btn.disabled = false;
-
-        if (error) {
-            errorEl.textContent = 'Помилка входу: ' + error.message;
-            errorEl.style.display = 'block';
-        } else {
-            // The onAuthStateChange listener will handle showing the dashboard
-        }
+        if (error) { errorEl.textContent = 'Помилка: ' + error.message; errorEl.style.display = 'block'; }
     } else {
-        // Obsolete fallback - should ideally be removed if full Supabase migration
         if (document.getElementById('adminPass').value === 'admin123') {
             localStorage.setItem('adminAuth', 'true');
             showDashboard();
-        } else {
-            errorEl.textContent = 'Невірний пароль';
-            errorEl.style.display = 'block';
-        }
+        } else { errorEl.textContent = 'Невірний пароль'; errorEl.style.display = 'block'; }
     }
 };
 
 window.logout = async function () {
-    if (window.supabase) {
-        await supabase.auth.signOut();
-    }
+    if (window.supabase) await supabase.auth.signOut();
     localStorage.removeItem('adminAuth');
     location.reload();
 };
 
 async function showDashboard() {
     document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('dashboardSection').style.display = 'block';
+    document.getElementById('dashboardSection').style.display = 'flex';
     await loadData();
-    updateStats();
-    renderCategories();
-    renderAdminProducts();
-    populateCatDropdowns();
+    refreshAll();
     if (typeof populateSettingsForm === 'function') populateSettingsForm();
 }
 
+function refreshAll() {
+    updateStats();
+    updateNavBadges();
+    renderCategories();
+    renderAdminProducts();
+    populateCatDropdowns();
+    renderDashFeatured();
+}
+
+// ---- NAVIGATION ----
+const PAGE_MAP = {
+    dashboard: { title: 'Дашборд', breadcrumb: 'Панель керування', id: 'pageDashboard' },
+    products: { title: 'Товари', breadcrumb: 'Контент → Товари', id: 'pageProducts' },
+    categories: { title: 'Категорії', breadcrumb: 'Контент → Категорії', id: 'pageCategories' },
+    blog: { title: 'Блог', breadcrumb: 'Контент → Блог', id: 'pageBlog' },
+    reviews: { title: 'Відгуки', breadcrumb: 'Контент → Відгуки', id: 'pageReviews' },
+    constructor: { title: 'Конструктор', breadcrumb: 'Контент → Конструктор', id: 'pageConstructor' },
+    settings: { title: 'Налаштування', breadcrumb: 'Система → Налаштування', id: 'pageSettings' }
+};
+
+window.navigateTo = function (page) {
+    const info = PAGE_MAP[page];
+    if (!info) return;
+
+    // Update topbar
+    document.getElementById('topbarTitle').textContent = info.title;
+    document.getElementById('topbarBreadcrumb').textContent = info.breadcrumb;
+
+    // Update sidebar
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navBtn = document.querySelector(`.nav-item[data-page="${page}"]`);
+    if (navBtn) navBtn.classList.add('active');
+
+    // Show page
+    document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+    document.getElementById(info.id).classList.add('active');
+
+    // Page-specific rendering
+    if (page === 'blog') renderBlogList();
+    if (page === 'reviews') renderReviewsList();
+    if (page === 'constructor') renderConstructorFlowers();
+    if (page === 'settings' && typeof populateSettingsForm === 'function') populateSettingsForm();
+    if (page === 'products') { renderAdminProducts(); populateCatDropdowns(); }
+    if (page === 'categories') renderCategories();
+
+    // Close mobile sidebar
+    closeSidebar();
+};
+
+window.toggleSidebar = function () {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+};
+
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ---- STATS ----
 function updateStats() {
     document.getElementById('statProducts').textContent = products.length;
     document.getElementById('statCategories').textContent = categories.length;
-    document.getElementById('statFeatured').textContent = products.filter(p => p.featured).length;
+    document.getElementById('statBlog').textContent = blogPosts.length;
+    document.getElementById('statReviews').textContent = reviews.length;
 }
 
-// Tabs
-window.switchTab = function (tab) {
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    if (tab === 'categories') {
-        document.querySelector('.admin-tab:nth-child(1)').classList.add('active');
-        document.getElementById('tabCategories').classList.add('active');
-    } else if (tab === 'products') {
-        document.querySelector('.admin-tab:nth-child(2)').classList.add('active');
-        document.getElementById('tabProducts').classList.add('active');
-    } else if (tab === 'constructor') {
-        document.querySelector('.admin-tab:nth-child(3)').classList.add('active');
-        document.getElementById('tabConstructor').classList.add('active');
-        renderConstructorFlowers();
-    } else if (tab === 'settings') {
-        document.querySelector('.admin-tab:nth-child(4)').classList.add('active');
-        document.getElementById('tabSettings').classList.add('active');
-        if (typeof populateSettingsForm === 'function') populateSettingsForm();
-    }
-};
+function updateNavBadges() {
+    document.getElementById('navBadgeProducts').textContent = products.length;
+    document.getElementById('navBadgeCategories').textContent = categories.length;
+    document.getElementById('navBadgeBlog').textContent = blogPosts.length;
+    document.getElementById('navBadgeReviews').textContent = reviews.length;
+}
 
+function renderDashFeatured() {
+    const el = document.getElementById('dashFeatured');
+    const featured = products.filter(p => p.featured);
+    if (featured.length === 0) {
+        el.innerHTML = '<span style="opacity:0.5">Немає виділених товарів</span>';
+        return;
+    }
+    el.innerHTML = featured.map(p => {
+        const catName = (categories.find(c => c.id === p.categoryId) || {}).name || '';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+            <img src="${p.image}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;">
+            <div>
+                <div style="font-size:0.82rem;color:white;">${p.name}</div>
+                <div style="font-size:0.7rem;color:var(--text-dim);">${catName} · ${p.price} грн</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ---- SETTINGS ----
 window.populateSettingsForm = function () {
     if (!window.SITE_SETTINGS) return;
     document.getElementById('setPhone').value = window.SITE_SETTINGS.phone || '';
     document.getElementById('setTg').value = window.SITE_SETTINGS.telegramUser || '';
     document.getElementById('setInsta').value = window.SITE_SETTINGS.instagramLink || '';
-
     document.getElementById('setHomeTitle').value = window.SITE_SETTINGS.homeHeroTitle || '';
     document.getElementById('setHomeSub').value = window.SITE_SETTINGS.homeHeroSubtitle || '';
     document.getElementById('setHomeBg').value = window.SITE_SETTINGS.homeHeroBg || '';
     document.getElementById('setAboutTitle').value = window.SITE_SETTINGS.homeAboutTitle || '';
     document.getElementById('setAboutText').value = window.SITE_SETTINGS.homeAboutText || '';
-
     document.getElementById('setConstTitle').value = window.SITE_SETTINGS.constHeroTitle || '';
     document.getElementById('setConstSub').value = window.SITE_SETTINGS.constHeroSubtitle || '';
     document.getElementById('setConstDisc').value = window.SITE_SETTINGS.constDisclaimer || '';
@@ -274,13 +282,11 @@ window.saveSiteSettings = async function (e) {
         phone: document.getElementById('setPhone').value.trim(),
         telegramUser: document.getElementById('setTg').value.trim(),
         instagramLink: document.getElementById('setInsta').value.trim(),
-
         homeHeroTitle: document.getElementById('setHomeTitle').value.trim(),
         homeHeroSubtitle: document.getElementById('setHomeSub').value.trim(),
         homeHeroBg: document.getElementById('setHomeBg').value.trim(),
         homeAboutTitle: document.getElementById('setAboutTitle').value.trim(),
         homeAboutText: document.getElementById('setAboutText').value.trim(),
-
         constHeroTitle: document.getElementById('setConstTitle').value.trim(),
         constHeroSubtitle: document.getElementById('setConstSub').value.trim(),
         constDisclaimer: document.getElementById('setConstDisc').value.trim()
@@ -293,16 +299,19 @@ window.saveSiteSettings = async function (e) {
         const updates = Object.keys(s).map(key => ({ key, value: s[key] }));
         await supabase.from('site_settings').upsert(updates);
     }
-
-    const msg = document.getElementById('settingsSavedMsg');
-    msg.style.opacity = '1';
-    setTimeout(() => msg.style.opacity = '0', 2000);
+    toast('Налаштування збережено');
 };
 
-// ---- CATEGORIES ----
+// ============================================================
+// CATEGORIES
+// ============================================================
 function renderCategories() {
     const list = document.getElementById('catList');
     list.innerHTML = '';
+    if (categories.length === 0) {
+        list.innerHTML = '<li style="padding:30px;text-align:center;color:var(--text-dim);">Категорій ще немає</li>';
+        return;
+    }
     categories.forEach((cat, idx) => {
         const count = products.filter(p => p.categoryId === cat.id).length;
         const li = document.createElement('li');
@@ -310,11 +319,11 @@ function renderCategories() {
         li.innerHTML = `
             <span class="cat-order">${idx + 1}</span>
             <span class="cat-name">${cat.name}</span>
-            <span class="cat-count-badge">${count} тов.</span>
-            <button class="cat-toggle ${cat.showOnMain ? 'on' : ''}" title="Показати на головній" onclick="toggleCatMain('${cat.id}')"></button>
-            <button class="btn-sm" onclick="moveCat('${cat.id}',-1)" title="Вгору">↑</button>
-            <button class="btn-sm" onclick="moveCat('${cat.id}',1)" title="Вниз">↓</button>
-            <button class="btn-sm danger" onclick="deleteCategory('${cat.id}')" title="Видалити">✕</button>
+            <span class="badge badge-gray">${count} тов.</span>
+            <button class="cat-toggle ${cat.showOnMain ? 'on' : ''}" title="На головній" onclick="toggleCatMain('${cat.id}')"></button>
+            <button class="btn btn-sm" onclick="moveCat('${cat.id}',-1)" title="Вгору">↑</button>
+            <button class="btn btn-sm" onclick="moveCat('${cat.id}',1)" title="Вниз">↓</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteCategory('${cat.id}')" title="Видалити">✕</button>
         `;
         list.appendChild(li);
     });
@@ -324,21 +333,22 @@ window.addCategory = function () {
     const input = document.getElementById('newCatName');
     const name = input.value.trim();
     if (!name) return;
-    const id = 'cat-' + Date.now();
-    categories.push({ id, name, order: categories.length, showOnMain: false });
+    categories.push({ id: 'cat-' + Date.now(), name, order: categories.length, showOnMain: false });
     saveCategories();
     input.value = '';
     renderCategories();
     populateCatDropdowns();
     updateStats();
+    updateNavBadges();
+    toast('Категорію додано');
 };
 
 window.deleteCategory = async function (id) {
     const cat = categories.find(c => c.id === id);
     const count = products.filter(p => p.categoryId === id).length;
     const msg = count > 0
-        ? `Видалити категорію "${cat.name}"? В ній ${count} товарів (вони залишаться без категорії).`
-        : `Видалити категорію "${cat.name}"?`;
+        ? `Видалити "${cat.name}"? ${count} товарів залишаться без категорії.`
+        : `Видалити "${cat.name}"?`;
     if (!confirm(msg)) return;
     categories = categories.filter(c => c.id !== id);
     categories.forEach((c, i) => c.order = i);
@@ -347,6 +357,8 @@ window.deleteCategory = async function (id) {
     renderCategories();
     populateCatDropdowns();
     updateStats();
+    updateNavBadges();
+    toast('Категорію видалено');
 };
 
 window.toggleCatMain = function (id) {
@@ -364,29 +376,43 @@ window.moveCat = function (id, dir) {
     renderCategories();
 };
 
-// ---- PRODUCTS ----
+// ============================================================
+// PRODUCTS
+// ============================================================
 function populateCatDropdowns() {
-    // Filter dropdown
     const filter = document.getElementById('filterCatSelect');
     const current = filter.value;
     filter.innerHTML = '<option value="all">Всі категорії</option>';
-    categories.forEach(c => {
-        filter.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-    });
+    categories.forEach(c => { filter.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
     filter.value = current;
 
-    // Product form dropdown
     const prodCat = document.getElementById('prodCat');
     prodCat.innerHTML = '';
-    categories.forEach(c => {
-        prodCat.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-    });
+    categories.forEach(c => { prodCat.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
 }
 
 window.renderAdminProducts = function () {
     const grid = document.getElementById('adminProductGrid');
     const filterCat = document.getElementById('filterCatSelect').value;
-    let filtered = filterCat === 'all' ? products : products.filter(p => p.categoryId === filterCat);
+    const search = (document.getElementById('productSearch').value || '').toLowerCase().trim();
+
+    let filtered = filterCat === 'all' ? [...products] : products.filter(p => p.categoryId === filterCat);
+    if (search) {
+        filtered = filtered.filter(p =>
+            p.name.toLowerCase().includes(search) ||
+            p.id.toLowerCase().includes(search) ||
+            (p.desc && p.desc.toLowerCase().includes(search))
+        );
+    }
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg>
+            <h4>Товарів не знайдено</h4>
+            <p>Додайте перший товар або змініть фільтр</p>
+        </div>`;
+        return;
+    }
 
     grid.innerHTML = '';
     filtered.forEach(p => {
@@ -394,19 +420,16 @@ window.renderAdminProducts = function () {
         const card = document.createElement('div');
         card.className = 'admin-card';
         card.innerHTML = `
-            ${p.featured ? '<div class="featured-badge">★ Виділений</div>' : ''}
-            <div class="card-image-wrapper" style="height: 200px;">
-                <img src="${p.image}" class="product-img" style="filter: none;">
-            </div>
-            <div style="padding: 15px;">
-                <div class="product-category">${catName}</div>
-                <h4 style="color: white; margin: 5px 0; font-family: var(--font-heading);">${p.name}</h4>
-                <div style="color: var(--gold); font-size: 0.85rem;">${p.id} — ${p.price} грн</div>
-                ${p.desc ? `<div style="color: var(--text-dim); font-size: 0.8rem; margin-top: 5px;">${p.desc}</div>` : ''}
+            ${p.featured ? '<div class="admin-card-badge">★ Виділений</div>' : ''}
+            <img src="${p.image}" alt="${p.name}" class="admin-card-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23111%22 width=%22200%22 height=%22200%22/></svg>'">
+            <div class="admin-card-body">
+                <div class="admin-card-cat">${catName}</div>
+                <div class="admin-card-title">${p.name}</div>
+                <div class="admin-card-price">${p.id} · ${p.price} грн</div>
             </div>
             <div class="admin-card-actions">
-                <button onclick="editProduct('${p.id}')" class="btn-icon" title="Редагувати">✎</button>
-                <button onclick="deleteProduct('${p.id}')" class="btn-icon btn-delete" title="Видалити">×</button>
+                <button class="btn btn-icon" onclick="editProduct('${p.id}')" title="Редагувати">✎</button>
+                <button class="btn btn-icon btn-danger" onclick="deleteProduct('${p.id}')" title="Видалити">×</button>
             </div>
         `;
         grid.appendChild(card);
@@ -416,15 +439,12 @@ window.renderAdminProducts = function () {
 window.openProductModal = function () {
     document.getElementById('productForm').reset();
     document.getElementById('editingId').value = '';
-    document.getElementById('prodImg').value = 'images/bouquet1.jpg';
+    document.getElementById('prodImg').value = '';
     document.getElementById('productModalTitle').textContent = 'Новий товар';
     populateCatDropdowns();
     document.getElementById('productModal').classList.add('open');
 };
-
-window.closeProductModal = function () {
-    document.getElementById('productModal').classList.remove('open');
-};
+window.closeProductModal = function () { document.getElementById('productModal').classList.remove('open'); };
 
 window.saveProduct = function (e) {
     e.preventDefault();
@@ -452,6 +472,9 @@ window.saveProduct = function (e) {
     renderAdminProducts();
     renderCategories();
     updateStats();
+    updateNavBadges();
+    renderDashFeatured();
+    toast(editingId ? 'Товар оновлено' : 'Товар додано');
 };
 
 window.editProduct = function (id) {
@@ -463,7 +486,7 @@ window.editProduct = function (id) {
     document.getElementById('prodName').value = p.name;
     document.getElementById('prodCat').value = p.categoryId;
     document.getElementById('prodPrice').value = p.price;
-    document.getElementById('prodImg').value = p.image;
+    document.getElementById('prodImg').value = p.image || '';
     document.getElementById('prodTopView').value = p.topViewImage || '';
     document.getElementById('prodDesc').value = p.desc || '';
     document.getElementById('prodFeatured').checked = !!p.featured;
@@ -473,42 +496,287 @@ window.editProduct = function (id) {
 
 window.deleteProduct = async function (id) {
     const p = products.find(x => x.id === id);
-    if (!confirm(`Видалити товар "${p ? p.name : id}"?`)) return;
+    if (!confirm(`Видалити "${p ? p.name : id}"?`)) return;
     products = products.filter(x => x.id !== id);
     saveProducts();
     if (window.supabase) await supabase.from('products').delete().eq('id', id);
     renderAdminProducts();
     renderCategories();
     updateStats();
+    updateNavBadges();
+    renderDashFeatured();
+    toast('Товар видалено');
 };
 
-// Close modal on overlay click
-document.getElementById('productModal').addEventListener('click', (e) => {
+// Modal overlay click
+document.addEventListener('click', (e) => {
     if (e.target.id === 'productModal') closeProductModal();
+    if (e.target.id === 'blogModal') closeBlogModal();
+    if (e.target.id === 'reviewModal') closeReviewModal();
+    if (e.target.id === 'constructorFlowerModal') closeConstructorFlowerModal();
 });
 
-// ---- CONSTRUCTOR FLOWERS ----
-function renderConstructorFlowers() {
-    const grid = document.getElementById('constructorFlowerGrid');
-    grid.innerHTML = '';
+// ============================================================
+// BLOG
+// ============================================================
+window.renderBlogList = function () {
+    const container = document.getElementById('blogListContainer');
+    const search = (document.getElementById('blogSearch').value || '').toLowerCase().trim();
 
-    if (constructorFlowers.length === 0) {
-        grid.innerHTML = '<p style="color: var(--text-dim); padding: 40px; text-align: center;">Квіти для конструктора ще не додані.<br>Натисніть "Додати квітку" щоб створити першу.</p>';
+    let filtered = [...blogPosts];
+    if (search) {
+        filtered = filtered.filter(p =>
+            p.title.toLowerCase().includes(search) ||
+            p.slug.toLowerCase().includes(search) ||
+            (p.description && p.description.toLowerCase().includes(search))
+        );
+    }
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <h4>Статей ще немає</h4>
+            <p>Напишіть першу статтю для блогу</p>
+            <button class="btn btn-primary" onclick="openBlogModal()">+ Нова стаття</button>
+        </div>`;
         return;
     }
 
+    container.innerHTML = `<table class="data-table">
+        <thead><tr>
+            <th>Зображення</th><th>Заголовок</th><th>Slug</th><th>Статус</th><th>Мета</th><th>Дії</th>
+        </tr></thead>
+        <tbody>${filtered.map(p => `<tr>
+            <td><img src="${p.image || ''}" class="thumb" onerror="this.style.display='none'"></td>
+            <td style="font-family:var(--font-heading);max-width:250px;">${p.title}</td>
+            <td style="color:var(--text-dim);font-size:0.78rem;">/blog/${p.slug}</td>
+            <td>${p.published ? '<span class="badge badge-green">Опубліковано</span>' : '<span class="badge badge-gray">Чернетка</span>'}</td>
+            <td style="color:var(--text-dim);font-size:0.78rem;">${p.meta || ''}</td>
+            <td>
+                <div style="display:flex;gap:4px;">
+                    <button class="btn btn-sm" onclick="editBlogPost('${p.id}')">✎</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteBlogPost('${p.id}')">✕</button>
+                </div>
+            </td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+};
+
+window.openBlogModal = function () {
+    document.getElementById('blogForm').reset();
+    document.getElementById('editingBlogId').value = '';
+    document.getElementById('blogPublished').checked = true;
+    document.getElementById('blogModalTitle').textContent = 'Нова стаття';
+    document.getElementById('blogModal').classList.add('open');
+};
+window.closeBlogModal = function () { document.getElementById('blogModal').classList.remove('open'); };
+
+window.autoGenerateSlug = function () {
+    const titleEl = document.getElementById('blogTitle');
+    const slugEl = document.getElementById('blogSlug');
+    // Only auto-generate if slug is empty or was auto-generated before
+    if (slugEl.dataset.manual === 'true') return;
+    const title = titleEl.value;
+    // Ukrainian transliteration map
+    const ukMap = {'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ye','ж':'zh','з':'z','и':'y','і':'i','ї':'yi','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'','ю':'yu','я':'ya'};
+    let slug = title.toLowerCase();
+    slug = slug.split('').map(c => ukMap[c] || c).join('');
+    slug = slug.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 80);
+    slugEl.value = slug;
+};
+
+window.saveBlogPost = async function (e) {
+    e.preventDefault();
+    const editingId = document.getElementById('editingBlogId').value;
+    const data = {
+        id: editingId || ('blog-' + Date.now()),
+        slug: document.getElementById('blogSlug').value.trim(),
+        title: document.getElementById('blogTitle').value.trim(),
+        description: document.getElementById('blogDesc').value.trim(),
+        content: document.getElementById('blogContent').value.trim(),
+        image: document.getElementById('blogImage').value.trim(),
+        meta: document.getElementById('blogMeta').value.trim(),
+        published: document.getElementById('blogPublished').checked,
+        updated_at: new Date().toISOString()
+    };
+
+    if (editingId) {
+        const idx = blogPosts.findIndex(p => p.id === editingId);
+        if (idx !== -1) blogPosts[idx] = { ...blogPosts[idx], ...data };
+    } else {
+        data.created_at = new Date().toISOString();
+        blogPosts.unshift(data);
+    }
+
+    saveBlogPosts();
+    closeBlogModal();
+    renderBlogList();
+    updateStats();
+    updateNavBadges();
+    toast(editingId ? 'Статтю оновлено' : 'Статтю створено');
+};
+
+window.editBlogPost = function (id) {
+    const p = blogPosts.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('editingBlogId').value = p.id;
+    document.getElementById('blogTitle').value = p.title || '';
+    document.getElementById('blogSlug').value = p.slug || '';
+    document.getElementById('blogSlug').dataset.manual = 'true';
+    document.getElementById('blogDesc').value = p.description || '';
+    document.getElementById('blogImage').value = p.image || '';
+    document.getElementById('blogMeta').value = p.meta || '';
+    document.getElementById('blogContent').value = p.content || '';
+    document.getElementById('blogPublished').checked = !!p.published;
+    document.getElementById('blogModalTitle').textContent = 'Редагувати статтю';
+    document.getElementById('blogModal').classList.add('open');
+};
+
+window.deleteBlogPost = async function (id) {
+    const p = blogPosts.find(x => x.id === id);
+    if (!confirm(`Видалити "${p ? p.title : id}"?`)) return;
+    blogPosts = blogPosts.filter(x => x.id !== id);
+    saveBlogPosts();
+    if (window.supabase) await supabase.from('blog_posts').delete().eq('id', id);
+    renderBlogList();
+    updateStats();
+    updateNavBadges();
+    toast('Статтю видалено');
+};
+
+// ============================================================
+// REVIEWS
+// ============================================================
+window.renderReviewsList = function () {
+    const container = document.getElementById('reviewsListContainer');
+
+    if (reviews.length === 0) {
+        container.innerHTML = `<div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <h4>Відгуків ще немає</h4>
+            <p>Додайте відгуки клієнтів для відображення на сайті</p>
+            <button class="btn btn-primary" onclick="openReviewModal()">+ Додати відгук</button>
+        </div>`;
+        return;
+    }
+
+    container.innerHTML = `<table class="data-table">
+        <thead><tr>
+            <th>#</th><th>Автор</th><th>Рейтинг</th><th>Текст</th><th>Джерело</th><th>Статус</th><th>Дії</th>
+        </tr></thead>
+        <tbody>${reviews.map((r, i) => `<tr>
+            <td style="color:var(--text-dim)">${i + 1}</td>
+            <td style="white-space:nowrap;">${r.author_name}</td>
+            <td style="color:var(--gold);">${'★'.repeat(r.rating || 5)}</td>
+            <td style="max-width:300px;font-size:0.8rem;color:var(--text-mid);">${(r.text || '').substring(0, 120)}${(r.text || '').length > 120 ? '...' : ''}</td>
+            <td style="color:var(--text-dim);font-size:0.78rem;">${r.source || 'Google Maps'}</td>
+            <td>${r.visible !== false ? '<span class="badge badge-green">Видимий</span>' : '<span class="badge badge-gray">Прихований</span>'}</td>
+            <td>
+                <div style="display:flex;gap:4px;">
+                    <button class="btn btn-sm" onclick="editReview('${r.id}')">✎</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteReview('${r.id}')">✕</button>
+                </div>
+            </td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+};
+
+window.openReviewModal = function () {
+    document.getElementById('reviewForm').reset();
+    document.getElementById('editingReviewId').value = '';
+    document.getElementById('reviewRating').value = 5;
+    document.getElementById('reviewSource').value = 'Google Maps';
+    document.getElementById('reviewVisible').checked = true;
+    document.getElementById('reviewModalTitle').textContent = 'Новий відгук';
+    document.getElementById('reviewModal').classList.add('open');
+};
+window.closeReviewModal = function () { document.getElementById('reviewModal').classList.remove('open'); };
+
+window.saveReview = async function (e) {
+    e.preventDefault();
+    const editingId = document.getElementById('editingReviewId').value;
+    const authorName = document.getElementById('reviewAuthor').value.trim();
+    const data = {
+        id: editingId || ('rev-' + Date.now()),
+        author_name: authorName,
+        author_initial: authorName.charAt(0).toUpperCase(),
+        rating: parseInt(document.getElementById('reviewRating').value) || 5,
+        text: document.getElementById('reviewText').value.trim(),
+        source: document.getElementById('reviewSource').value.trim() || 'Google Maps',
+        visible: document.getElementById('reviewVisible').checked,
+        order: editingId ? (reviews.find(r => r.id === editingId) || {}).order || 0 : reviews.length
+    };
+
+    if (editingId) {
+        const idx = reviews.findIndex(r => r.id === editingId);
+        if (idx !== -1) reviews[idx] = { ...reviews[idx], ...data };
+    } else {
+        data.created_at = new Date().toISOString();
+        reviews.push(data);
+    }
+
+    saveReviews();
+    closeReviewModal();
+    renderReviewsList();
+    updateStats();
+    updateNavBadges();
+    toast(editingId ? 'Відгук оновлено' : 'Відгук додано');
+};
+
+window.editReview = function (id) {
+    const r = reviews.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('editingReviewId').value = r.id;
+    document.getElementById('reviewAuthor').value = r.author_name || '';
+    document.getElementById('reviewRating').value = r.rating || 5;
+    document.getElementById('reviewText').value = r.text || '';
+    document.getElementById('reviewSource').value = r.source || 'Google Maps';
+    document.getElementById('reviewVisible').checked = r.visible !== false;
+    document.getElementById('reviewModalTitle').textContent = 'Редагувати відгук';
+    document.getElementById('reviewModal').classList.add('open');
+};
+
+window.deleteReview = async function (id) {
+    const r = reviews.find(x => x.id === id);
+    if (!confirm(`Видалити відгук від "${r ? r.author_name : id}"?`)) return;
+    reviews = reviews.filter(x => x.id !== id);
+    saveReviews();
+    if (window.supabase) await supabase.from('reviews').delete().eq('id', id);
+    renderReviewsList();
+    updateStats();
+    updateNavBadges();
+    toast('Відгук видалено');
+};
+
+// ============================================================
+// CONSTRUCTOR FLOWERS
+// ============================================================
+function renderConstructorFlowers() {
+    const grid = document.getElementById('constructorFlowerGrid');
+
+    if (constructorFlowers.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            <h4>Квіти не додані</h4>
+            <p>Додайте квіти для конструктора букетів</p>
+            <button class="btn btn-primary" onclick="openConstructorFlowerModal()">+ Додати квітку</button>
+        </div>`;
+        return;
+    }
+
+    grid.innerHTML = '';
     constructorFlowers.forEach(f => {
         const card = document.createElement('div');
-        card.className = 'card admin-card';
+        card.className = 'admin-card';
         card.innerHTML = `
-            <div class="admin-card-actions">
-                <button class="btn-icon" onclick="editConstructorFlower('${f.id}')" title="Редагувати">✎</button>
-                <button class="btn-icon btn-delete" onclick="deleteConstructorFlower('${f.id}')" title="Видалити">✕</button>
+            <img src="${f.image}" alt="${f.name}" class="admin-card-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23111%22 width=%22200%22 height=%22200%22/></svg>'">
+            <div class="admin-card-body">
+                <div class="admin-card-title">${f.name}</div>
+                <div class="admin-card-price">${f.price} грн/шт</div>
             </div>
-            <img src="${f.image}" alt="${f.name}" loading="lazy">
-            <div class="card-info">
-                <h3 class="card-title">${f.name}</h3>
-                <p class="card-price">${f.price} грн/шт</p>
+            <div class="admin-card-actions">
+                <button class="btn btn-icon" onclick="editConstructorFlower('${f.id}')" title="Редагувати">✎</button>
+                <button class="btn btn-icon btn-danger" onclick="deleteConstructorFlower('${f.id}')" title="Видалити">✕</button>
             </div>
         `;
         grid.appendChild(card);
@@ -516,18 +784,13 @@ function renderConstructorFlowers() {
 }
 
 window.openConstructorFlowerModal = function () {
+    document.getElementById('constructorFlowerForm').reset();
     document.getElementById('editingConstructorId').value = '';
-    document.getElementById('cFlowerName').value = '';
-    document.getElementById('cFlowerPrice').value = '';
-    document.getElementById('cFlowerImg').value = 'images/bouquet1.jpg';
-    document.getElementById('cFlowerImgSelect').value = 'images/bouquet1.jpg';
+    document.getElementById('cFlowerImg').value = '';
     document.getElementById('constructorFlowerModalTitle').textContent = 'Нова квітка';
     document.getElementById('constructorFlowerModal').classList.add('open');
 };
-
-window.closeConstructorFlowerModal = function () {
-    document.getElementById('constructorFlowerModal').classList.remove('open');
-};
+window.closeConstructorFlowerModal = function () { document.getElementById('constructorFlowerModal').classList.remove('open'); };
 
 window.saveConstructorFlower = function (e) {
     e.preventDefault();
@@ -536,28 +799,19 @@ window.saveConstructorFlower = function (e) {
     const price = parseInt(document.getElementById('cFlowerPrice').value);
     const image = document.getElementById('cFlowerImg').value.trim();
 
-    if (!name || !price || !image) {
-        alert('Заповніть всі поля');
-        return;
-    }
+    if (!name || !price || !image) { toast('Заповніть всі поля', 'error'); return; }
 
     if (id) {
-        // Edit existing
         const flower = constructorFlowers.find(f => f.id === id);
-        if (flower) {
-            flower.name = name;
-            flower.price = price;
-            flower.image = image;
-        }
+        if (flower) { flower.name = name; flower.price = price; flower.image = image; }
     } else {
-        // Add new
-        const newId = 'cf-' + Date.now();
-        constructorFlowers.push({ id: newId, name, price, image });
+        constructorFlowers.push({ id: 'cf-' + Date.now(), name, price, image });
     }
 
     saveConstructorFlowers();
     closeConstructorFlowerModal();
     renderConstructorFlowers();
+    toast(id ? 'Квітку оновлено' : 'Квітку додано');
 };
 
 window.editConstructorFlower = function (id) {
@@ -567,25 +821,16 @@ window.editConstructorFlower = function (id) {
     document.getElementById('cFlowerName').value = f.name;
     document.getElementById('cFlowerPrice').value = f.price;
     document.getElementById('cFlowerImg').value = f.image;
-
-    const sel = document.getElementById('cFlowerImgSelect');
-    const opt = Array.from(sel.options).find(o => o.value === f.image);
-    sel.value = opt ? f.image : 'custom';
-
     document.getElementById('constructorFlowerModalTitle').textContent = 'Редагувати квітку';
     document.getElementById('constructorFlowerModal').classList.add('open');
 };
 
 window.deleteConstructorFlower = async function (id) {
     const f = constructorFlowers.find(x => x.id === id);
-    if (!confirm(`Видалити квітку "${f ? f.name : id}" з конструктора?`)) return;
+    if (!confirm(`Видалити "${f ? f.name : id}"?`)) return;
     constructorFlowers = constructorFlowers.filter(x => x.id !== id);
     saveConstructorFlowers();
     if (window.supabase) await supabase.from('constructor_flowers').delete().eq('id', id);
     renderConstructorFlowers();
+    toast('Квітку видалено');
 };
-
-// Close constructor modal on overlay click
-document.getElementById('constructorFlowerModal').addEventListener('click', (e) => {
-    if (e.target.id === 'constructorFlowerModal') closeConstructorFlowerModal();
-});

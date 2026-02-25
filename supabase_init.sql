@@ -55,17 +55,46 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
     value text
 );
 
+CREATE TABLE IF NOT EXISTS public.blog_posts (
+    id text PRIMARY KEY,
+    slug text UNIQUE NOT NULL,
+    title text NOT NULL,
+    description text,
+    content text,
+    image text,
+    meta text,
+    published boolean NOT NULL DEFAULT false,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.reviews (
+    id text PRIMARY KEY,
+    author_name text NOT NULL,
+    author_initial text,
+    rating integer NOT NULL DEFAULT 5,
+    text text NOT NULL,
+    source text DEFAULT 'Google Maps',
+    visible boolean NOT NULL DEFAULT true,
+    "order" integer NOT NULL DEFAULT 0,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
 -- 3. Enable RLS (Row Level Security)
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.constructor_flowers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
 -- 4. Create Policies for Public Read (anon + authenticated)
 CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
 CREATE POLICY "Public Read Products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Public Read Constructor Flowers" ON public.constructor_flowers FOR SELECT USING (true);
 CREATE POLICY "Public Read Site Settings" ON public.site_settings FOR SELECT USING (true);
+CREATE POLICY "Public Read Blog Posts" ON public.blog_posts FOR SELECT USING (true);
+CREATE POLICY "Public Read Reviews" ON public.reviews FOR SELECT USING (true);
 
 -- 5. Create Policies for Admin Edit (authenticated ONLY)
 CREATE POLICY "Admin Insert Categories" ON public.categories FOR INSERT TO authenticated WITH CHECK (true);
@@ -83,3 +112,11 @@ CREATE POLICY "Admin Delete Constructor Flowers" ON public.constructor_flowers F
 CREATE POLICY "Admin Insert Site Settings" ON public.site_settings FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "Admin Update Site Settings" ON public.site_settings FOR UPDATE TO authenticated USING (true);
 CREATE POLICY "Admin Delete Site Settings" ON public.site_settings FOR DELETE TO authenticated USING (true);
+
+CREATE POLICY "Admin Insert Blog Posts" ON public.blog_posts FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Admin Update Blog Posts" ON public.blog_posts FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Admin Delete Blog Posts" ON public.blog_posts FOR DELETE TO authenticated USING (true);
+
+CREATE POLICY "Admin Insert Reviews" ON public.reviews FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Admin Update Reviews" ON public.reviews FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Admin Delete Reviews" ON public.reviews FOR DELETE TO authenticated USING (true);

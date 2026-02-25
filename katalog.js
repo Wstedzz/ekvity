@@ -2,47 +2,44 @@
 const PHONE = window.SITE_SETTINGS ? (window.SITE_SETTINGS.phone || '+380 98 048 84 37') : '+380 98 048 84 37';
 const TG_USER = window.SITE_SETTINGS ? (window.SITE_SETTINGS.telegramUser || 'ekvityua') : 'ekvityua';
 
-const DEFAULT_CATEGORIES = [
-    { id: 'cat-1', name: 'Букети', order: 0, showOnMain: true },
-    { id: 'cat-2', name: 'Квіти поштучно', order: 1, showOnMain: true },
-    { id: 'cat-3', name: 'Композиції', order: 2, showOnMain: true }
-];
-
-const DEFAULT_PRODUCTS = [
-    { id: 'EKV-001', name: 'Velvet Noir', categoryId: 'cat-1', price: 2362, image: 'images/bouquet1.jpg', desc: 'Dark red roses, eucalyptus, mystery.', featured: true },
-    { id: 'EKV-002', name: 'Opulence', categoryId: 'cat-1', price: 6760, image: 'images/bouquet3.jpg', desc: 'Premium selection, gold wrapping.', featured: true },
-    { id: 'EKV-003', name: 'Ethereal Mist', categoryId: 'cat-1', price: 5800, image: 'images/bouquet1.jpg', desc: 'Rare white blooms, silk ribbon.', featured: false },
-    { id: 'EKV-004', name: 'Pastel Dream', categoryId: 'cat-1', price: 3140, image: 'images/bouquet3.jpg', desc: 'Soft pinks, creamy textures.', featured: false },
-    { id: 'EKV-005', name: 'Classic Elegance', categoryId: 'cat-1', price: 1990, image: 'images/bouquet1.jpg', desc: 'Timeless red roses.', featured: false },
-    { id: 'EKV-006', name: 'Midnight Garden', categoryId: 'cat-1', price: 2200, image: 'images/bouquet3.jpg', desc: 'Deep purples and shadows.', featured: false },
-    { id: 'EKV-010', name: 'Athena Royal', categoryId: 'cat-2', price: 100, image: 'images/bouquet2.jpg', desc: 'Single stem, 60cm.', featured: true },
-    { id: 'EKV-011', name: 'Genista Gold', categoryId: 'cat-2', price: 40, image: 'images/bouquet2.jpg', desc: 'Bright accent.', featured: false },
-    { id: 'EKV-012', name: 'Lilac Essence', categoryId: 'cat-2', price: 290, image: 'images/bouquet2.jpg', desc: 'Fragrant luxury.', featured: false },
-    { id: 'EKV-013', name: 'Chamelaucium', categoryId: 'cat-2', price: 80, image: 'images/bouquet2.jpg', desc: 'Delicate wax flower.', featured: false },
-    { id: 'EKV-014', name: 'Oxypetalum Blue', categoryId: 'cat-2', price: 160, image: 'images/bouquet2.jpg', desc: 'Rare blue hue.', featured: false },
-    { id: 'EKV-020', name: 'Sculptural White', categoryId: 'cat-3', price: 4500, image: 'images/bouquet4.jpg', desc: 'Modern vase arrangement.', featured: true }
-];
-
 let categories = [];
 let products = [];
 let currentCategory = 'all';
 let currentPage = 1;
 const PAGE_SIZE = 9;
 
-function seedData() {
-    if (!localStorage.getItem('ekvity_categories')) {
-        localStorage.setItem('ekvity_categories', JSON.stringify(DEFAULT_CATEGORIES));
-    }
-    if (!localStorage.getItem('ekvity_products')) {
-        localStorage.setItem('ekvity_products', JSON.stringify(DEFAULT_PRODUCTS));
-    }
+function loadData() {
+    categories = JSON.parse(localStorage.getItem('ekvity_categories') || '[]');
+    products = JSON.parse(localStorage.getItem('ekvity_products') || '[]');
+    categories.sort((a, b) => a.order - b.order);
 }
 
-function loadData() {
-    seedData();
-    categories = JSON.parse(localStorage.getItem('ekvity_categories')) || [];
-    products = JSON.parse(localStorage.getItem('ekvity_products')) || [];
-    categories.sort((a, b) => a.order - b.order);
+async function fetchSupabaseCatalog() {
+    if (!window.supabase) return;
+    try {
+        const [cRes, pRes] = await Promise.all([
+            supabase.from('categories').select('*').order('order'),
+            supabase.from('products').select('*')
+        ]);
+        let shouldRender = false;
+        if (!cRes.error && cRes.data && cRes.data.length > 0) {
+            categories = cRes.data;
+            localStorage.setItem('ekvity_categories', JSON.stringify(categories));
+            shouldRender = true;
+        }
+        if (!pRes.error && pRes.data && pRes.data.length > 0) {
+            products = pRes.data;
+            localStorage.setItem('ekvity_products', JSON.stringify(products));
+            shouldRender = true;
+        }
+        if (shouldRender) {
+            renderSidebarCategories();
+            renderMobileTags();
+            renderProducts();
+        }
+    } catch (e) {
+        console.error('Catalog Supabase error:', e);
+    }
 }
 
 function getCategoryName(catId) {
@@ -267,6 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMobileTags();
     updateBreadcrumbs();
     renderProducts();
+
+    fetchSupabaseCatalog();
 
     // Search input
     document.getElementById('searchInput').addEventListener('input', () => {
