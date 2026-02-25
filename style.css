@@ -1194,4 +1194,5 @@ a:hover {
   object-fit: cover;
   object-position: center 30%;
   filter: brightness(0.4) contrast(1.1);
+  transform: scale(1.05);
 }
