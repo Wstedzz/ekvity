@@ -114,7 +114,7 @@ a:hover {
 
 /* Bigger Logo Desktop */
 .logo-img {
-    height: 70px;
+    height: 58px;
     width: auto;
     color: white;
 }
@@ -818,7 +818,7 @@ a:hover {
 
     /* Bigger Mobile Logo */
     .logo-img {
-        height: 45px;
+        height: 38px;
     }
 
     /* Sticky categories mobile adjustments */
