@@ -1,107 +1,146 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Блог про квіти — ЄКвіти Львів</title>
-    <meta name="description" content="Поради з догляду за квітами, ідеї букетів, тренди флористики. Блог квіткової майстерні ЄКвіти у Львові.">
+    <meta name="description" content="Поради флористів ЄКвіти: як обрати, зберегти та подарувати квіти. Тренди, сезонні огляди, ідеї для подарунків.">
+    <link rel="canonical" href="https://ekvity.co.ua/blog">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Блог про квіти — ЄКвіти Львів">
-    <meta property="og:description" content="Поради з догляду за квітами, ідеї букетів, тренди флористики.">
+    <meta property="og:description" content="Поради флористів ЄКвіти: як обрати, зберегти та подарувати квіти.">
     <meta property="og:image" content="https://ekvity.co.ua/og-image-v3.jpg">
+    <meta property="og:url" content="https://ekvity.co.ua/blog">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        .blog-hero {
-            padding: 140px 0 80px;
+        .blog-page {
+            padding-top: 120px;
+            min-height: 100vh;
+        }
+
+        .blog-page-header {
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 60px 0 70px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .blog-hero h1 {
+
+        .blog-page-header h1 {
             font-family: var(--font-heading);
-            font-size: clamp(2.2rem, 5vw, 4rem);
+            font-size: clamp(2rem, 5vw, 3.5rem);
             font-weight: 400;
-            margin: 16px 0 20px;
+            margin: 12px 0 16px;
         }
-        .blog-hero p {
+
+        .blog-page-header p {
             color: var(--text-dim);
-            font-size: 1rem;
-            max-width: 500px;
+            font-size: 0.95rem;
+            max-width: 480px;
             margin: 0 auto;
         }
-        .blog-grid {
+
+        .blog-articles-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 40px;
-            padding: 80px 0 100px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            padding: 0 0 120px;
         }
-        .blog-card {
-            display: flex;
-            flex-direction: column;
-            text-decoration: none;
-            color: inherit;
-            border: 1px solid rgba(255,255,255,0.07);
-            transition: border-color 0.3s, transform 0.3s;
+
+        .blog-article-card {
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            padding: 0 0 40px;
+            transition: background 0.3s;
         }
-        .blog-card:hover {
-            border-color: rgba(255,255,255,0.2);
-            transform: translateY(-4px);
+
+        .blog-article-card:hover {
+            background: rgba(255,255,255,0.02);
         }
-        .blog-card-img {
+
+        .blog-article-card:nth-child(3n) {
+            border-right: none;
+        }
+
+        .blog-article-img {
             width: 100%;
             aspect-ratio: 16/9;
             object-fit: cover;
             display: block;
-            filter: brightness(0.9);
-            transition: filter 0.3s;
+            filter: brightness(0.75) grayscale(15%);
+            transition: filter 0.4s;
         }
-        .blog-card:hover .blog-card-img {
-            filter: brightness(1);
+
+        .blog-article-card:hover .blog-article-img {
+            filter: brightness(0.9) grayscale(0%);
         }
-        .blog-card-body {
-            padding: 28px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+
+        .blog-article-body {
+            padding: 24px 28px 0;
         }
-        .blog-card-tag {
-            font-family: var(--font-body);
+
+        .blog-article-meta {
             font-size: 0.65rem;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--text-dim);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
-        .blog-card-title {
+
+        .blog-article-title {
             font-family: var(--font-heading);
-            font-size: 1.4rem;
+            font-size: 1.05rem;
             font-weight: 400;
-            margin: 0 0 14px;
-            line-height: 1.3;
+            line-height: 1.35;
+            margin-bottom: 10px;
+            color: var(--accent);
         }
-        .blog-card-excerpt {
+
+        .blog-article-desc {
+            font-size: 0.82rem;
             color: var(--text-dim);
-            font-size: 0.9rem;
-            line-height: 1.7;
-            flex: 1;
-            margin-bottom: 24px;
+            line-height: 1.65;
+            margin-bottom: 16px;
         }
-        .blog-card-meta {
-            font-size: 0.75rem;
-            color: #555;
-            display: flex;
-            justify-content: space-between;
+
+        .blog-article-link {
+            font-size: 0.7rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            display: inline-block;
         }
-        .blog-card-read {
-            color: var(--text-dim);
-            font-size: 0.75rem;
-            letter-spacing: 1px;
+
+        @media (max-width: 900px) {
+            .blog-articles-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .blog-article-card:nth-child(3n) {
+                border-right: 1px solid rgba(255,255,255,0.05);
+            }
+            .blog-article-card:nth-child(2n) {
+                border-right: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .blog-articles-grid {
+                grid-template-columns: 1fr;
+            }
+            .blog-article-card {
+                border-right: none !important;
+            }
+            .blog-article-body {
+                padding: 20px 20px 0;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
@@ -121,12 +160,12 @@
             <div class="nav-links">
                 <a href="/#collection">Колекція</a>
                 <a href="/katalog">Каталог</a>
-                <a href="/blog">Блог</a>
+                <a href="/blog" style="color: var(--gold);">Блог</a>
                 <a href="/#about">Про нас</a>
-                <a href="tel:+380980488437" class="nav-contact">+380 98 048 84 37</a>
+                <a href="tel:+380980488437" class="nav-contact dyn-phone">+380 98 048 84 37</a>
             </div>
-            <a href="tel:+380980488437" class="mobile-phone-btn">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="tel:+380980488437" class="mobile-phone-btn dyn-phone">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 3px;">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
             </a>
@@ -139,95 +178,124 @@
             <a href="/" onclick="toggleMenu()">Головна</a>
             <a href="/katalog" onclick="toggleMenu()">Каталог</a>
             <a href="/blog" onclick="toggleMenu()">Блог</a>
+            <a href="/constructor" onclick="toggleMenu()">Конструктор</a>
             <a href="/#about" onclick="toggleMenu()">Про нас</a>
-            <a href="tel:+380980488437" class="mobile-contact">+380 98 048 84 37</a>
+            <a href="tel:+380980488437" class="mobile-contact dyn-phone">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                +380 98 048 84 37
+            </a>
+            <div class="mobile-socials">
+                <a href="https://instagram.com/ekvity.ua" target="_blank" class="instagram-link dyn-insta">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    Instagram
+                </a>
+                <a href="https://t.me/ekvityua" target="_blank" class="telegram-link dyn-tg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Telegram
+                </a>
+            </div>
         </div>
     </div>
 
-    <section class="blog-hero">
+    <div class="blog-page">
         <div class="container">
-            <span class="section-label">Блог</span>
-            <h1>Про квіти</h1>
-            <p>Поради, натхнення та все про світ флористики від майстерні ЄКвіти.</p>
+            <div class="blog-page-header">
+                <span class="section-label">Від флористів</span>
+                <h1>Блог про квіти</h1>
+                <p>Поради, тренди та ідеї від майстрів ЄКвіти — щоб ваші квіти завжди виглядали ідеально.</p>
+            </div>
+            <div class="blog-articles-grid" id="blogGrid"></div>
         </div>
-    </section>
-
-    <main class="container">
-        <div class="blog-grid">
-
-            <a href="/blog/tulpany-lviv" class="blog-card">
-                <img src="images/prod-bouquet3.jpg" alt="Тюльпани Львів" class="blog-card-img">
-                <div class="blog-card-body">
-                    <div class="blog-card-tag">Тюльпани</div>
-                    <h2 class="blog-card-title">Тюльпани у Львові: як обрати свіжий букет і зберегти його довше</h2>
-                    <p class="blog-card-excerpt">Тюльпани — найпопулярніша квітка навесні. Розповідаємо як відрізнити свіжі від залежалих, які сорти найдовше стоять у вазі та де купити тюльпани у Львові.</p>
-                    <div class="blog-card-meta">
-                        <span>Лютий 2026</span>
-                        <span class="blog-card-read">5 хв читання →</span>
-                    </div>
-                </div>
-            </a>
-
-            <a href="/blog/yak-zberegty-buket" class="blog-card">
-                <img src="images/prod-bouquet4.jpg" alt="Як зберегти букет" class="blog-card-img">
-                <div class="blog-card-body">
-                    <div class="blog-card-tag">Поради</div>
-                    <h2 class="blog-card-title">Як зберегти букет свіжим до 2 тижнів: 7 правил від флориста</h2>
-                    <p class="blog-card-excerpt">Правильна вода, температура, підрізка стебел і ще 4 прості правила які подвоять термін життя вашого букета.</p>
-                    <div class="blog-card-meta">
-                        <span>Лютий 2026</span>
-                        <span class="blog-card-read">4 хв читання →</span>
-                    </div>
-                </div>
-            </a>
-
-            <a href="/blog/pionovidni-troyand" class="blog-card">
-                <img src="images/prod-bouquet8.jpg" alt="Піоновидні троянди" class="blog-card-img">
-                <div class="blog-card-body">
-                    <div class="blog-card-tag">Троянди</div>
-                    <h2 class="blog-card-title">Піоновидні троянди: чому вони коштують дорожче і чи варто це того</h2>
-                    <p class="blog-card-excerpt">Пояснюємо що таке піоновидна троянда, чим вона відрізняється від звичайної і чому її так люблять флористи по всьому світу.</p>
-                    <div class="blog-card-meta">
-                        <span>Лютий 2026</span>
-                        <span class="blog-card-read">3 хв читання →</span>
-                    </div>
-                </div>
-            </a>
-
-        </div>
-    </main>
+    </div>
 
     <footer class="footer">
         <div class="container" style="text-align: center;">
             <img src="images/logo-mark.svg" alt="ЄКвіти" style="height: 40px; opacity: 0.8; margin-bottom: 25px;">
             <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
-                <a href="tel:+380980488437" style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                <a href="tel:+380980488437" class="dyn-phone" style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                     +380 98 048 84 37
                 </a>
-                <a href="https://instagram.com/ekvity.ua" target="_blank" style="display: flex; align-items: center; gap: 8px; color: var(--text-dim);">
+                <a href="https://instagram.com/ekvity.ua" target="_blank" class="dyn-insta footer-insta" style="display: flex; align-items: center; gap: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                     @ekvity.ua
+                </a>
+                <a href="https://t.me/ekvityua" target="_blank" class="dyn-tg footer-tg" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                    Telegram
                 </a>
             </div>
             <p style="font-size: 0.75rem; color: #555;">© 2026 ЄКвіти</p>
         </div>
     </footer>
 
+    <script src="supabase-config.js"></script>
     <script src="settings.js"></script>
     <script>
-        window.toggleMenu = function () {
+        // Blog articles data
+        const ARTICLES = [
+            { slug: 'tulpany-lviv', title: 'Тюльпани у Львові: як обрати свіжий букет і зберегти його довше', desc: 'Як відрізнити свіжі тюльпани, які сорти найдовше стоять та як доглядати за букетом.', img: 'images/prod-bouquet3.jpg', meta: 'Тюльпани · Лютий 2026 · 5 хв' },
+            { slug: 'troyandy-lviv', title: 'Троянди у Львові: де купити свіжі та як обрати сорт', desc: 'Де купити свіжі троянди, які сорти найдовше стоять та як відрізнити якісний букет.', img: 'images/prod-bouquet1.jpg', meta: 'Троянди · Лютий 2026 · 6 хв' },
+            { slug: 'kvity-na-den-narodzhennya', title: 'Квіти на день народження: що подарувати у 2025', desc: 'Тренди, ідеї та поради — які квіти обрати для особливого подарунка.', img: 'images/prod-bouquet2.jpg', meta: 'День народження · Лютий 2026 · 5 хв' },
+            { slug: 'bukety-na-vesillya-lviv', title: 'Весільні букети у Львові: тренди та ціни 2025', desc: 'Весільні букети 2025: стилі, ціни та як замовити букет нареченої у Львові.', img: 'images/prod-bouquet4.jpg', meta: 'Весілля · Лютий 2026 · 7 хв' },
+            { slug: 'kvity-na-8-bereznya-lviv', title: 'Квіти на 8 березня у Львові: де замовити заздалегідь', desc: 'Як не залишитися без квітів у пік попиту — тюльпани, мімоза, троянди.', img: 'images/prod-bouquet5.jpg', meta: '8 березня · Лютий 2026 · 4 хв' },
+            { slug: 'pivonii-lviv', title: 'Півонії у Львові: сезон, ціни та найкращі букети', desc: 'Коли купити, скільки коштують та як зберегти букет з півоній.', img: 'images/prod-bouquet6.jpg', meta: 'Півонії · Лютий 2026 · 5 хв' },
+            { slug: 'avtorski-bukety-lviv', title: 'Авторські букети у Львові: що це і скільки коштує', desc: 'Чим відрізняється авторський букет від звичайного та як замовити у ЄКвіти.', img: 'images/prod-bouquet7.jpg', meta: 'Флористика · Лютий 2026 · 5 хв' },
+            { slug: 'yak-zberehty-buket-dovshe', title: 'Як зберегти букет довше: 10 порад флориста', desc: '10 практичних порад від флористів ЄКвіти — від підрізки до температури.', img: 'images/hero-4.jpg', meta: 'Догляд · Лютий 2026 · 5 хв' },
+            { slug: 'monobuket-lviv', title: 'Монобукет: тренд чи класика? Де замовити у Львові', desc: 'Монобукет з тюльпанів, троянд або піоній — сміливо та сучасно.', img: 'images/prod-bouquet1.jpg', meta: 'Тренди · Лютий 2026 · 4 хв' },
+            { slug: 'kvity-dlya-kohanoi', title: 'Квіти для коханої: що обрати і як здивувати', desc: 'Романтичні варіанти та як організувати сюрприз з квітами у Львові.', img: 'images/prod-bouquet2.jpg', meta: 'Романтика · Лютий 2026 · 5 хв' },
+            { slug: 'kvity-dlya-mamy', title: 'Які квіти подарувати мамі: поради флориста', desc: 'Класика та сучасні ідеї — як обрати ідеальний букет для мами.', img: 'images/hero-3.jpg', meta: 'Для мами · Лютий 2026 · 5 хв' },
+            { slug: 'bili-kvity-buket', title: 'Білі квіти для букету: символіка та кращі поєднання', desc: 'Все про білу флористику — значення, найкращі квіти та поєднання.', img: 'images/hero-1.jpg', meta: 'Флористика · Лютий 2026 · 5 хв' },
+            { slug: 'ranunkulus-lviv', title: 'Ранункулюс у Львові: де купити і як доглядати', desc: 'Найніжніша весняна квітка — сезон, кольори та догляд у вазі.', img: 'images/prod-bouquet5.jpg', meta: 'Ранункулюс · Лютий 2026 · 5 хв' },
+            { slug: 'orkhideyi-lviv', title: 'Орхідеї у Львові: купити, доглядати, дарувати', desc: 'Все про орхідеї — сорти, догляд та де купити у Львові.', img: 'images/prod-bouquet6.jpg', meta: 'Орхідеї · Лютий 2026 · 6 хв' },
+            { slug: 'sukhi-kvity-kompozytsiyi', title: 'Сухоцвіти та сухі квіти: сучасні композиції', desc: 'Памас-трава, лаванда, бавовна — тренд який не в\'яне.', img: 'images/prod-bouquet3.jpg', meta: 'Сухоцвіти · Лютий 2026 · 5 хв' },
+            { slug: 'kvity-na-vypusknyi-lviv', title: 'Квіти на випускний у Львові: ідеї та ціни', desc: 'Які квіти купити вчителям та випускникам — ідеї та бюджети.', img: 'images/hero-5.jpg', meta: 'Випускний · Лютий 2026 · 4 хв' },
+            { slug: 'kvity-korporatyvni-lviv', title: 'Корпоративні квіти у Львові: оформлення офісу та подій', desc: 'Регулярна підписка, оформлення заходів та корпоративні подарунки.', img: 'images/prod-bouquet4.jpg', meta: 'Корпоративне · Лютий 2026 · 4 хв' },
+            { slug: 'kvity-lviv-nedorogo', title: 'Квіти у Львові недорого: гарний букет за розумну ціну', desc: 'Які квіти виглядають дорого але коштують недорого — поради для економних.', img: 'images/prod-bouquet8.jpg', meta: 'Бюджет · Лютий 2026 · 4 хв' },
+            { slug: 'litni-kvity-lviv', title: 'Літні квіти у Львові: соняшники, далії, цинії', desc: 'Найкращі літні квіти та ідеї для яскравих сезонних букетів.', img: 'images/prod-bouquet7.jpg', meta: 'Літо · Лютий 2026 · 5 хв' },
+            { slug: 'yak-vybrats-floryst-lviv', title: 'Як обрати флориста у Львові: на що звернути увагу', desc: 'Портфоліо, свіжість квітів, відгуки — чек-лист для правильного вибору.', img: 'images/prod-bouquet8.jpg', meta: 'Поради · Лютий 2026 · 5 хв' },
+        ];
+
+        function renderGrid() {
+            const grid = document.getElementById('blogGrid');
+            grid.innerHTML = ARTICLES.map(a => `
+                <div class="blog-article-card" onclick="window.location='/blog/${a.slug}'">
+                    <img src="${a.img}" alt="${a.title}" class="blog-article-img" loading="lazy">
+                    <div class="blog-article-body">
+                        <div class="blog-article-meta">${a.meta}</div>
+                        <div class="blog-article-title">${a.title}</div>
+                        <div class="blog-article-desc">${a.desc}</div>
+                        <span class="blog-article-link">Читати →</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        renderGrid();
+
+        // Cursor
+        window.toggleMenu = function() {
             const menu = document.getElementById('mobileMenu');
             menu.classList.toggle('open');
             document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
         };
+
         const dot = document.querySelector('.cursor-dot');
         const outline = document.querySelector('.cursor-outline');
-        if (!window.matchMedia("(hover: none)").matches) {
-            window.addEventListener('mousemove', (e) => {
+        if (!window.matchMedia('(hover: none)').matches) {
+            window.addEventListener('mousemove', e => {
                 dot.style.left = e.clientX + 'px';
                 dot.style.top = e.clientY + 'px';
-                outline.animate({ left: e.clientX + 'px', top: e.clientY + 'px' }, { duration: 500, fill: "forwards" });
+                outline.animate({ left: e.clientX + 'px', top: e.clientY + 'px' }, { duration: 500, fill: 'forwards' });
             });
         }
     </script>

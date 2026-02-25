@@ -75,8 +75,7 @@ const server = http.createServer(async (req, res) => {
     '/katalog': '/katalog.html',
     '/constructor': '/constructor.html',
     '/admin': '/admin.html',
-    // serve raw CSS/fonts for blog pages (blog uses /style.css directly)
-    '/style.css': null, // handled below
+    '/blog': '/blog.html',
   };
 
   // Special: serve style.css directly from root (blog pages need it)
