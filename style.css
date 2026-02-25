@@ -1136,3 +1136,24 @@ a:hover {
     gap: 2px;
   }
 }
+
+.ig-handle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: border-color 0.3s, color 0.3s;
+}
+
+.ig-handle-badge:hover {
+  border-color: rgba(255,255,255,0.4);
+  color: var(--text);
+}
