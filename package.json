@@ -22,7 +22,6 @@
     "url": "https://github.com/yourusername/ekvity.git"
   },
   "dependencies": {
-    "express": "^4.19.2",
     "serve": "^14.2.5"
   },
   "devDependencies": {
