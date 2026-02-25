@@ -292,9 +292,6 @@ a:hover {
     pointer-events: none;
 }
 
-.hero:hover .hero-bg {
-    transform: scale(1);
-}
 
 .hero-content {
     text-align: center;
