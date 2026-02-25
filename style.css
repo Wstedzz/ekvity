@@ -1196,3 +1196,181 @@ a:hover {
   will-change: opacity;
   image-rendering: high-quality;
 }
+
+/* ===== How To Order Section ===== */
+.how-to-order-section {
+  padding: var(--spacing-section) 0;
+  background: #0a0a0a;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-header h3 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 400;
+  margin-top: 12px;
+}
+
+.steps-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.step-card {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  padding: 40px 30px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  position: relative;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.step-card:hover {
+  border-color: rgba(212, 163, 115, 0.3);
+  background: rgba(212, 163, 115, 0.04);
+}
+
+.step-number {
+  font-family: var(--font-logo);
+  font-size: 3rem;
+  color: rgba(212, 163, 115, 0.2);
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+
+.step-icon {
+  color: var(--gold);
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+.step-card h4 {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 400;
+  margin-bottom: 12px;
+  color: var(--accent);
+}
+
+.step-card p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.step-arrow {
+  font-size: 1.5rem;
+  color: rgba(212, 163, 115, 0.3);
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .step-arrow {
+    transform: rotate(90deg);
+    padding: 10px 0;
+    width: 100%;
+    text-align: center;
+  }
+  .step-card {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* ===== Reviews Section ===== */
+.reviews-section {
+  padding: var(--spacing-section) 0;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.review-card {
+  padding: 36px 28px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.3s;
+}
+
+.review-card:hover {
+  border-color: rgba(212, 163, 115, 0.25);
+}
+
+.review-stars {
+  color: var(--gold);
+  font-size: 1rem;
+  letter-spacing: 2px;
+}
+
+.review-text {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  line-height: 1.75;
+  font-style: italic;
+  flex: 1;
+}
+
+.review-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.review-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(212, 163, 115, 0.15);
+  border: 1px solid rgba(212, 163, 115, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-logo);
+  font-size: 0.85rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.review-name {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.review-source {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+/* ===== WhatsApp Modal Button ===== */
+.btn-whatsapp {
+  background: transparent;
+  border: 1px solid #25d366;
+  color: #25d366 !important;
+}
+
+.btn-whatsapp:hover {
+  background: rgba(37, 211, 102, 0.1);
+}

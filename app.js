@@ -180,6 +180,7 @@ window.order = function (id, name, price) {
     const details = document.getElementById('modalProductDetails');
     const btnTg = document.getElementById('btnTelegram');
     const btnVb = document.getElementById('btnViber');
+    const btnWa = document.getElementById('btnWhatsApp');
 
     details.innerHTML = `<h4>${name}</h4><p>ID: ${id} — ${price} грн</p>`;
 
@@ -187,14 +188,16 @@ window.order = function (id, name, price) {
     const encoded = encodeURIComponent(message);
 
     const tgLink = `https://t.me/${CONFIG.telegramUser}?text=${encoded}`;
-    const phoneClean = CONFIG.phone.replace('+', '');
+    const phoneClean = CONFIG.phone.replace(/[\s+]/g, '');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const vbLink = isMobile
         ? `viber://add?number=${phoneClean}`
         : `viber://chat?number=%2B${phoneClean}&text=${encoded}`;
+    const waLink = `https://wa.me/${phoneClean}?text=${encoded}`;
 
     btnTg.href = tgLink;
     btnVb.href = vbLink;
+    if (btnWa) btnWa.href = waLink;
 
     modal.classList.add('open');
 };
