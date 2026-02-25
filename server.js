@@ -25,6 +25,15 @@ const MIME = {
   '.woff': 'font/woff',
 };
 
+// Invalidate cache on startup (force fresh fetch after deploy)
+if (fs.existsSync(CACHE_FILE)) {
+  try {
+    const c = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+    c.timestamp = 0;
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(c));
+  } catch (_) {}
+}
+
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url);
   const pathname = parsed.pathname;
@@ -128,6 +137,7 @@ async function getInstagramPosts() {
 
   const posts = items
     .filter(i => i.displayUrl)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .map(i => ({
       url: i.url,
       displayUrl: i.displayUrl,
