@@ -353,3 +353,38 @@ function initHeroSlideshow() {
         slides[current].classList.add('active');
     }, 5000);
 }
+
+// ===== HERO STATS COUNT-UP =====
+function initStatCounters() {
+    const stats = document.querySelectorAll('.hero-stat-number');
+    if (!stats.length) return;
+
+    const animate = (el) => {
+        const target = parseInt(el.dataset.target, 10);
+        const duration = 1600;
+        const start = performance.now();
+
+        const tick = (now) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // ease-out cubic
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(eased * target);
+            if (progress < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animate(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    stats.forEach(el => observer.observe(el));
+}
+
+initStatCounters();

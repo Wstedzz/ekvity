@@ -1374,3 +1374,63 @@ a:hover {
 .btn-whatsapp:hover {
   background: rgba(37, 211, 102, 0.1);
 }
+
+/* ===== Hero Stats ===== */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-top: 48px;
+  flex-wrap: wrap;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 40px;
+}
+
+.hero-stat-number {
+  font-family: var(--font-logo);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  color: var(--gold);
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.hero-stat-suffix {
+  font-family: var(--font-logo);
+  font-size: clamp(1rem, 2vw, 1.6rem);
+  color: var(--gold);
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-top: 8px;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,0.12);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .hero-stat {
+    padding: 16px 24px;
+  }
+  .hero-stat-divider {
+    display: none;
+  }
+}
+
+.delay-3 {
+  animation-delay: 0.6s;
+}

@@ -80,9 +80,14 @@ const server = http.createServer(async (req, res) => {
   const rewritten = rewrites[pathname] || pathname;
   let filePath = path.join(DIST, rewritten === '/' ? 'index.html' : rewritten);
 
-  // SPA fallback — no extension = serve index.html
+  // Blog article fallback — /blog/<slug> → dist/blog/<slug>/index.html
   if (!path.extname(filePath)) {
-    filePath = path.join(DIST, 'index.html');
+    const maybeIndex = path.join(filePath, 'index.html');
+    if (fs.existsSync(maybeIndex)) {
+      filePath = maybeIndex;
+    } else {
+      filePath = path.join(DIST, 'index.html');
+    }
   }
 
   fs.readFile(filePath, (err, data) => {
