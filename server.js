@@ -288,33 +288,45 @@ async function apifyGet(endpoint) {
 
 function fetchGoogleReviews(placeId) {
   return new Promise((resolve, reject) => {
-    const apiUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=reviews,name,rating&key=${GOOGLE_API_KEY}&language=uk&reviews_sort=newest`;
+    const postData = JSON.stringify({ languageCode: 'uk' });
+    const options = {
+      hostname: 'places.googleapis.com',
+      path: `/v1/places/${encodeURIComponent(placeId)}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_API_KEY,
+        'X-Goog-FieldMask': 'displayName,rating,reviews'
+      }
+    };
 
-    https.get(apiUrl, (res) => {
+    const req = https.request(options, (res) => {
       let raw = '';
       res.on('data', c => raw += c);
       res.on('end', () => {
         try {
           const data = JSON.parse(raw);
-          if (data.status !== 'OK') {
-            reject(new Error(`Google API error: ${data.status} — ${data.error_message || ''}`));
+          if (data.error) {
+            reject(new Error(`Google API error: ${data.error.message || JSON.stringify(data.error)}`));
             return;
           }
-          const reviews = (data.result?.reviews || []).map(r => ({
-            author_name: r.author_name || '',
+          const reviews = (data.reviews || []).map(r => ({
+            author_name: r.authorAttribution?.displayName || '',
             rating: r.rating || 5,
-            text: r.text || '',
-            time: r.time,
-            relative_time: r.relative_time_description || '',
-            profile_photo: r.profile_photo_url || '',
-            language: r.language || 'uk'
+            text: r.text?.text || r.originalText?.text || '',
+            relative_time: r.relativePublishTimeDescription || '',
+            profile_photo: r.authorAttribution?.photoUri || '',
+            publish_time: r.publishTime || ''
           }));
           resolve(reviews);
         } catch (e) {
-          reject(new Error('Failed to parse Google response'));
+          reject(new Error('Failed to parse Google response: ' + raw.slice(0, 200)));
         }
       });
-    }).on('error', reject);
+    });
+
+    req.on('error', reject);
+    req.end();
   });
 }
 
