@@ -51,7 +51,6 @@ CREATE TABLE public.products (
     "categoryId" text NOT NULL,
     price numeric NOT NULL DEFAULT 0,
     image text,
-    "topViewImage" text,
     "desc" text,
     featured boolean NOT NULL DEFAULT false
 );

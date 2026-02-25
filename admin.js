@@ -301,6 +301,7 @@ window.populateSettingsForm = function () {
     document.getElementById('setConstTitle').value = window.SITE_SETTINGS.constHeroTitle || '';
     document.getElementById('setConstSub').value = window.SITE_SETTINGS.constHeroSubtitle || '';
     document.getElementById('setConstDisc').value = window.SITE_SETTINGS.constDisclaimer || '';
+    document.getElementById('setGooglePlaceId').value = window.SITE_SETTINGS.googlePlaceId || '';
 };
 
 window.saveSiteSettings = async function (e) {
@@ -316,7 +317,8 @@ window.saveSiteSettings = async function (e) {
         homeAboutText: document.getElementById('setAboutText').value.trim(),
         constHeroTitle: document.getElementById('setConstTitle').value.trim(),
         constHeroSubtitle: document.getElementById('setConstSub').value.trim(),
-        constDisclaimer: document.getElementById('setConstDisc').value.trim()
+        constDisclaimer: document.getElementById('setConstDisc').value.trim(),
+        googlePlaceId: document.getElementById('setGooglePlaceId').value.trim()
     };
 
     window.SITE_SETTINGS = { ...window.SITE_SETTINGS, ...s };
@@ -485,7 +487,6 @@ window.saveProduct = function (e) {
         categoryId: document.getElementById('prodCat').value,
         price: Number(document.getElementById('prodPrice').value),
         image: document.getElementById('prodImg').value.trim(),
-        topViewImage: document.getElementById('prodTopView').value.trim(),
         desc: document.getElementById('prodDesc').value.trim(),
         featured: document.getElementById('prodFeatured').checked
     };
@@ -517,7 +518,6 @@ window.editProduct = function (id) {
     document.getElementById('prodCat').value = p.categoryId;
     document.getElementById('prodPrice').value = p.price;
     document.getElementById('prodImg').value = p.image || '';
-    document.getElementById('prodTopView').value = p.topViewImage || '';
     document.getElementById('prodDesc').value = p.desc || '';
     document.getElementById('prodFeatured').checked = !!p.featured;
     document.getElementById('productModalTitle').textContent = 'Редагувати товар';
@@ -857,6 +857,132 @@ window.deleteReview = async function (id) {
     updateStats();
     updateNavBadges();
     toast('Відгук видалено');
+};
+
+// ---- GOOGLE REVIEWS IMPORT ----
+let _googleFetchedReviews = [];
+
+window.fetchGoogleReviews = async function () {
+    const placeId = (window.SITE_SETTINGS && window.SITE_SETTINGS.googlePlaceId) || '';
+    if (!placeId) {
+        toast('Спочатку вкажіть Google Place ID у Налаштуваннях → Google Maps', 'error');
+        return;
+    }
+
+    // Show modal with loading state
+    document.getElementById('googleReviewsStatus').style.display = '';
+    document.getElementById('googleReviewsList').style.display = 'none';
+    document.getElementById('googleReviewsModal').classList.add('open');
+    _googleFetchedReviews = [];
+
+    try {
+        const resp = await fetch(`/api/google-reviews?placeId=${encodeURIComponent(placeId)}`);
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Server error');
+        if (!data.reviews || data.reviews.length === 0) {
+            document.getElementById('googleReviewsStatus').innerHTML =
+                '<p style="color:var(--text-dim);">Google не повернув жодного відгуку для цього Place ID.</p>' +
+                '<button class="btn" onclick="closeGoogleReviewsModal()" style="margin-top:12px;">Закрити</button>';
+            return;
+        }
+
+        _googleFetchedReviews = data.reviews;
+        renderGoogleReviewCards();
+    } catch (err) {
+        document.getElementById('googleReviewsStatus').innerHTML =
+            `<p style="color:var(--danger);">Помилка: ${err.message}</p>` +
+            '<button class="btn" onclick="closeGoogleReviewsModal()" style="margin-top:12px;">Закрити</button>';
+    }
+};
+
+function renderGoogleReviewCards() {
+    const container = document.getElementById('googleReviewsItems');
+    // Check which reviews already exist (by author + first 40 chars of text)
+    const existingKeys = new Set(reviews.map(r => `${r.author_name}::${(r.text || '').substring(0, 40)}`));
+
+    container.innerHTML = _googleFetchedReviews.map((r, i) => {
+        const key = `${r.author_name}::${(r.text || '').substring(0, 40)}`;
+        const exists = existingKeys.has(key);
+        return `<div class="g-review-card ${exists ? '' : 'selected'}" data-idx="${i}" onclick="toggleGoogleReview(this)">
+            <div class="g-review-header">
+                <input type="checkbox" class="g-review-check" ${exists ? '' : 'checked'} onclick="event.stopPropagation();" onchange="this.closest('.g-review-card').classList.toggle('selected', this.checked)">
+                <span class="g-review-author">${r.author_name}</span>
+                <span class="g-review-stars">${'★'.repeat(r.rating || 5)}${'☆'.repeat(5 - (r.rating || 5))}</span>
+                <span class="g-review-time">${r.relative_time || ''}</span>
+            </div>
+            <div class="g-review-text">${(r.text || '').substring(0, 300)}${(r.text || '').length > 300 ? '...' : ''}</div>
+            ${exists ? '<span class="g-review-exists">⚠ Вже імпортовано</span>' : ''}
+        </div>`;
+    }).join('');
+
+    const total = _googleFetchedReviews.length;
+    const selected = container.querySelectorAll('.g-review-check:checked').length;
+    document.getElementById('googleReviewsCount').textContent = `${total} відгуків знайдено`;
+    document.getElementById('googleSelectAll').checked = selected === total;
+
+    document.getElementById('googleReviewsStatus').style.display = 'none';
+    document.getElementById('googleReviewsList').style.display = '';
+}
+
+window.toggleGoogleReview = function (card) {
+    const cb = card.querySelector('.g-review-check');
+    cb.checked = !cb.checked;
+    card.classList.toggle('selected', cb.checked);
+    // Update select-all checkbox
+    const all = document.querySelectorAll('#googleReviewsItems .g-review-check');
+    const checked = document.querySelectorAll('#googleReviewsItems .g-review-check:checked');
+    document.getElementById('googleSelectAll').checked = checked.length === all.length;
+};
+
+window.toggleAllGoogleReviews = function (state) {
+    document.querySelectorAll('#googleReviewsItems .g-review-card').forEach(card => {
+        const cb = card.querySelector('.g-review-check');
+        cb.checked = state;
+        card.classList.toggle('selected', state);
+    });
+};
+
+window.importSelectedGoogleReviews = async function () {
+    const cards = document.querySelectorAll('#googleReviewsItems .g-review-card');
+    let imported = 0;
+
+    cards.forEach(card => {
+        const cb = card.querySelector('.g-review-check');
+        if (!cb.checked) return;
+        const idx = parseInt(card.dataset.idx);
+        const r = _googleFetchedReviews[idx];
+        if (!r) return;
+
+        reviews.push({
+            id: 'rev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+            author_name: r.author_name,
+            author_initial: (r.author_name || 'G').charAt(0).toUpperCase(),
+            rating: r.rating || 5,
+            text: r.text || '',
+            source: 'Google Maps',
+            visible: true,
+            order: reviews.length,
+            created_at: new Date().toISOString()
+        });
+        imported++;
+    });
+
+    if (imported === 0) {
+        toast('Не обрано жодного відгуку', 'error');
+        return;
+    }
+
+    await saveReviews();
+    closeGoogleReviewsModal();
+    renderReviewsList();
+    updateStats();
+    updateNavBadges();
+    toast(`Імпортовано ${imported} відгук(ів) з Google Maps`);
+};
+
+window.closeGoogleReviewsModal = function () {
+    document.getElementById('googleReviewsModal').classList.remove('open');
+    _googleFetchedReviews = [];
 };
 
 // ============================================================

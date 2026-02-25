@@ -8,4 +8,3 @@ ALTER TABLE public.categories RENAME COLUMN showonmain TO "showOnMain";
 
 -- Fix products table
 ALTER TABLE public.products RENAME COLUMN categoryid TO "categoryId";
-ALTER TABLE public.products RENAME COLUMN topviewimage TO "topViewImage";

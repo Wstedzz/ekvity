@@ -6,6 +6,7 @@ const url = require('url');
 
 const PORT = process.env.PORT || 8080;
 const APIFY_TOKEN = process.env.APIFY_TOKEN || '';
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
 const DIST = path.join(__dirname, 'dist');
 const PUBLIC = path.join(__dirname, 'public');
 const CACHE_FILE = path.join(__dirname, 'instagram-cache.json');
@@ -64,6 +65,32 @@ const server = http.createServer(async (req, res) => {
     try {
       const data = await getInstagramPosts();
       res.end(JSON.stringify(data));
+    } catch (err) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // Google Reviews proxy endpoint
+  if (pathname === '/api/google-reviews') {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const qs = new URLSearchParams(parsed.query || '');
+    const placeId = qs.get('placeId');
+    if (!placeId) {
+      res.writeHead(400);
+      res.end(JSON.stringify({ error: 'placeId is required' }));
+      return;
+    }
+    if (!GOOGLE_API_KEY) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: 'GOOGLE_API_KEY not configured on server' }));
+      return;
+    }
+    try {
+      const reviews = await fetchGoogleReviews(placeId);
+      res.end(JSON.stringify({ reviews }));
     } catch (err) {
       res.writeHead(500);
       res.end(JSON.stringify({ error: err.message }));
@@ -255,6 +282,40 @@ function apifyPost(endpoint, body) {
 async function apifyGet(endpoint) {
   const res = await apifyRequest('GET', endpoint);
   return Array.isArray(res) ? res : (res.data?.items || []);
+}
+
+// ===== Google Reviews logic =====
+
+function fetchGoogleReviews(placeId) {
+  return new Promise((resolve, reject) => {
+    const apiUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=reviews,name,rating&key=${GOOGLE_API_KEY}&language=uk&reviews_sort=newest`;
+
+    https.get(apiUrl, (res) => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => {
+        try {
+          const data = JSON.parse(raw);
+          if (data.status !== 'OK') {
+            reject(new Error(`Google API error: ${data.status} — ${data.error_message || ''}`));
+            return;
+          }
+          const reviews = (data.result?.reviews || []).map(r => ({
+            author_name: r.author_name || '',
+            rating: r.rating || 5,
+            text: r.text || '',
+            time: r.time,
+            relative_time: r.relative_time_description || '',
+            profile_photo: r.profile_photo_url || '',
+            language: r.language || 'uk'
+          }));
+          resolve(reviews);
+        } catch (e) {
+          reject(new Error('Failed to parse Google response'));
+        }
+      });
+    }).on('error', reject);
+  });
 }
 
 async function waitForRun(runId, timeoutMs) {
