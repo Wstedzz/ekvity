@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupScrollHint();
 
     fetchSupabaseData();
+    loadInstagramFeed();
 });
 
 function loadData() {
@@ -289,4 +290,39 @@ function setupScrollHint() {
             }, 300);
         }
     });
+}
+
+// ===== INSTAGRAM FEED =====
+async function loadInstagramFeed() {
+    const grid = document.getElementById('instagramGrid');
+    if (!grid) return;
+
+    try {
+        const res = await fetch('/api/instagram');
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+
+        if (!data.posts || data.posts.length === 0) {
+            grid.innerHTML = '';
+            return;
+        }
+
+        grid.innerHTML = data.posts.map(post => `
+            <a class="ig-post" href="${post.url}" target="_blank" rel="noopener">
+                <img src="${post.displayUrl}" alt="${post.caption ? post.caption.slice(0, 50) : 'ekvity.ua'}" loading="lazy">
+                <div class="ig-post-overlay">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                </div>
+            </a>
+        `).join('');
+    } catch (err) {
+        console.error('Instagram feed error:', err);
+        // Hide section on error — no broken UI
+        const section = document.getElementById('instagram');
+        if (section) section.style.display = 'none';
+    }
 }

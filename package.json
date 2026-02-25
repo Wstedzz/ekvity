@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "serve dist --config serve.json -l ${PORT:-8080}"
+    "start": "node server.js"
   },
   "keywords": [
     "flowers",
@@ -22,6 +22,7 @@
     "url": "https://github.com/yourusername/ekvity.git"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "serve": "^14.2.5"
   },
   "devDependencies": {
