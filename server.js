@@ -79,7 +79,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Static files
-  let filePath = path.join(DIST, pathname === '/' ? 'index.html' : pathname);
+  const rewrites = {
+    '/katalog': '/katalog.html',
+    '/constructor': '/constructor.html',
+    '/admin': '/admin.html',
+  };
+
+  const rewritten = rewrites[pathname] || pathname;
+  let filePath = path.join(DIST, rewritten === '/' ? 'index.html' : rewritten);
 
   // SPA fallback — no extension = serve index.html
   if (!path.extname(filePath)) {
