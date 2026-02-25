@@ -74,7 +74,6 @@ const server = http.createServer(async (req, res) => {
     '/katalog': '/katalog.html',
     '/constructor': '/constructor.html',
     '/admin': '/admin.html',
-    '/blog': '/blog.html',
   };
 
   const rewritten = rewrites[pathname] || pathname;

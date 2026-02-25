@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Блог про квіти — ЄКвіти Львів</title>
+    <meta name="description" content="Поради флористів ЄКвіти: як обрати, зберегти та подарувати квіти. Тренди, сезонні огляди, ідеї для подарунків.">
+    <link rel="canonical" href="https://ekvity.co.ua/blog">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Блог про квіти — ЄКвіти Львів">
+    <meta property="og:description" content="Поради флористів ЄКвіти: як обрати, зберегти та подарувати квіти.">
+    <meta property="og:image" content="https://ekvity.co.ua/og-image-v3.jpg">
+    <meta property="og:url" content="https://ekvity.co.ua/blog">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        .blog-hero { padding: 160px 0 80px; text-align: center; }
+        .blog-hero h1 { font-family: var(--font-heading); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 400; margin-bottom: 16px; }
+        .blog-hero p { color: var(--text-dim); font-size: 1rem; max-width: 500px; margin: 0 auto; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0; padding: 60px 0 120px; }
+        .blog-card { display: block; color: inherit; border-top: 1px solid rgba(255,255,255,0.06); padding: 40px 0; transition: border-color 0.3s; }
+        .blog-card:hover { border-top-color: rgba(212,163,115,0.4); }
+        .blog-card-inner { padding: 0 40px; }
+        .blog-card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; filter: brightness(0.75) grayscale(20%); display: block; margin-bottom: 28px; transition: filter 0.4s; }
+        .blog-card:hover .blog-card-img { filter: brightness(0.9) grayscale(0%); }
+        .blog-card-meta { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+        .blog-card-title { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 400; line-height: 1.3; margin-bottom: 12px; }
+        .blog-card-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; }
+        .blog-card-link { font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); margin-top: 16px; display: block; }
+    </style>
+</head>
+<body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <img src="/images/logo-mark.svg" alt="ЄКвіти" class="logo-img">
+            </a>
+            <div class="nav-links">
+                <a href="/#collection">Колекція</a>
+                <a href="/katalog">Каталог</a>
+                <a href="/blog" style="color: var(--gold);">Блог</a>
+                <a href="tel:+380980488437">+380 98 048 84 37</a>
+            </div>
+        </div>
+    </nav>
+    <section class="blog-hero">
+        <div class="container">
+            <span class="section-label">Від флористів</span>
+            <h1>Блог про квіти</h1>
+            <p>Поради, тренди та ідеї від майстрів ЄКвіти — щоб ваші квіти завжди виглядали ідеально.</p>
+        </div>
+    </section>
+    <section>
+        <div class="container">
+            <div class="blog-grid">
+                <a href="/blog/tulpany-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet3.jpg" alt="Тюльпани у Львові" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Тюльпани · Лютий 2026</div>
+                        <div class="blog-card-title">Тюльпани у Львові: як обрати свіжий букет і зберегти його довше</div>
+                        <div class="blog-card-desc">Як відрізнити свіжі тюльпани, які сорти найдовше стоять і як доглядати за букетом.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/troyandy-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet1.jpg" alt="Троянди у Львові: де купити свіжі та як обрати сорт" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Троянди · Лютий 2026 · 6 хв читання</div>
+                        <div class="blog-card-title">Троянди у Львові: де купити свіжі та як обрати сорт</div>
+                        <div class="blog-card-desc">Де купити свіжі троянди у Львові, які сорти найдовше стоять у вазі та як відрізнити якісний букет. Поради флористів ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-na-den-narodzhennya" class="blog-card">
+                    <img src="/images/prod-bouquet2.jpg" alt="Квіти на день народження: що подарувати у 2025" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">День народження · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Квіти на день народження: що подарувати у 2025</div>
+                        <div class="blog-card-desc">Які квіти подарувати на день народження у 2025 році. Тренди, ідеї та поради від флористів ЄКвіти у Львові.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/bukety-na-vesillya-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet3.jpg" alt="Весільні букети у Львові: тренди та ціни 2025" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Весілля · Лютий 2026 · 7 хв читання</div>
+                        <div class="blog-card-title">Весільні букети у Львові: тренди та ціни 2025</div>
+                        <div class="blog-card-desc">Весільні букети у Львові 2025: тренди, стилі, ціни. Як замовити букет нареченої та оформлення залу в ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-na-8-bereznya-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet4.jpg" alt="Квіти на 8 березня у Львові: де замовити заздалегідь" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">8 березня · Лютий 2026 · 4 хв читання</div>
+                        <div class="blog-card-title">Квіти на 8 березня у Львові: де замовити заздалегідь</div>
+                        <div class="blog-card-desc">Де замовити квіти на 8 березня у Львові. Тюльпани, мімоза, троянди — ціни та поради як не залишитися без квітів у пік попиту.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/orkhideyi-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet5.jpg" alt="Орхідеї у Львові: купити, доглядати, дарувати" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Орхідеї · Лютий 2026 · 6 хв читання</div>
+                        <div class="blog-card-title">Орхідеї у Львові: купити, доглядати, дарувати</div>
+                        <div class="blog-card-desc">Де купити орхідеї у Львові. Як доглядати за орхідеєю вдома щоб вона цвіла знову. Поради флористів ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/pivonii-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet6.jpg" alt="Півонії у Львові: сезон, ціни та найкращі букети" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Півонії · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Півонії у Львові: сезон, ціни та найкращі букети</div>
+                        <div class="blog-card-desc">Коли купити півонії у Львові, скільки коштують та як зберегти. Сезон, сорти та авторські букети в ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/avtorski-bukety-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet7.jpg" alt="Авторські букети у Львові: що це і скільки коштує" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Авторська флористика · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Авторські букети у Львові: що це і скільки коштує</div>
+                        <div class="blog-card-desc">Що таке авторський букет у Львові, чим відрізняється від стандартного та скільки коштує. ЄКвіти — флористика без шаблонів.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-z-dostavkoyu-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet8.jpg" alt="Квіти з доставкою у Львові: як замовити швидко" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Доставка · Лютий 2026 · 4 хв читання</div>
+                        <div class="blog-card-title">Квіти з доставкою у Львові: як замовити швидко</div>
+                        <div class="blog-card-desc">Як замовити квіти з доставкою у Львові. ЄКвіти — флористика з доставкою по місту, готово за годину.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/bili-kvity-buket" class="blog-card">
+                    <img src="/images/hero-1.jpg" alt="Білі квіти для букету: символіка та кращі поєднання" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Флористика · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Білі квіти для букету: символіка та кращі поєднання</div>
+                        <div class="blog-card-desc">Білі квіти в букеті: значення, символіка та найкращі поєднання. Які білі квіти обрати для різних приводів.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-dlya-mamy" class="blog-card">
+                    <img src="/images/hero-3.jpg" alt="Які квіти подарувати мамі: поради флориста" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Для мами · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Які квіти подарувати мамі: поради флориста</div>
+                        <div class="blog-card-desc">Які квіти подарувати мамі на день народження, свято або просто так. Ідеї та рекомендації флористів ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/yak-zberehty-buket-dovshe" class="blog-card">
+                    <img src="/images/hero-4.jpg" alt="Як зберегти букет довше: 10 порад флориста" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Догляд за квітами · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Як зберегти букет довше: 10 порад флориста</div>
+                        <div class="blog-card-desc">Як зберегти букет квітів довше вдома. 10 практичних порад від флористів ЄКвіти — від підрізки до температури.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-na-vypusknyi-lviv" class="blog-card">
+                    <img src="/images/hero-5.jpg" alt="Квіти на випускний у Львові: ідеї та ціни" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Випускний · Лютий 2026 · 4 хв читання</div>
+                        <div class="blog-card-title">Квіти на випускний у Львові: ідеї та ціни</div>
+                        <div class="blog-card-desc">Які квіти купити на випускний у Львові. Ідеї для вчителів та випускників, ціни та де замовити.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/monobuket-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet1.jpg" alt="Монобукет: тренд чи класика? Де замовити у Львові" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Тренди флористики · Лютий 2026 · 4 хв читання</div>
+                        <div class="blog-card-title">Монобукет: тренд чи класика? Де замовити у Львові</div>
+                        <div class="blog-card-desc">Монобукет — що це, коли підходить та де замовити у Львові. ЄКвіти — авторські монобукети з тюльпанів, троянд, піоній.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-dlya-kohanoi" class="blog-card">
+                    <img src="/images/prod-bouquet2.jpg" alt="Квіти для коханої: що обрати і як здивувати" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Романтика · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Квіти для коханої: що обрати і як здивувати</div>
+                        <div class="blog-card-desc">Які квіти подарувати коханій. Ідеї, романтичні варіанти та як організувати несподіванку з доставкою у Львові.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/sukhi-kvity-kompozytsiyi" class="blog-card">
+                    <img src="/images/prod-bouquet3.jpg" alt="Сухоцвіти та сухі квіти: сучасні композиції" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Сухоцвіти · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Сухоцвіти та сухі квіти: сучасні композиції</div>
+                        <div class="blog-card-desc">Сухоцвіти у флористиці: як виглядають, з чим поєднувати та де купити сучасні композиції у Львові.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-korporatyvni-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet4.jpg" alt="Корпоративні квіти у Львові: оформлення офісу та подій" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Корпоративна флористика · Лютий 2026 · 4 хв читання</div>
+                        <div class="blog-card-title">Корпоративні квіти у Львові: оформлення офісу та подій</div>
+                        <div class="blog-card-desc">Корпоративне замовлення квітів у Львові. Оформлення офісу, заходів та регулярна підписка на квіти від ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/ranunkulus-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet5.jpg" alt="Ранункулюс у Львові: де купити і як доглядати" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Ранункулюс · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Ранункулюс у Львові: де купити і як доглядати</div>
+                        <div class="blog-card-desc">Ранункулюс у Львові: де купити, сезон, ціни та як зберегти. Найкрасивіша весняна квітка від флористів ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/kvity-lviv-nedorogo" class="blog-card">
+                    <img src="/images/prod-bouquet6.jpg" alt="Квіти у Львові недорого: гарний букет за розумну ціну" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Бюджетна флористика · Лютий 2026 · 4 хв читання</div>
+                        <div class="blog-card-title">Квіти у Львові недорого: гарний букет за розумну ціну</div>
+                        <div class="blog-card-desc">Де купити гарні квіти у Львові недорого. Бюджетні варіанти та як заощадити не жертвуючи якістю. Поради ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/litni-kvity-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet7.jpg" alt="Літні квіти у Львові: соняшники, далії, цинії" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Літня флористика · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Літні квіти у Львові: соняшники, далії, цинії</div>
+                        <div class="blog-card-desc">Літні квіти у Львові: соняшники, далії, цинії та інші сезонні квіти. Де купити та які букети зробити влітку.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+                <a href="/blog/yak-vybrats-floryst-lviv" class="blog-card">
+                    <img src="/images/prod-bouquet8.jpg" alt="Як обрати флориста у Львові: на що звернути увагу" class="blog-card-img">
+                    <div class="blog-card-inner">
+                        <div class="blog-card-meta">Поради · Лютий 2026 · 5 хв читання</div>
+                        <div class="blog-card-title">Як обрати флориста у Львові: на що звернути увагу</div>
+                        <div class="blog-card-desc">Як обрати надійного флориста у Львові. На що дивитися: портфоліо, відгуки, свіжість квітів. Поради від ЄКвіти.</div>
+                        <span class="blog-card-link">Читати →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <img src="/images/logo-mark.svg" alt="ЄКвіти" style="height: 40px; opacity: 0.8; margin-bottom: 25px;">
+            <p style="font-size: 0.75rem; color: #555;">© 2026 ЄКвіти</p>
+        </div>
+    </footer>
+    <script>
+        const dot = document.querySelector('.cursor-dot');
+        const outline = document.querySelector('.cursor-outline');
+        if (!window.matchMedia("(hover: none)").matches) {
+            window.addEventListener('mousemove', (e) => {
+                dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px';
+                outline.animate({ left: e.clientX + 'px', top: e.clientY + 'px' }, { duration: 500, fill: "forwards" });
+            });
+        }
+    </script>
+</body>
+</html>
