@@ -15,15 +15,15 @@ const DEFAULT_CATEGORIES = [
 
 const DEFAULT_PRODUCTS = [
     { id: 'EKV-001', name: 'Тюльпани мікс', categoryId: 'cat-1', price: 2800, image: 'images/prod-bouquet1.jpg', desc: 'Три кольори, три настрої. Букет у фірмовому пакуванні.', featured: true },
-    { id: 'EKV-002', name: 'Персикові тюльпани', categoryId: 'cat-1', price: 3200, image: 'images/prod-bouquet2.jpg', desc: 'Ніжний персиковий відтінок, 51 шт.', featured: true },
-    { id: 'EKV-003', name: 'Бордові тюльпани', categoryId: 'cat-1', price: 2600, image: 'images/prod-bouquet3.jpg', desc: 'Темно-бордові, насичені. 101 шт.', featured: false },
-    { id: 'EKV-004', name: 'Піоновидні рожеві', categoryId: 'cat-1', price: 4800, image: 'images/prod-bouquet4.jpg', desc: 'Розкішні піоновидні тюльпани, 101 шт.', featured: false },
-    { id: 'EKV-005', name: 'Білі піоновидні', categoryId: 'cat-1', price: 3800, image: 'images/prod-bouquet5.jpg', desc: 'Сніжно-білі, кремові. Витонченість у кожній пелюстці.', featured: false },
-    { id: 'EKV-006', name: 'Букет на замовлення', categoryId: 'cat-1', price: 1500, image: 'images/prod-bouquet1.jpg', desc: 'Обираєш колір, кількість, пакування — ми створюємо.', featured: false },
-    { id: 'EKV-010', name: 'Тюльпан поштучно', categoryId: 'cat-2', price: 55, image: 'images/prod-bouquet3.jpg', desc: 'Один стебло, 60 см.', featured: true },
-    { id: 'EKV-011', name: 'Піоновидний поштучно', categoryId: 'cat-2', price: 80, image: 'images/prod-bouquet4.jpg', desc: 'Піоновидний тюльпан, преміум.', featured: false },
-    { id: 'EKV-012', name: 'Білий тюльпан', categoryId: 'cat-2', price: 60, image: 'images/prod-bouquet5.jpg', desc: 'Білий або кремовий, 60 см.', featured: false },
-    { id: 'EKV-013', name: 'Бордовий тюльпан', categoryId: 'cat-2', price: 55, image: 'images/prod-bouquet3.jpg', desc: 'Темно-бордовий, виразний.', featured: false },
+    { id: 'EKV-002', name: 'Бордові тюльпани', categoryId: 'cat-1', price: 2600, image: 'images/prod-bouquet3.jpg', desc: 'Темно-бордові, насичені. 101 шт.', featured: true },
+    { id: 'EKV-003', name: 'Піоновидні рожеві', categoryId: 'cat-1', price: 4800, image: 'images/prod-bouquet4.jpg', desc: 'Розкішні піоновидні тюльпани, 101 шт.', featured: false },
+    { id: 'EKV-004', name: 'Рожеві троянди', categoryId: 'cat-1', price: 5200, image: 'images/prod-bouquet6.jpg', desc: 'Кущові рожеві троянди. Пишний букет.', featured: false },
+    { id: 'EKV-005', name: 'Білі троянди', categoryId: 'cat-1', price: 4900, image: 'images/prod-bouquet7.jpg', desc: 'Кремово-білі піоновидні троянди.', featured: false },
+    { id: 'EKV-006', name: 'Пудрові троянди', categoryId: 'cat-1', price: 4600, image: 'images/prod-bouquet8.jpg', desc: 'Пудровий відтінок, ніжна текстура. 101 шт.', featured: false },
+    { id: 'EKV-010', name: 'Тюльпан поштучно', categoryId: 'cat-2', price: 55, image: 'images/prod-bouquet3.jpg', desc: 'Одне стебло, 60 см.', featured: true },
+    { id: 'EKV-011', name: 'Піоновидний тюльпан', categoryId: 'cat-2', price: 80, image: 'images/prod-bouquet4.jpg', desc: 'Піоновидний тюльпан, преміум.', featured: false },
+    { id: 'EKV-012', name: 'Троянда кущова', categoryId: 'cat-2', price: 90, image: 'images/prod-bouquet6.jpg', desc: 'Кущова троянда, гілка.', featured: false },
+    { id: 'EKV-013', name: 'Піоновидна троянда', categoryId: 'cat-2', price: 110, image: 'images/prod-bouquet8.jpg', desc: 'Одна піоновидна троянда.', featured: false },
     { id: 'EKV-020', name: 'Кошик з тюльпанів', categoryId: 'cat-3', price: 4500, image: 'images/hero-5.jpg', desc: 'Плетений кошик, 51 тюльпан, стрічка.', featured: true },
     { id: 'EKV-021', name: 'Кошик преміум', categoryId: 'cat-3', price: 8500, image: 'images/hero-4.jpg', desc: 'Великий кошик 101 троянд з персоналізацією.', featured: false }
 ];
@@ -34,7 +34,7 @@ let products = [];
 let category = 'all';
 
 // Seed data if needed
-const SEED_VERSION = 'v4';
+const SEED_VERSION = 'v5';
 
 function seedData() {
     // Reset if seed version changed
