@@ -131,7 +131,7 @@ function createProductCard(p, animIndex) {
             <h3 class="product-name">${p.name}</h3>
             <p class="product-price">${p.price} <span>UAH</span></p>
             <div class="card-actions">
-                <button class="btn-order" onclick="orderProduct('${p.id}','${p.name.replace(/'/g, "\\'")}',${p.price})">Замовити</button>
+                <button class="btn-order" onclick="event.stopPropagation(); orderProduct('${p.id}','${p.name.replace(/'/g, "\\'")}',${p.price})">Замовити</button>
             </div>
         </div>
     `;

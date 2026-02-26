@@ -417,6 +417,17 @@
         </div>
     </footer>
 
+    <!-- Lightbox -->
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+        <div class="lightbox-inner">
+            <button class="lightbox-close" onclick="closeLightboxDirect()">&times;</button>
+            <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1, event)">&#8592;</button>
+            <img class="lightbox-img" id="lightboxImg" src="" alt="">
+            <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1, event)">&#8594;</button>
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+        </div>
+    </div>
+
     <!-- Order Modal -->
     <div id="orderModal" class="modal-overlay">
         <div class="modal-content">

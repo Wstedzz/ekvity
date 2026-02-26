@@ -470,11 +470,19 @@
                     </div>
                     <div class="sidebar-section">
                         <div class="sidebar-title">Ціна (грн)</div>
-                        <div class="price-range">
-                            <input type="number" id="priceMin" class="price-input" placeholder="від">
-                            <span class="price-sep">—</span>
-                            <input type="number" id="priceMax" class="price-input" placeholder="до">
+                        <div class="price-slider-wrap">
+                            <div class="price-slider-track">
+                                <div class="price-slider-range" id="sliderRange"></div>
+                                <input type="range" id="priceSliderMin" min="0" max="10000" value="0" step="50">
+                                <input type="range" id="priceSliderMax" min="0" max="10000" value="10000" step="50">
+                            </div>
+                            <div class="price-slider-labels">
+                                <span id="sliderMinLabel">0 грн</span>
+                                <span id="sliderMaxLabel">10 000 грн</span>
+                            </div>
                         </div>
+                        <input type="hidden" id="priceMin">
+                        <input type="hidden" id="priceMax">
                     </div>
                     <div class="sidebar-section">
                         <div class="sidebar-title">Сортування</div>
@@ -503,6 +511,17 @@
         </div>
     </div>
 
+    <!-- Lightbox -->
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+        <div class="lightbox-inner">
+            <button class="lightbox-close" onclick="closeLightboxDirect()">&times;</button>
+            <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1, event)">&#8592;</button>
+            <img class="lightbox-img" id="lightboxImg" src="" alt="">
+            <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1, event)">&#8594;</button>
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+        </div>
+    </div>
+
     <!-- Filter Panel (mobile) -->
     <div class="filter-panel-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
     <div class="filter-panel" id="filterPanel">
@@ -512,11 +531,19 @@
         </div>
         <div class="sidebar-section">
             <div class="sidebar-title">Ціна (грн)</div>
-            <div class="price-range">
-                <input type="number" id="priceMinMobile" class="price-input" placeholder="від">
-                <span class="price-sep">—</span>
-                <input type="number" id="priceMaxMobile" class="price-input" placeholder="до">
+            <div class="price-slider-wrap">
+                <div class="price-slider-track">
+                    <div class="price-slider-range" id="sliderRangeMobile"></div>
+                    <input type="range" id="priceSliderMinMobile" min="0" max="10000" value="0" step="50">
+                    <input type="range" id="priceSliderMaxMobile" min="0" max="10000" value="10000" step="50">
+                </div>
+                <div class="price-slider-labels">
+                    <span id="sliderMinLabelMobile">0 грн</span>
+                    <span id="sliderMaxLabelMobile">10 000 грн</span>
+                </div>
             </div>
+            <input type="hidden" id="priceMinMobile">
+            <input type="hidden" id="priceMaxMobile">
         </div>
         <div class="sidebar-section">
             <div class="sidebar-title">Сортування</div>
