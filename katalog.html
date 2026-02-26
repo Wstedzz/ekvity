@@ -386,7 +386,7 @@
                 <a href="/constructor">Конструктор</a>
                 <a href="tel:+380980488437" class="nav-contact dyn-phone">+380 98 048 84 37</a>
             </div>
-            <a href="tel:+380980488437" class="mobile-phone-btn dyn-phone">
+                        <a href="tel:+380980488437" class="mobile-phone-btn dyn-phone">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 3px;">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
@@ -398,7 +398,7 @@
         <button class="menu-close" onclick="toggleMenu()">&times;</button>
         <div class="mobile-nav-links">
             <a href="/" onclick="toggleMenu()">Головна</a>
-            <a href="/katalog" onclick="toggleMenu()" style="color: var(--gold);">Каталог</a>
+            <a href="/katalog" style="color: var(--gold);" onclick="toggleMenu()">Каталог</a>
             <a href="/blog" onclick="toggleMenu()">Блог</a>
             <a href="/constructor" onclick="toggleMenu()">Конструктор</a>
             <a href="tel:+380980488437" class="mobile-contact dyn-phone">
@@ -417,97 +417,13 @@
                     Instagram
                 </a>
                 <a href="https://t.me/ekvityua" target="_blank" class="telegram-link dyn-tg">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                     </svg>
                     Telegram
                 </a>
             </div>
         </div>
-    </div>
-    </div>
-
-    <div class="catalog-page">
-        <div class="container">
-            <!-- Breadcrumbs -->
-            <div class="breadcrumbs">
-                <a href="/">Головна</a>
-                <span>→</span>
-                <span id="breadcrumbCurrent">Каталог</span>
-            </div>
-
-            <!-- Search -->
-            <div class="catalog-search">
-                <div class="search-wrapper">
-                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Пошук квітів...">
-                </div>
-            </div>
-
-            <!-- Mobile category tags -->
-            <div class="mobile-cat-tags" id="mobileCatTags"></div>
-
-            <!-- Mobile filter button -->
-            <button class="mobile-filter-btn" onclick="openFilterPanel()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    style="vertical-align: middle; margin-right: 8px;">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                </svg>
-                Фільтри та сортування
-            </button>
-
-            <div class="catalog-layout">
-                <!-- Sidebar (desktop) -->
-                <aside class="catalog-sidebar">
-                    <div class="sidebar-section">
-                        <div class="sidebar-title">Категорії</div>
-                        <div id="sidebarCategories"></div>
-                    </div>
-                    <div class="sidebar-section">
-                        <div class="sidebar-title">Ціна (грн)</div>
-                        <div class="price-slider-wrap">
-                            <div class="price-slider-track">
-                                <div class="price-slider-range" id="sliderRange"></div>
-                                <input type="range" id="priceSliderMin" min="0" max="10000" value="0" step="50">
-                                <input type="range" id="priceSliderMax" min="0" max="10000" value="10000" step="50">
-                            </div>
-                            <div class="price-slider-labels">
-                                <span id="sliderMinLabel">0 грн</span>
-                                <span id="sliderMaxLabel">10 000 грн</span>
-                            </div>
-                        </div>
-                        <input type="hidden" id="priceMin">
-                        <input type="hidden" id="priceMax">
-                    </div>
-                    <div class="sidebar-section">
-                        <div class="sidebar-title">Сортування</div>
-                        <select id="sortSelect" class="sort-select">
-                            <option value="default">За замовчуванням</option>
-                            <option value="price-asc">За ціною ↑</option>
-                            <option value="price-desc">За ціною ↓</option>
-                            <option value="name">За назвою</option>
-                        </select>
-                    </div>
-                </aside>
-
-                <!-- Products -->
-                <div class="catalog-main">
-                    <div class="results-info" id="resultsInfo"></div>
-                    <div class="grid" id="catalogGrid"></div>
-                    <div class="no-results" id="noResults" style="display:none;">
-                        <h3>Нічого не знайдено</h3>
-                        <p>Спробуйте змінити фільтри або пошуковий запит</p>
-                    </div>
-                    <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
-                        <button class="btn-luxury" id="loadMoreBtn">Показати більше</button>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
