@@ -785,11 +785,23 @@ a:hover {
 
 .btn-modal:hover svg { opacity: 1; }
 
-.btn-telegram, .btn-viber, .btn-whatsapp {
-    background: transparent !important;
-    border-color: rgba(255,255,255,0.15) !important;
-    color: rgba(255,255,255,0.8) !important;
+.btn-telegram {
+    border-color: rgba(33, 150, 243, 0.3) !important;
+    color: rgba(255,255,255,0.85) !important;
 }
+.btn-telegram svg { color: #29b6f6; }
+
+.btn-viber {
+    border-color: rgba(123, 97, 189, 0.3) !important;
+    color: rgba(255,255,255,0.85) !important;
+}
+.btn-viber svg { color: #9575cd; }
+
+.btn-whatsapp {
+    border-color: rgba(37, 211, 102, 0.3) !important;
+    color: rgba(255,255,255,0.85) !important;
+}
+.btn-whatsapp svg { color: #4caf50; }
 
 .modal-contact {
     padding-top: 20px;

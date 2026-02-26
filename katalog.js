@@ -217,11 +217,13 @@ window.orderProduct = function (id, name, price) {
     const msg = `Вітаю! Хочу замовити:\n${name} (ID: ${id})\nЦіна: ${price} грн`;
     const encoded = encodeURIComponent(msg);
     document.getElementById('btnTelegram').href = `https://t.me/${TG_USER}?text=${encoded}`;
-    const phoneClean = PHONE.replace('+', '');
+    const phoneClean = PHONE.replace(/[\s+]/g, '');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     document.getElementById('btnViber').href = isMobile
         ? `viber://add?number=${phoneClean}`
         : `viber://chat?number=%2B${phoneClean}&text=${encoded}`;
+    const btnWa = document.getElementById('btnWhatsApp');
+    if (btnWa) btnWa.href = `https://wa.me/${phoneClean}?text=${encoded}`;
     modal.classList.add('open');
 };
 
