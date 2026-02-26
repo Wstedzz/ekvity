@@ -427,6 +427,7 @@ a:hover {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 30px 20px;
+    align-items: start;
 }
 
 /* Product Card - Editorial Style */
@@ -436,6 +437,19 @@ a:hover {
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.5s ease, transform 0.5s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-actions {
+    margin-top: auto;
+    padding-top: 12px;
 }
 
 .product-card.visible {
@@ -501,10 +515,6 @@ a:hover {
     color: var(--gold);
     font-family: var(--font-heading);
     font-style: italic;
-}
-
-.card-actions {
-    margin-top: 12px;
 }
 
 .btn-order {
@@ -1664,65 +1674,99 @@ a:hover {
 .lightbox-inner {
     position: relative;
     max-width: 92vw;
-    max-height: 90vh;
     cursor: default;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0;
 }
 
 .lightbox-img {
     max-width: 90vw;
-    max-height: 80vh;
+    max-height: 72vh;
     object-fit: contain;
     display: block;
     user-select: none;
     -webkit-user-select: none;
 }
 
-.lightbox-close {
-    position: absolute;
-    top: -44px;
-    right: 0;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 2.2rem;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    line-height: 1;
-    padding: 8px;
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .lightbox-close:hover { opacity: 1; }
 
 .lightbox-caption {
-    position: absolute;
-    bottom: -32px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    color: rgba(255,255,255,0.45);
+    display: none;
+}
+
+.lightbox-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 90vw;
+}
+
+.lb-name {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: white;
+    flex: 1;
+    min-width: 120px;
+}
+
+.lb-price {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    color: var(--gold);
+    font-style: italic;
+    white-space: nowrap;
+}
+
+.lb-id {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.4);
+    font-family: monospace;
     letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.lb-order-btn {
+    background: white;
+    color: black;
+    border: none;
+    padding: 8px 20px;
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.lb-order-btn:hover { opacity: 0.85; }
+
+@media (max-width: 600px) {
+    .lightbox-info {
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .lb-name { font-size: 0.9rem; }
+    .lb-id { display: none; }
+    .lightbox-img { max-height: 60vh; }
 }
 
 .lightbox-nav {
-    position: absolute;
+    position: fixed;
     top: 50%;
     transform: translateY(-50%);
     background: rgba(0,0,0,0.5);
     border: 1px solid rgba(255,255,255,0.25);
     color: white;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     font-size: 1.2rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -1731,6 +1775,7 @@ a:hover {
     justify-content: center;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    z-index: 10000;
 }
 
 .lightbox-nav:hover {
@@ -1738,16 +1783,18 @@ a:hover {
     border-color: white;
 }
 
-.lightbox-prev { left: -56px; }
-.lightbox-next { right: -56px; }
+.lightbox-prev { left: 12px; }
+.lightbox-next { right: 12px; }
 
-/* Mobile: navs inside overlay, not outside image */
+.lightbox-close {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10000;
+}
+
 @media (max-width: 600px) {
-    .lightbox-prev { left: 8px; }
-    .lightbox-next { right: 8px; }
-    .lightbox-close { top: 12px; right: 12px; position: fixed; }
-    .lightbox-img { max-width: 96vw; max-height: 75vh; }
-    .lightbox-caption { display: none; }
+    .lightbox-img { max-width: 96vw; }
 }
 
 /* Card image cursor */

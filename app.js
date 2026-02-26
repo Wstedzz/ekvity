@@ -95,6 +95,8 @@ function renderGrid() {
         card.className = 'product-card';
         card.style.transitionDelay = `${index * 0.1}s`;
         card.dataset.productId = p.id;
+        card.dataset.productName = p.name;
+        card.dataset.productPrice = p.price;
 
         const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
         card.innerHTML = `
@@ -418,8 +420,9 @@ window.openLightboxHome = function(src, name, id) {
     const cards = document.querySelectorAll('#productsGrid .product-card');
     homeLightboxImages = Array.from(cards).map(c => ({
         src: c.querySelector('.product-img')?.src || src,
-        name: c.querySelector('.product-name')?.textContent || name,
-        id: c.dataset.productId || id
+        name: c.dataset.productName || c.querySelector('.product-name')?.textContent || name,
+        id: c.dataset.productId || id,
+        price: c.dataset.productPrice || ''
     }));
     homeLightboxIndex = homeLightboxImages.findIndex(i => i.id === id);
     if (homeLightboxIndex < 0) homeLightboxIndex = 0;
@@ -430,7 +433,17 @@ function showHomeLightbox() {
     const item = homeLightboxImages[homeLightboxIndex];
     if (!item) return;
     document.getElementById('lightboxImg').src = item.src;
-    document.getElementById('lightboxCaption').textContent = item.name + ' — ' + item.id;
+    document.getElementById('lightboxImg').alt = item.name;
+    const infoEl = document.getElementById('lightboxInfo');
+    if (infoEl) {
+        infoEl.querySelector('.lb-name').textContent = item.name;
+        infoEl.querySelector('.lb-price').textContent = item.price ? item.price + ' UAH' : '';
+        infoEl.querySelector('.lb-id').textContent = 'ID: ' + item.id;
+        const btn = infoEl.querySelector('.lb-order-btn');
+        if (btn) {
+            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(item.id, item.name, item.price); };
+        }
+    }
     document.getElementById('lightboxOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 }

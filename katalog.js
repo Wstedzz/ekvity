@@ -115,6 +115,8 @@ function createProductCard(p, animIndex) {
     const card = document.createElement('div');
     card.className = 'product-card';
     card.dataset.productId = p.id;
+    card.dataset.productName = p.name;
+    card.dataset.productPrice = p.price;
     card.style.transitionDelay = `${animIndex * 0.08}s`;
     const catName = getCategoryName(p.categoryId);
     const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
@@ -343,8 +345,9 @@ window.openLightboxFromCard = function(src, name, id) {
     const cards = document.querySelectorAll('#catalogGrid .product-card');
     lightboxImages = Array.from(cards).map(c => ({
         src: c.querySelector('.product-img')?.src || src,
-        name: c.querySelector('.product-name')?.textContent || name,
-        id: c.dataset.productId || id
+        name: c.dataset.productName || c.querySelector('.product-name')?.textContent || name,
+        id: c.dataset.productId || id,
+        price: c.dataset.productPrice || ''
     }));
     lightboxIndex = lightboxImages.findIndex(i => i.id === id);
     if (lightboxIndex < 0) lightboxIndex = 0;
@@ -355,7 +358,17 @@ function showLightbox() {
     const item = lightboxImages[lightboxIndex];
     if (!item) return;
     document.getElementById('lightboxImg').src = item.src;
-    document.getElementById('lightboxCaption').textContent = item.name + ' — ' + item.id;
+    document.getElementById('lightboxImg').alt = item.name;
+    const infoEl = document.getElementById('lightboxInfo');
+    if (infoEl) {
+        infoEl.querySelector('.lb-name').textContent = item.name;
+        infoEl.querySelector('.lb-price').textContent = item.price ? item.price + ' UAH' : '';
+        infoEl.querySelector('.lb-id').textContent = 'ID: ' + item.id;
+        const btn = infoEl.querySelector('.lb-order-btn');
+        if (btn) {
+            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(item.id, item.name, item.price); };
+        }
+    }
     document.getElementById('lightboxOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
