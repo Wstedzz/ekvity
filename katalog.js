@@ -36,6 +36,9 @@ async function fetchSupabaseCatalog() {
             renderSidebarCategories();
             renderMobileTags();
             renderProducts();
+            // Reinit sliders with correct price range from real data
+            initPriceSlider('priceSliderMin', 'priceSliderMax', 'sliderRange', 'sliderMinLabel', 'sliderMaxLabel', 'priceMin', 'priceMax');
+            initPriceSlider('priceSliderMinMobile', 'priceSliderMaxMobile', 'sliderRangeMobile', 'sliderMinLabelMobile', 'sliderMaxLabelMobile', 'priceMinMobile', 'priceMaxMobile');
         }
     } catch (e) {
         console.error('Catalog Supabase error:', e);
@@ -114,8 +117,10 @@ function createProductCard(p, animIndex) {
     card.dataset.productId = p.id;
     card.style.transitionDelay = `${animIndex * 0.08}s`;
     const catName = getCategoryName(p.categoryId);
+    const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
     card.innerHTML = `
-        <div class="card-image-wrapper">
+        <div class="card-image-wrapper" onclick="openLightboxFromCard('${p.image}', '${p.name.replace(/'/g, "\\'")}', '${p.id}')">
+            ${featuredBadge}
             <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
             <div class="card-meta-overlay">
                 <span class="product-id">${p.id}</span>
@@ -273,14 +278,108 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts();
     });
 
-    // Desktop filters
-    document.getElementById('priceMin').addEventListener('change', () => { currentPage = 1; renderProducts(); });
-    document.getElementById('priceMax').addEventListener('change', () => { currentPage = 1; renderProducts(); });
+    // Price sliders (init after products load for correct max)
+    initPriceSlider('priceSliderMin', 'priceSliderMax', 'sliderRange', 'sliderMinLabel', 'sliderMaxLabel', 'priceMin', 'priceMax');
+    initPriceSlider('priceSliderMinMobile', 'priceSliderMaxMobile', 'sliderRangeMobile', 'sliderMinLabelMobile', 'sliderMaxLabelMobile', 'priceMinMobile', 'priceMaxMobile');
+
+    // Sort
     document.getElementById('sortSelect').addEventListener('change', () => { currentPage = 1; renderProducts(); });
 
     // Load more
     document.getElementById('loadMoreBtn').addEventListener('click', () => {
         currentPage++;
-        renderProducts(true); // appendOnly — only animate new cards
+        renderProducts(true);
     });
+});
+
+// ===== PRICE RANGE SLIDER =====
+function initPriceSlider(minId, maxId, rangeId, minLabelId, maxLabelId, hiddenMinId, hiddenMaxId) {
+    const sliderMin = document.getElementById(minId);
+    const sliderMax = document.getElementById(maxId);
+    const range = document.getElementById(rangeId);
+    const minLabel = document.getElementById(minLabelId);
+    const maxLabel = document.getElementById(maxLabelId);
+    const hiddenMin = document.getElementById(hiddenMinId);
+    const hiddenMax = document.getElementById(hiddenMaxId);
+
+    if (!sliderMin || !sliderMax) return;
+
+    const maxPrice = products.length ? Math.max(...products.map(p => p.price)) : 10000;
+    const roundedMax = Math.ceil(maxPrice / 500) * 500;
+    sliderMin.max = roundedMax;
+    sliderMax.max = roundedMax;
+    sliderMax.value = roundedMax;
+
+    function fmt(v) {
+        return v >= 1000 ? (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + ' тис.' : v + '';
+    }
+
+    function update() {
+        let minVal = parseInt(sliderMin.value);
+        let maxVal = parseInt(sliderMax.value);
+        if (minVal > maxVal) { [minVal, maxVal] = [maxVal, minVal]; sliderMin.value = minVal; sliderMax.value = maxVal; }
+        const pct1 = (minVal / parseInt(sliderMin.max)) * 100;
+        const pct2 = (maxVal / parseInt(sliderMax.max)) * 100;
+        range.style.left = pct1 + '%';
+        range.style.width = (pct2 - pct1) + '%';
+        minLabel.textContent = fmt(minVal) + ' грн';
+        maxLabel.textContent = fmt(maxVal) + ' грн';
+        if (hiddenMin) hiddenMin.value = minVal > 0 ? minVal : '';
+        if (hiddenMax) hiddenMax.value = maxVal < parseInt(sliderMax.max) ? maxVal : '';
+        currentPage = 1;
+        renderProducts();
+    }
+
+    sliderMin.addEventListener('input', update);
+    sliderMax.addEventListener('input', update);
+    update();
+}
+
+// ===== LIGHTBOX =====
+let lightboxImages = [];
+let lightboxIndex = 0;
+
+window.openLightboxFromCard = function(src, name, id) {
+    const cards = document.querySelectorAll('#catalogGrid .product-card');
+    lightboxImages = Array.from(cards).map(c => ({
+        src: c.querySelector('.product-img')?.src || src,
+        name: c.querySelector('.product-name')?.textContent || name,
+        id: c.dataset.productId || id
+    }));
+    lightboxIndex = lightboxImages.findIndex(i => i.id === id);
+    if (lightboxIndex < 0) lightboxIndex = 0;
+    showLightbox();
+};
+
+function showLightbox() {
+    const item = lightboxImages[lightboxIndex];
+    if (!item) return;
+    document.getElementById('lightboxImg').src = item.src;
+    document.getElementById('lightboxCaption').textContent = item.name + ' — ' + item.id;
+    document.getElementById('lightboxOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+window.closeLightbox = function(e) {
+    if (e && e.target !== document.getElementById('lightboxOverlay')) return;
+    window.closeLightboxDirect();
+};
+
+window.closeLightboxDirect = function() {
+    document.getElementById('lightboxOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+window.lightboxNav = function(dir, e) {
+    if (e) e.stopPropagation();
+    lightboxIndex = (lightboxIndex + dir + lightboxImages.length) % lightboxImages.length;
+    showLightbox();
+};
+
+document.addEventListener('keydown', (e) => {
+    const lb = document.getElementById('lightboxOverlay');
+    if (!lb || !lb.classList.contains('open')) return;
+    if (e.key === 'Escape') window.closeLightboxDirect();
+    if (e.key === 'ArrowLeft') window.lightboxNav(-1);
+    if (e.key === 'ArrowRight') window.lightboxNav(1);
 });

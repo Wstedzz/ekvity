@@ -94,9 +94,12 @@ function renderGrid() {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.style.transitionDelay = `${index * 0.1}s`;
+        card.dataset.productId = p.id;
 
+        const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
         card.innerHTML = `
-            <div class="card-image-wrapper">
+            <div class="card-image-wrapper" onclick="openLightboxHome('${p.image}', '${p.name.replace(/'/g, "\\'")}', '${p.id}')">
+                ${featuredBadge}
                 <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
                 <div class="card-meta-overlay">
                     <span class="product-id">${p.id}</span>
@@ -406,3 +409,52 @@ function renderReviews(grid, reviews) {
     }, { threshold: 0.15 });
     cards.forEach(card => observer.observe(card));
 }
+
+// ===== LIGHTBOX (home page) =====
+let homeLightboxImages = [];
+let homeLightboxIndex = 0;
+
+window.openLightboxHome = function(src, name, id) {
+    const cards = document.querySelectorAll('#productsGrid .product-card');
+    homeLightboxImages = Array.from(cards).map(c => ({
+        src: c.querySelector('.product-img')?.src || src,
+        name: c.querySelector('.product-name')?.textContent || name,
+        id: c.dataset.productId || id
+    }));
+    homeLightboxIndex = homeLightboxImages.findIndex(i => i.id === id);
+    if (homeLightboxIndex < 0) homeLightboxIndex = 0;
+    showHomeLightbox();
+};
+
+function showHomeLightbox() {
+    const item = homeLightboxImages[homeLightboxIndex];
+    if (!item) return;
+    document.getElementById('lightboxImg').src = item.src;
+    document.getElementById('lightboxCaption').textContent = item.name + ' — ' + item.id;
+    document.getElementById('lightboxOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+window.closeLightbox = function(e) {
+    if (e && e.target !== document.getElementById('lightboxOverlay')) return;
+    window.closeLightboxDirect();
+};
+
+window.closeLightboxDirect = function() {
+    document.getElementById('lightboxOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+window.lightboxNav = function(dir, e) {
+    if (e) e.stopPropagation();
+    homeLightboxIndex = (homeLightboxIndex + dir + homeLightboxImages.length) % homeLightboxImages.length;
+    showHomeLightbox();
+};
+
+document.addEventListener('keydown', (e) => {
+    const lb = document.getElementById('lightboxOverlay');
+    if (!lb || !lb.classList.contains('open')) return;
+    if (e.key === 'Escape') window.closeLightboxDirect();
+    if (e.key === 'ArrowLeft') window.lightboxNav(-1);
+    if (e.key === 'ArrowRight') window.lightboxNav(1);
+});
