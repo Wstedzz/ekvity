@@ -710,10 +710,13 @@ a:hover {
 }
 
 .modal-title {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     margin-bottom: 20px;
-    font-family: var(--font-heading);
-    color: var(--gold);
+    font-family: var(--font-body);
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
 }
 
 .modal-text {
@@ -722,61 +725,89 @@ a:hover {
 }
 
 .modal-product {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .modal-product h4 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
+    font-size: 1.4rem;
+    margin-bottom: 6px;
+    font-family: var(--font-heading);
+    font-weight: 400;
+    color: white;
 }
 
 .modal-product p {
     color: var(--gold);
     font-style: italic;
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
 }
 
 .modal-actions {
     display: flex;
-    gap: 20px;
-    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
     margin-bottom: 30px;
 }
 
 .btn-modal {
-    padding: 12px 30px;
+    padding: 14px 24px;
     text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    transition: all 0.3s;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    font-family: var(--font-body);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: transparent;
+    color: rgba(255,255,255,0.8);
+    transition: all 0.25s;
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    width: 100%;
 }
 
-.btn-telegram:hover {
-    background: #229ED9;
-    border-color: #229ED9;
+.btn-modal svg {
+    opacity: 0.6;
+    transition: opacity 0.25s;
+    flex-shrink: 0;
 }
 
-.btn-viber:hover {
-    background: #665CAC;
-    border-color: #665CAC;
+.btn-modal:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.4);
+    color: white;
+}
+
+.btn-modal:hover svg { opacity: 1; }
+
+.btn-telegram, .btn-viber, .btn-whatsapp {
+    background: transparent !important;
+    border-color: rgba(255,255,255,0.15) !important;
+    color: rgba(255,255,255,0.8) !important;
 }
 
 .modal-contact {
-    font-size: 0.9rem;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.75rem;
     color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .phone-link {
     color: white;
     display: block;
-    margin-top: 5px;
-    font-size: 1.1rem;
+    margin-top: 8px;
+    font-size: 1rem;
+    font-family: var(--font-heading);
+    letter-spacing: 2px;
+    text-decoration: none;
 }
 
 /* Mobile */
@@ -1382,16 +1413,7 @@ a:hover {
   margin-top: 2px;
 }
 
-/* ===== WhatsApp Modal Button ===== */
-.btn-whatsapp {
-  background: transparent;
-  border: 1px solid #25d366;
-  color: #25d366 !important;
-}
-
-.btn-whatsapp:hover {
-  background: rgba(37, 211, 102, 0.1);
-}
+/* WhatsApp — unified with other modal buttons */
 
 /* ===== Hero Stats ===== */
 .hero-stats {
