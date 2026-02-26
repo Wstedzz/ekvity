@@ -507,6 +507,11 @@ a:hover {
     margin-bottom: 4px;
     font-weight: 400;
     font-family: var(--font-heading);
+    min-height: calc(1.3rem * 1.2 * 2);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .product-price {
@@ -989,6 +994,7 @@ a:hover {
 
     .product-name {
         font-size: 1rem;
+        min-height: calc(1rem * 1.2 * 2);
     }
 
     .product-price {
