@@ -13,6 +13,10 @@ const CACHE_FILE = path.join(__dirname, 'instagram-cache.json');
 const IMG_CACHE_DIR = path.join(__dirname, 'instagram-images');
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 
+// Supabase config (for persistent IG cache)
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ighzhuqolvwjmlzrxqzj.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnaHpodXFvbHZ3am1senJ4cXpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjcxNTcsImV4cCI6MjA4NzM0MzE1N30.sSITN_jroTKIzy15tr6_BfSHnZi7XVFtqB7_95k4xzM';
+
 // Ensure image cache dir exists
 if (!fs.existsSync(IMG_CACHE_DIR)) fs.mkdirSync(IMG_CACHE_DIR);
 
@@ -32,14 +36,19 @@ const MIME = {
   '.woff': 'font/woff',
 };
 
-// Invalidate cache on startup (force fresh fetch after deploy)
-if (fs.existsSync(CACHE_FILE)) {
+// Local file cache is ephemeral on Railway — Supabase is the persistent store.
+// On startup, try to warm local cache from Supabase so first request is fast.
+(async () => {
   try {
-    const c = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
-    c.timestamp = 0;
-    fs.writeFileSync(CACHE_FILE, JSON.stringify(c));
-  } catch (_) {}
-}
+    const remote = await supabaseGetIgCache();
+    if (remote && remote.posts?.length > 0) {
+      fs.writeFileSync(CACHE_FILE, JSON.stringify(remote));
+      console.log(`[IG] Warmed local cache from Supabase (${remote.posts.length} posts, age: ${Math.round((Date.now() - remote.timestamp) / 3600000)}h)`);
+    }
+  } catch (e) {
+    console.warn('[IG] Could not warm cache from Supabase:', e.message);
+  }
+})();
 
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url);
@@ -201,15 +210,73 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => console.log(`Server on port ${PORT}`));
 
+// ===== Supabase helpers =====
+
+function supabaseRequest(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(SUPABASE_URL + path);
+    const data = body ? JSON.stringify(body) : null;
+    const opts = {
+      hostname: u.hostname,
+      path: u.pathname + u.search,
+      method,
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : '',
+      }
+    };
+    if (data) opts.headers['Content-Length'] = Buffer.byteLength(data);
+    const req = https.request(opts, res => {
+      let body = '';
+      res.on('data', d => body += d);
+      res.on('end', () => {
+        try { resolve(body ? JSON.parse(body) : null); }
+        catch { resolve(null); }
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
+async function supabaseGetIgCache() {
+  try {
+    const rows = await supabaseRequest('GET', '/rest/v1/instagram_cache?select=*&limit=1');
+    if (rows && rows[0]) return rows[0].data;
+    return null;
+  } catch { return null; }
+}
+
+async function supabaseSetIgCache(cacheObj) {
+  try {
+    await supabaseRequest('POST', '/rest/v1/instagram_cache', { id: 1, data: cacheObj });
+  } catch (e) {
+    console.warn('[IG] Supabase write failed:', e.message);
+  }
+}
+
 // ===== Instagram logic =====
 
 async function getInstagramPosts() {
-  // Check cache
+  // 1. Check local file cache (fast, in-memory equivalent)
   if (fs.existsSync(CACHE_FILE)) {
-    const cache = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
-    if (Date.now() - cache.timestamp < CACHE_TTL && cache.posts?.length > 0) {
-      return { posts: cache.posts, cached: true };
-    }
+    try {
+      const cache = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+      if (Date.now() - cache.timestamp < CACHE_TTL && cache.posts?.length > 0) {
+        return { posts: cache.posts, cached: true };
+      }
+    } catch (_) {}
+  }
+
+  // 2. Check Supabase (survives deploys)
+  const remote = await supabaseGetIgCache();
+  if (remote && Date.now() - remote.timestamp < CACHE_TTL && remote.posts?.length > 0) {
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(remote));
+    console.log('[IG] Served from Supabase cache');
+    return { posts: remote.posts, cached: true };
   }
 
   if (!APIFY_TOKEN) throw new Error('APIFY_TOKEN not set');
@@ -252,7 +319,10 @@ async function getInstagramPosts() {
     };
   }));
 
-  fs.writeFileSync(CACHE_FILE, JSON.stringify({ timestamp: Date.now(), posts }));
+  const cacheObj = { timestamp: Date.now(), posts };
+  fs.writeFileSync(CACHE_FILE, JSON.stringify(cacheObj));
+  await supabaseSetIgCache(cacheObj);
+  console.log('[IG] Cache saved to file + Supabase');
   return { posts, cached: false };
 }
 

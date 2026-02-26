@@ -241,3 +241,27 @@ INSERT INTO public.site_settings (key, value) VALUES
     ('constHeroSubtitle', 'Обирай квіти, упаковку та створюй унікальну композицію на свій смак'),
     ('constDisclaimer',   'Конструктор — це інтерактивна іграшка для натхнення, а не точне замовлення. Флорист орієнтуватиметься на обрані кольори та пропорції, але розташування квіток у реальному букеті буде іншим — і зазвичай ще красивішим 🌸')
 ON CONFLICT (key) DO NOTHING;
+
+-- Instagram cache (persistent across Railway deploys)
+CREATE TABLE IF NOT EXISTS public.instagram_cache (
+    id integer PRIMARY KEY DEFAULT 1,
+    data jsonb NOT NULL,
+    updated_at timestamptz DEFAULT now()
+);
+
+-- Only one row (id=1), upsert-friendly
+ALTER TABLE public.instagram_cache ENABLE ROW LEVEL SECURITY;
+
+-- Anon can read (for server-side fetch with anon key)
+CREATE POLICY "Public read instagram_cache"
+ON public.instagram_cache FOR SELECT
+USING (true);
+
+-- Anon can upsert (server writes cache)
+CREATE POLICY "Public upsert instagram_cache"
+ON public.instagram_cache FOR INSERT
+WITH CHECK (true);
+
+CREATE POLICY "Public update instagram_cache"
+ON public.instagram_cache FOR UPDATE
+USING (true);
