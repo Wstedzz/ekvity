@@ -414,30 +414,49 @@ function renderReviews(grid, reviews) {
 }
 
 // ===== LIGHTBOX (home page) =====
-// Navigates through images of the current product, not between products
-let homeLightboxImages = [];
-let homeLightboxIndex = 0;
+// Arrow keys / nav buttons:
+//   - within a product: cycle through its images (dots indicator)
+//   - at first/last image: wraps to prev/next product (with slide-in effect)
+let homeLightboxImages = [];  // images of current product
+let homeLightboxIndex = 0;    // current image index within product
 let homeLightboxProduct = null;
+let homeLightboxProductList = []; // all visible products
+let homeLightboxProductIndex = 0; // current product index
+
+function getProductImages(p) {
+    return (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+}
 
 window.openLightboxHome = function(productId) {
-    const p = products.find(x => x.id === productId);
-    if (!p) return;
-    homeLightboxProduct = p;
-    homeLightboxImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
-    homeLightboxIndex = 0;
-    showHomeLightbox();
+    // Build product list from currently visible cards
+    const cards = document.querySelectorAll('#productsGrid .product-card');
+    const visibleIds = Array.from(cards).map(c => c.dataset.productId);
+    homeLightboxProductList = visibleIds.map(id => products.find(x => x.id === id)).filter(Boolean);
+
+    const idx = homeLightboxProductList.findIndex(x => x.id === productId);
+    homeLightboxProductIndex = idx >= 0 ? idx : 0;
+    _loadProductIntoLightbox(homeLightboxProductList[homeLightboxProductIndex], 0);
+    document.getElementById('lightboxOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
 };
 
-function showHomeLightbox() {
+function _loadProductIntoLightbox(p, imgIdx) {
+    if (!p) return;
+    homeLightboxProduct = p;
+    homeLightboxImages = getProductImages(p);
+    homeLightboxIndex = Math.max(0, Math.min(imgIdx, homeLightboxImages.length - 1));
+    _renderLightboxContent();
+}
+
+function _renderLightboxContent() {
     const src = homeLightboxImages[homeLightboxIndex];
     const p = homeLightboxProduct;
     if (!src || !p) return;
 
     document.getElementById('lightboxImg').src = src;
     document.getElementById('lightboxImg').alt = p.name;
-
-    // Counter dots / index indicator
-    updateLightboxCounter('lightboxOverlay', homeLightboxIndex, homeLightboxImages.length);
+    updateLightboxCounter('lightboxOverlay', homeLightboxIndex, homeLightboxImages.length,
+        homeLightboxProductIndex, homeLightboxProductList.length);
 
     const infoEl = document.getElementById('lightboxInfo');
     if (infoEl) {
@@ -445,12 +464,8 @@ function showHomeLightbox() {
         infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
         infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
         const btn = infoEl.querySelector('.lb-order-btn');
-        if (btn) {
-            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(p.id, p.name, p.price); };
-        }
+        if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(p.id, p.name, p.price); };
     }
-    document.getElementById('lightboxOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
 }
 
 window.closeLightbox = function(e) {
@@ -463,11 +478,26 @@ window.closeLightboxDirect = function() {
     document.body.style.overflow = '';
 };
 
+// dir: -1 = left, 1 = right
 window.lightboxNav = function(dir, e) {
     if (e) e.stopPropagation();
-    if (homeLightboxImages.length <= 1) return;
-    homeLightboxIndex = (homeLightboxIndex + dir + homeLightboxImages.length) % homeLightboxImages.length;
-    showHomeLightbox();
+    const newImgIdx = homeLightboxIndex + dir;
+
+    if (newImgIdx >= 0 && newImgIdx < homeLightboxImages.length) {
+        // Still within this product's images
+        homeLightboxIndex = newImgIdx;
+        _renderLightboxContent();
+    } else {
+        // Jump to next/prev product
+        const newProdIdx = homeLightboxProductIndex + dir;
+        if (newProdIdx < 0 || newProdIdx >= homeLightboxProductList.length) return;
+        homeLightboxProductIndex = newProdIdx;
+        // Enter next product from its first image; prev product from its last image
+        const nextP = homeLightboxProductList[homeLightboxProductIndex];
+        const nextImgs = getProductImages(nextP);
+        const startImg = dir === 1 ? 0 : nextImgs.length - 1;
+        _loadProductIntoLightbox(nextP, startImg);
+    }
 };
 
 document.addEventListener('keydown', (e) => {
@@ -478,22 +508,39 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') window.lightboxNav(1);
 });
 
-// ===== LIGHTBOX COUNTER (dots for multi-image) =====
-function updateLightboxCounter(overlayId, index, total) {
+// ===== LIGHTBOX COUNTER =====
+// Shows: image dots (if multi-image) + product counter "3 / 12"
+function updateLightboxCounter(overlayId, imgIdx, imgTotal, prodIdx, prodTotal) {
     const overlay = document.getElementById(overlayId);
     if (!overlay) return;
-    let counter = overlay.querySelector('.lb-counter');
-    if (!counter) {
-        counter = document.createElement('div');
-        counter.className = 'lb-counter';
-        overlay.appendChild(counter);
+
+    // --- image dots ---
+    let dotsEl = overlay.querySelector('.lb-counter');
+    if (!dotsEl) {
+        dotsEl = document.createElement('div');
+        dotsEl.className = 'lb-counter';
+        overlay.appendChild(dotsEl);
     }
-    if (total <= 1) {
-        counter.style.display = 'none';
-        return;
+    if (imgTotal > 1) {
+        dotsEl.style.display = 'flex';
+        dotsEl.innerHTML = Array.from({length: imgTotal}, (_, i) =>
+            `<span class="lb-dot ${i === imgIdx ? 'active' : ''}"></span>`
+        ).join('');
+    } else {
+        dotsEl.style.display = 'none';
     }
-    counter.style.display = 'flex';
-    counter.innerHTML = Array.from({length: total}, (_, i) =>
-        `<span class="lb-dot ${i === index ? 'active' : ''}"></span>`
-    ).join('');
+
+    // --- product counter "2 / 8" ---
+    let prodCounter = overlay.querySelector('.lb-prod-counter');
+    if (!prodCounter) {
+        prodCounter = document.createElement('div');
+        prodCounter.className = 'lb-prod-counter';
+        overlay.appendChild(prodCounter);
+    }
+    if (prodTotal > 1) {
+        prodCounter.style.display = 'block';
+        prodCounter.textContent = `${prodIdx + 1} / ${prodTotal}`;
+    } else {
+        prodCounter.style.display = 'none';
+    }
 }

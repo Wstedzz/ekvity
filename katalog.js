@@ -341,29 +341,46 @@ function initPriceSlider(minId, maxId, rangeId, minLabelId, maxLabelId, hiddenMi
 }
 
 // ===== LIGHTBOX =====
-// Navigates through images of the current product
+// Arrow nav: cycles images within product, wraps to prev/next product at edges
 let lightboxImages = [];
 let lightboxIndex = 0;
 let lightboxProduct = null;
+let lightboxProductList = [];
+let lightboxProductIndex = 0;
+
+function getProductImages(p) {
+    return (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+}
 
 window.openLightboxFromCard = function(productId) {
-    const p = products.find(x => x.id === productId);
-    if (!p) return;
-    lightboxProduct = p;
-    lightboxImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
-    lightboxIndex = 0;
-    showLightbox();
+    const cards = document.querySelectorAll('#catalogGrid .product-card');
+    const visibleIds = Array.from(cards).map(c => c.dataset.productId);
+    lightboxProductList = visibleIds.map(id => products.find(x => x.id === id)).filter(Boolean);
+
+    const idx = lightboxProductList.findIndex(x => x.id === productId);
+    lightboxProductIndex = idx >= 0 ? idx : 0;
+    _loadProductLightbox(lightboxProductList[lightboxProductIndex], 0);
+    document.getElementById('lightboxOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
 };
 
-function showLightbox() {
+function _loadProductLightbox(p, imgIdx) {
+    if (!p) return;
+    lightboxProduct = p;
+    lightboxImages = getProductImages(p);
+    lightboxIndex = Math.max(0, Math.min(imgIdx, lightboxImages.length - 1));
+    _renderLightbox();
+}
+
+function _renderLightbox() {
     const src = lightboxImages[lightboxIndex];
     const p = lightboxProduct;
     if (!src || !p) return;
 
     document.getElementById('lightboxImg').src = src;
     document.getElementById('lightboxImg').alt = p.name;
-
-    updateLightboxCounter('lightboxOverlay', lightboxIndex, lightboxImages.length);
+    updateLightboxCounter('lightboxOverlay', lightboxIndex, lightboxImages.length,
+        lightboxProductIndex, lightboxProductList.length);
 
     const infoEl = document.getElementById('lightboxInfo');
     if (infoEl) {
@@ -371,13 +388,11 @@ function showLightbox() {
         infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
         infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
         const btn = infoEl.querySelector('.lb-order-btn');
-        if (btn) {
-            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(p.id, p.name, p.price); };
-        }
+        if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(p.id, p.name, p.price); };
     }
-    document.getElementById('lightboxOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
 }
+
+function showLightbox() { _renderLightbox(); } // alias for compat
 
 window.closeLightbox = function(e) {
     if (e && e.target !== document.getElementById('lightboxOverlay')) return;
@@ -391,9 +406,20 @@ window.closeLightboxDirect = function() {
 
 window.lightboxNav = function(dir, e) {
     if (e) e.stopPropagation();
-    if (lightboxImages.length <= 1) return;
-    lightboxIndex = (lightboxIndex + dir + lightboxImages.length) % lightboxImages.length;
-    showLightbox();
+    const newImgIdx = lightboxIndex + dir;
+
+    if (newImgIdx >= 0 && newImgIdx < lightboxImages.length) {
+        lightboxIndex = newImgIdx;
+        _renderLightbox();
+    } else {
+        const newProdIdx = lightboxProductIndex + dir;
+        if (newProdIdx < 0 || newProdIdx >= lightboxProductList.length) return;
+        lightboxProductIndex = newProdIdx;
+        const nextP = lightboxProductList[lightboxProductIndex];
+        const nextImgs = getProductImages(nextP);
+        const startImg = dir === 1 ? 0 : nextImgs.length - 1;
+        _loadProductLightbox(nextP, startImg);
+    }
 };
 
 document.addEventListener('keydown', (e) => {
@@ -404,22 +430,36 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') window.lightboxNav(1);
 });
 
-// ===== LIGHTBOX COUNTER (dots for multi-image) =====
-function updateLightboxCounter(overlayId, index, total) {
+// ===== LIGHTBOX COUNTER =====
+function updateLightboxCounter(overlayId, imgIdx, imgTotal, prodIdx, prodTotal) {
     const overlay = document.getElementById(overlayId);
     if (!overlay) return;
-    let counter = overlay.querySelector('.lb-counter');
-    if (!counter) {
-        counter = document.createElement('div');
-        counter.className = 'lb-counter';
-        overlay.appendChild(counter);
+
+    let dotsEl = overlay.querySelector('.lb-counter');
+    if (!dotsEl) {
+        dotsEl = document.createElement('div');
+        dotsEl.className = 'lb-counter';
+        overlay.appendChild(dotsEl);
     }
-    if (total <= 1) {
-        counter.style.display = 'none';
-        return;
+    if (imgTotal > 1) {
+        dotsEl.style.display = 'flex';
+        dotsEl.innerHTML = Array.from({length: imgTotal}, (_, i) =>
+            `<span class="lb-dot ${i === imgIdx ? 'active' : ''}"></span>`
+        ).join('');
+    } else {
+        dotsEl.style.display = 'none';
     }
-    counter.style.display = 'flex';
-    counter.innerHTML = Array.from({length: total}, (_, i) =>
-        `<span class="lb-dot ${i === index ? 'active' : ''}"></span>`
-    ).join('');
+
+    let prodCounter = overlay.querySelector('.lb-prod-counter');
+    if (!prodCounter) {
+        prodCounter = document.createElement('div');
+        prodCounter.className = 'lb-prod-counter';
+        overlay.appendChild(prodCounter);
+    }
+    if (prodTotal > 1) {
+        prodCounter.style.display = 'block';
+        prodCounter.textContent = `${prodIdx + 1} / ${prodTotal}`;
+    } else {
+        prodCounter.style.display = 'none';
+    }
 }
