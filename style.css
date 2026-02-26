@@ -824,6 +824,10 @@ a:hover {
 
 /* Mobile */
 @media (max-width: 768px) {
+    :root {
+        --spacing-section: 64px;
+    }
+
     .hero-title {
         font-size: 4rem;
         letter-spacing: -1px;
@@ -1183,9 +1187,26 @@ a:hover {
 }
 
 @media (max-width: 600px) {
+  :root {
+    --spacing-section: 48px;
+  }
+
   .instagram-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 2px;
+  }
+
+  .collection {
+    padding: 40px 0;
+    min-height: unset;
+  }
+
+  .instagram-section {
+    padding: 48px 0 40px;
+  }
+
+  .section-header {
+    margin-bottom: 32px;
   }
 }
 
