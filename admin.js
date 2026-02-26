@@ -617,16 +617,19 @@ function initBlogEditor(content) {
     const editorId = 'blogEditor_' + Date.now();
     wrap.innerHTML = `<textarea id="${editorId}"></textarea>`;
 
+    // Set content on the textarea BEFORE TinyMCE init
+    const ta = document.getElementById(editorId);
+    ta.value = content || '';
+
     if (typeof tinymce === 'undefined') {
         // Fallback: show plain textarea
-        const ta = document.getElementById(editorId);
         ta.className = 'content-editor';
         ta.style.display = 'block';
-        ta.value = content || '';
-        ta.id = 'blogEditorArea'; // keep stable id for fallback getter
+        ta.id = 'blogEditorArea';
         return;
     }
 
+    const initContent = content || '';
     tinymce.init({
         selector: '#' + editorId,
         height: 420,
@@ -651,11 +654,9 @@ function initBlogEditor(content) {
             img { max-width: 100%; height: auto; border-radius: 6px; }
             blockquote { border-left: 3px solid #c8a96e; padding-left: 16px; color: #aaa; }
         `,
-        setup: (editor) => {
+        init_instance_callback: (editor) => {
             blogEditorInstance = editor;
-            editor.on('init', () => {
-                editor.setContent(content || '');
-            });
+            if (initContent) editor.setContent(initContent);
         },
         // Image upload via Supabase storage
         images_upload_handler: async (blobInfo) => {
@@ -869,7 +870,7 @@ let _googleFetchedReviews = [];
 let _googleSelectedPlaceId = '';
 
 window.fetchGoogleReviews = function () {
-    // Reset modal to step 1 (search)
+    // Always start with search step
     document.getElementById('googleStep1').style.display = '';
     document.getElementById('googleStep2').style.display = 'none';
     document.getElementById('googleStep3').style.display = 'none';
@@ -878,16 +879,8 @@ window.fetchGoogleReviews = function () {
     _googleFetchedReviews = [];
     _googleSelectedPlaceId = '';
 
-    // Pre-fill saved placeId query or default
-    const savedId = (window.SITE_SETTINGS && window.SITE_SETTINGS.googlePlaceId) || '';
-    document.getElementById('googlePlaceQuery').value = savedId ? '' : 'ЄКвіти Львів';
-
+    document.getElementById('googlePlaceQuery').value = 'ЄКвіти Львів';
     document.getElementById('googleReviewsModal').classList.add('open');
-
-    // If we have a saved Place ID, skip search and go straight to reviews
-    if (savedId) {
-        loadReviewsForPlace(savedId, '');
-    }
 };
 
 window.searchGooglePlace = async function () {
@@ -945,15 +938,6 @@ async function loadReviewsForPlace(placeId, placeName) {
         }
 
         _googleFetchedReviews = data.reviews;
-
-        // Save Place ID for next time
-        if (window.SITE_SETTINGS) {
-            window.SITE_SETTINGS.googlePlaceId = placeId;
-            localStorage.setItem('ekvity_site_settings', JSON.stringify(window.SITE_SETTINGS));
-            if (window.supabase) {
-                supabase.from('site_settings').upsert([{ key: 'googlePlaceId', value: placeId }]);
-            }
-        }
 
         renderGoogleReviewCards();
     } catch (err) {
