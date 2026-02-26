@@ -98,11 +98,12 @@ function renderGrid() {
         card.dataset.productName = p.name;
         card.dataset.productPrice = p.price;
 
+        const mainImg = (p.images && p.images.length) ? p.images[0] : (p.image || '');
         const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
         card.innerHTML = `
-            <div class="card-image-wrapper" onclick="openLightboxHome('${p.image}', '${p.name.replace(/'/g, "\\'")}', '${p.id}')">
+            <div class="card-image-wrapper" onclick="openLightboxHome('${p.id}')">
                 ${featuredBadge}
-                <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
+                <img src="${mainImg}" alt="${p.name}" class="product-img" loading="lazy">
                 <div class="card-meta-overlay">
                     <span class="product-id">${p.id}</span>
                 </div>
@@ -413,35 +414,39 @@ function renderReviews(grid, reviews) {
 }
 
 // ===== LIGHTBOX (home page) =====
+// Navigates through images of the current product, not between products
 let homeLightboxImages = [];
 let homeLightboxIndex = 0;
+let homeLightboxProduct = null;
 
-window.openLightboxHome = function(src, name, id) {
-    const cards = document.querySelectorAll('#productsGrid .product-card');
-    homeLightboxImages = Array.from(cards).map(c => ({
-        src: c.querySelector('.product-img')?.src || src,
-        name: c.dataset.productName || c.querySelector('.product-name')?.textContent || name,
-        id: c.dataset.productId || id,
-        price: c.dataset.productPrice || ''
-    }));
-    homeLightboxIndex = homeLightboxImages.findIndex(i => i.id === id);
-    if (homeLightboxIndex < 0) homeLightboxIndex = 0;
+window.openLightboxHome = function(productId) {
+    const p = products.find(x => x.id === productId);
+    if (!p) return;
+    homeLightboxProduct = p;
+    homeLightboxImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+    homeLightboxIndex = 0;
     showHomeLightbox();
 };
 
 function showHomeLightbox() {
-    const item = homeLightboxImages[homeLightboxIndex];
-    if (!item) return;
-    document.getElementById('lightboxImg').src = item.src;
-    document.getElementById('lightboxImg').alt = item.name;
+    const src = homeLightboxImages[homeLightboxIndex];
+    const p = homeLightboxProduct;
+    if (!src || !p) return;
+
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxImg').alt = p.name;
+
+    // Counter dots / index indicator
+    updateLightboxCounter('lightboxOverlay', homeLightboxIndex, homeLightboxImages.length);
+
     const infoEl = document.getElementById('lightboxInfo');
     if (infoEl) {
-        infoEl.querySelector('.lb-name').textContent = item.name;
-        infoEl.querySelector('.lb-price').textContent = item.price ? item.price + ' UAH' : '';
-        infoEl.querySelector('.lb-id').textContent = 'ID: ' + item.id;
+        infoEl.querySelector('.lb-name').textContent = p.name;
+        infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
+        infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
         const btn = infoEl.querySelector('.lb-order-btn');
         if (btn) {
-            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(item.id, item.name, item.price); };
+            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(p.id, p.name, p.price); };
         }
     }
     document.getElementById('lightboxOverlay').classList.add('open');
@@ -460,6 +465,7 @@ window.closeLightboxDirect = function() {
 
 window.lightboxNav = function(dir, e) {
     if (e) e.stopPropagation();
+    if (homeLightboxImages.length <= 1) return;
     homeLightboxIndex = (homeLightboxIndex + dir + homeLightboxImages.length) % homeLightboxImages.length;
     showHomeLightbox();
 };
@@ -471,3 +477,23 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') window.lightboxNav(-1);
     if (e.key === 'ArrowRight') window.lightboxNav(1);
 });
+
+// ===== LIGHTBOX COUNTER (dots for multi-image) =====
+function updateLightboxCounter(overlayId, index, total) {
+    const overlay = document.getElementById(overlayId);
+    if (!overlay) return;
+    let counter = overlay.querySelector('.lb-counter');
+    if (!counter) {
+        counter = document.createElement('div');
+        counter.className = 'lb-counter';
+        overlay.appendChild(counter);
+    }
+    if (total <= 1) {
+        counter.style.display = 'none';
+        return;
+    }
+    counter.style.display = 'flex';
+    counter.innerHTML = Array.from({length: total}, (_, i) =>
+        `<span class="lb-dot ${i === index ? 'active' : ''}"></span>`
+    ).join('');
+}

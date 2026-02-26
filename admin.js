@@ -71,6 +71,107 @@ window.updateImgPreview = function (input, previewId) {
     }
 };
 
+// ---- MULTI-IMAGE (продукти) ----
+let _imgRowCounter = 0;
+
+window.addProductImageRow = function(url = '') {
+    const container = document.getElementById('prodImagesContainer');
+    if (!container) return;
+    const rowId = 'imgRow_' + (++_imgRowCounter);
+    const thumbId = 'imgThumb_' + _imgRowCounter;
+    const inputId = 'imgUrl_' + _imgRowCounter;
+    const fileId = 'imgFile_' + _imgRowCounter;
+
+    const row = document.createElement('div');
+    row.className = 'img-row';
+    row.id = rowId;
+    row.innerHTML = `
+        <img id="${thumbId}" class="img-row-thumb ${url ? 'visible' : ''}" src="${url}" alt="">
+        <div class="img-row-fields">
+            <input type="text" id="${inputId}" class="form-input" placeholder="URL зображення" value="${url}"
+                oninput="updateRowThumb('${inputId}','${thumbId}')">
+            <input type="file" accept="image/*" class="form-file" id="${fileId}"
+                onchange="handleImageRowUpload(this,'${inputId}','${thumbId}')">
+        </div>
+        <div class="img-row-actions">
+            <button type="button" class="img-row-btn" onclick="moveImgRow('${rowId}',-1)" title="Вгору">↑</button>
+            <button type="button" class="img-row-btn" onclick="moveImgRow('${rowId}',1)" title="Вниз">↓</button>
+            <button type="button" class="img-row-btn remove" onclick="removeImgRow('${rowId}')">✕</button>
+        </div>
+    `;
+    container.appendChild(row);
+};
+
+window.updateRowThumb = function(inputId, thumbId) {
+    const url = document.getElementById(inputId)?.value.trim();
+    const thumb = document.getElementById(thumbId);
+    if (!thumb) return;
+    if (url) { thumb.src = url; thumb.classList.add('visible'); thumb.onerror = () => thumb.classList.remove('visible'); }
+    else { thumb.classList.remove('visible'); }
+};
+
+window.handleImageRowUpload = async function(fileInput, inputId, thumbId) {
+    const file = fileInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Завантажте зображення (JPG, PNG)', 'error'); return; }
+    const input = document.getElementById(inputId);
+    const thumb = document.getElementById(thumbId);
+
+    if (window.supabase) {
+        const ext = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
+        input.value = 'Завантаження...';
+        const { data, error } = await supabase.storage.from('images').upload(fileName, file);
+        if (error) { toast('Помилка: ' + error.message, 'error'); input.value = ''; return; }
+        const url = supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+        input.value = url;
+        if (thumb) { thumb.src = url; thumb.classList.add('visible'); }
+        toast('Зображення завантажено');
+    } else {
+        if (file.size > 2 * 1024 * 1024) { toast('Файл > 2MB', 'error'); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            input.value = e.target.result;
+            if (thumb) { thumb.src = e.target.result; thumb.classList.add('visible'); }
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+window.removeImgRow = function(rowId) {
+    document.getElementById(rowId)?.remove();
+};
+
+window.moveImgRow = function(rowId, dir) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const parent = row.parentNode;
+    if (dir === -1 && row.previousElementSibling) {
+        parent.insertBefore(row, row.previousElementSibling);
+    } else if (dir === 1 && row.nextElementSibling) {
+        parent.insertBefore(row.nextElementSibling, row);
+    }
+};
+
+function getProductImages() {
+    const container = document.getElementById('prodImagesContainer');
+    if (!container) return [];
+    const inputs = container.querySelectorAll('input[type="text"]');
+    return Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+}
+
+function setProductImages(images = []) {
+    const container = document.getElementById('prodImagesContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    _imgRowCounter = 0;
+    if (images.length === 0) {
+        addProductImageRow();
+    } else {
+        images.forEach(url => addProductImageRow(url));
+    }
+}
+
 // ---- DATA LOADING ----
 async function loadData() {
     if (window.supabase) {
@@ -466,11 +567,8 @@ window.renderAdminProducts = function () {
 window.openProductModal = function () {
     document.getElementById('productForm').reset();
     document.getElementById('editingId').value = '';
-    document.getElementById('prodImg').value = '';
     document.getElementById('productModalTitle').textContent = 'Новий товар';
-    // Reset image preview
-    const preview = document.getElementById('prodImgPreview');
-    if (preview) { preview.classList.remove('visible'); preview.src = ''; }
+    setProductImages([]);
     populateCatDropdowns();
     document.getElementById('productModal').classList.add('open');
 };
@@ -479,12 +577,14 @@ window.closeProductModal = function () { document.getElementById('productModal')
 window.saveProduct = function (e) {
     e.preventDefault();
     const editingId = document.getElementById('editingId').value;
+    const images = getProductImages();
     const data = {
         id: document.getElementById('prodId').value.trim(),
         name: document.getElementById('prodName').value.trim(),
         categoryId: document.getElementById('prodCat').value,
         price: Number(document.getElementById('prodPrice').value),
-        image: document.getElementById('prodImg').value.trim(),
+        images: images,
+        image: images[0] || '',
         desc: document.getElementById('prodDesc').value.trim(),
         featured: document.getElementById('prodFeatured').checked
     };
@@ -515,14 +615,12 @@ window.editProduct = function (id) {
     document.getElementById('prodName').value = p.name;
     document.getElementById('prodCat').value = p.categoryId;
     document.getElementById('prodPrice').value = p.price;
-    document.getElementById('prodImg').value = p.image || '';
     document.getElementById('prodDesc').value = p.desc || '';
     document.getElementById('prodFeatured').checked = !!p.featured;
     document.getElementById('productModalTitle').textContent = 'Редагувати товар';
-    // Show image preview
-    const preview = document.getElementById('prodImgPreview');
-    if (preview && p.image) { preview.src = p.image; preview.classList.add('visible'); }
-    else if (preview) { preview.classList.remove('visible'); }
+    // Multi-image: use images[] or fall back to legacy image field
+    const imgs = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+    setProductImages(imgs);
     document.getElementById('productModal').classList.add('open');
 };
 

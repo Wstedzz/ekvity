@@ -1883,3 +1883,29 @@ a:hover {
 .card-image-wrapper {
     cursor: zoom-in;
 }
+
+/* Lightbox dots counter */
+.lb-counter {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 10;
+}
+
+.lb-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transition: background 0.25s, transform 0.25s;
+    cursor: pointer;
+}
+
+.lb-dot.active {
+    background: #fff;
+    transform: scale(1.3);
+}

@@ -120,10 +120,11 @@ function createProductCard(p, animIndex) {
     card.style.transitionDelay = `${animIndex * 0.08}s`;
     const catName = getCategoryName(p.categoryId);
     const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
+    const mainImg = (p.images && p.images.length) ? p.images[0] : (p.image || '');
     card.innerHTML = `
-        <div class="card-image-wrapper" onclick="openLightboxFromCard('${p.image}', '${p.name.replace(/'/g, "\\'")}', '${p.id}')">
+        <div class="card-image-wrapper" onclick="openLightboxFromCard('${p.id}')">
             ${featuredBadge}
-            <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
+            <img src="${mainImg}" alt="${p.name}" class="product-img" loading="lazy">
             <div class="card-meta-overlay">
                 <span class="product-id">${p.id}</span>
             </div>
@@ -340,35 +341,38 @@ function initPriceSlider(minId, maxId, rangeId, minLabelId, maxLabelId, hiddenMi
 }
 
 // ===== LIGHTBOX =====
+// Navigates through images of the current product
 let lightboxImages = [];
 let lightboxIndex = 0;
+let lightboxProduct = null;
 
-window.openLightboxFromCard = function(src, name, id) {
-    const cards = document.querySelectorAll('#catalogGrid .product-card');
-    lightboxImages = Array.from(cards).map(c => ({
-        src: c.querySelector('.product-img')?.src || src,
-        name: c.dataset.productName || c.querySelector('.product-name')?.textContent || name,
-        id: c.dataset.productId || id,
-        price: c.dataset.productPrice || ''
-    }));
-    lightboxIndex = lightboxImages.findIndex(i => i.id === id);
-    if (lightboxIndex < 0) lightboxIndex = 0;
+window.openLightboxFromCard = function(productId) {
+    const p = products.find(x => x.id === productId);
+    if (!p) return;
+    lightboxProduct = p;
+    lightboxImages = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+    lightboxIndex = 0;
     showLightbox();
 };
 
 function showLightbox() {
-    const item = lightboxImages[lightboxIndex];
-    if (!item) return;
-    document.getElementById('lightboxImg').src = item.src;
-    document.getElementById('lightboxImg').alt = item.name;
+    const src = lightboxImages[lightboxIndex];
+    const p = lightboxProduct;
+    if (!src || !p) return;
+
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxImg').alt = p.name;
+
+    updateLightboxCounter('lightboxOverlay', lightboxIndex, lightboxImages.length);
+
     const infoEl = document.getElementById('lightboxInfo');
     if (infoEl) {
-        infoEl.querySelector('.lb-name').textContent = item.name;
-        infoEl.querySelector('.lb-price').textContent = item.price ? item.price + ' UAH' : '';
-        infoEl.querySelector('.lb-id').textContent = 'ID: ' + item.id;
+        infoEl.querySelector('.lb-name').textContent = p.name;
+        infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
+        infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
         const btn = infoEl.querySelector('.lb-order-btn');
         if (btn) {
-            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(item.id, item.name, item.price); };
+            btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(p.id, p.name, p.price); };
         }
     }
     document.getElementById('lightboxOverlay').classList.add('open');
@@ -387,6 +391,7 @@ window.closeLightboxDirect = function() {
 
 window.lightboxNav = function(dir, e) {
     if (e) e.stopPropagation();
+    if (lightboxImages.length <= 1) return;
     lightboxIndex = (lightboxIndex + dir + lightboxImages.length) % lightboxImages.length;
     showLightbox();
 };
@@ -398,3 +403,23 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') window.lightboxNav(-1);
     if (e.key === 'ArrowRight') window.lightboxNav(1);
 });
+
+// ===== LIGHTBOX COUNTER (dots for multi-image) =====
+function updateLightboxCounter(overlayId, index, total) {
+    const overlay = document.getElementById(overlayId);
+    if (!overlay) return;
+    let counter = overlay.querySelector('.lb-counter');
+    if (!counter) {
+        counter = document.createElement('div');
+        counter.className = 'lb-counter';
+        overlay.appendChild(counter);
+    }
+    if (total <= 1) {
+        counter.style.display = 'none';
+        return;
+    }
+    counter.style.display = 'flex';
+    counter.innerHTML = Array.from({length: total}, (_, i) =>
+        `<span class="lb-dot ${i === index ? 'active' : ''}"></span>`
+    ).join('');
+}
