@@ -1036,13 +1036,7 @@ function showDemoCursorMoves(hexes, onDone) {
 function runAutoDemo() {
     if (!tourOverlay) return;
 
-    // Disable "Далі" until demo finishes
-    const nextBtn = tourBox && tourBox.querySelector('.tour-next');
-    if (nextBtn) {
-        nextBtn.disabled = true;
-        nextBtn.style.opacity = '0.35';
-        nextBtn.style.cursor = 'not-allowed';
-    }
+    // (button already locked in renderTourStep before this runs)
 
     // Build 31-flower sequence cycling through all available flowers
     const total = 31;
@@ -1189,12 +1183,21 @@ function renderTourStep() {
 
     clearDemoTimers(); // cancel any running demo from previous step
 
+    // Lock "Далі" immediately if this step has autoDemo — before any setTimeout
+    if (step.autoDemo) {
+        const btn = tourBox.querySelector('.tour-next');
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.35';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+
     scrollToElementAndPlace(el, step.position);
 
     // After positioning is done, start auto demo if this step requests it
     if (step.autoDemo) {
-        // Delay slightly to let positioning settle
-        const t = setTimeout(runAutoDemo, 700);
+        const t = setTimeout(runAutoDemo, 300);
         tourDemoTimers.push(t);
     }
 }
