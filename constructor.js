@@ -984,12 +984,12 @@ function getHexCenter(hexEl) {
 function showDemoCursorMoves(hexes, onDone) {
     if (!hexes || hexes.length < 4) { onDone && onDone(); return; }
 
-    // 3 moves across the bouquet
-    const safeGet = i => hexes[Math.min(i, hexes.length - 1)];
+    // 3 moves — store as index pairs, not DOM refs (DOM gets recreated after each swap)
+    const maxIdx = hexes.length - 1;
     const moves = [
-        [safeGet(0),  safeGet(8)],
-        [safeGet(4),  safeGet(15)],
-        [safeGet(10), safeGet(3)],
+        [0,  Math.min(8,  maxIdx)],
+        [4,  Math.min(15, maxIdx)],
+        [10, Math.min(3,  maxIdx)],
     ];
 
     const cursor = document.createElement('div');
@@ -1024,31 +1024,61 @@ function showDemoCursorMoves(hexes, onDone) {
             return;
         }
 
-        const [from, to] = moves[moveIdx];
-        if (!from || !to || !document.body.contains(from)) { moveIdx++; doMove(); return; }
+        const [fromIdx, toIdx] = moves[moveIdx];
+        // Re-fetch hex elements fresh (they get recreated after each swap)
+        const preview = document.getElementById('circlePreview');
+        const currentHexes = preview
+            ? Array.from(preview.querySelectorAll('.hexagon-flower:not(.ghost)'))
+            : [];
 
-        const fc = getHexCenter(from);
-        const tc = getHexCenter(to);
+        const fromEl = currentHexes[Math.min(fromIdx, currentHexes.length - 1)];
+        const toEl   = currentHexes[Math.min(toIdx,   currentHexes.length - 1)];
 
-        // Teleport to source (no transition), then appear
+        if (!fromEl || !toEl || fromEl === toEl) { moveIdx++; doMove(); return; }
+
+        const fc = getHexCenter(fromEl);
+        const tc = getHexCenter(toEl);
+
+        // Teleport cursor to source, appear
         applyPos(fc.x, fc.y, false);
         cursor.style.opacity = '0';
 
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                cursor.style.opacity = '1';
-                // Pause on source so user sees it "grab"
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            cursor.style.opacity = '1';
+
+            // Pause on source — "grabbing"
+            setTimeout(() => {
+                // Slide to target
+                applyPos(tc.x, tc.y, true);
+
+                // Midway through slide — do the actual swap so it looks like drag
                 setTimeout(() => {
-                    // Slide to target
-                    applyPos(tc.x, tc.y, true);
-                    // After landing
-                    setTimeout(() => {
-                        cursor.style.opacity = '0';
-                        setTimeout(() => { moveIdx++; doMove(); }, 180);
-                    }, 700);
-                }, 350);
-            });
-        });
+                    // Get current index of these hex elements in flowerPositions
+                    const fromFpIdx = parseInt(fromEl.dataset.index);
+                    const toFpIdx   = parseInt(toEl.dataset.index);
+                    if (!isNaN(fromFpIdx) && !isNaN(toFpIdx) && fromFpIdx !== toFpIdx) {
+                        swapFlowers(fromFpIdx, toFpIdx);
+                        // After swap, updateSummary recreates elements — update cursor to new target pos
+                        requestAnimationFrame(() => {
+                            const newHexes = preview
+                                ? Array.from(preview.querySelectorAll('.hexagon-flower:not(.ghost)'))
+                                : [];
+                            const newTo = newHexes[Math.min(toIdx, newHexes.length - 1)];
+                            if (newTo) {
+                                const nc = getHexCenter(newTo);
+                                applyPos(nc.x, nc.y, false);
+                            }
+                        });
+                    }
+                }, 320);
+
+                // After landing — fade out, next move
+                setTimeout(() => {
+                    cursor.style.opacity = '0';
+                    setTimeout(() => { moveIdx++; doMove(); }, 200);
+                }, 750);
+            }, 320);
+        }));
     }
 
     setTimeout(doMove, 200);
