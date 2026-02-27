@@ -522,27 +522,17 @@ document.addEventListener('keydown', (e) => {
     }, { passive: true });
 })();
 
-// ===== LIGHTBOX CATEGORY LABEL =====
+// ===== LIGHTBOX META (inline below image) =====
 function updateLightboxCategory(overlayId, catName) {
-    const overlay = document.getElementById(overlayId);
-    if (!overlay) return;
-    let el = overlay.querySelector('.lb-category');
-    if (!el) {
-        el = document.createElement('div');
-        el.className = 'lb-category';
-        overlay.appendChild(el);
-    }
-    el.textContent = catName ? catName.toUpperCase() : '';
-    el.style.display = catName ? 'block' : 'none';
+    const el = document.querySelector(`#${overlayId} .lb-category-inline`);
+    if (el) el.textContent = catName ? catName.toUpperCase() : '';
 }
 
-// ===== LIGHTBOX COUNTER =====
-// Shows: image dots (if multi-image) + product counter "3 / 12"
 function updateLightboxCounter(overlayId, imgIdx, imgTotal, prodIdx, prodTotal) {
     const overlay = document.getElementById(overlayId);
     if (!overlay) return;
 
-    // --- image dots ---
+    // Image dots (bottom center of overlay)
     let dotsEl = overlay.querySelector('.lb-counter');
     if (!dotsEl) {
         dotsEl = document.createElement('div');
@@ -558,17 +548,7 @@ function updateLightboxCounter(overlayId, imgIdx, imgTotal, prodIdx, prodTotal) 
         dotsEl.style.display = 'none';
     }
 
-    // --- product counter "2 / 8" ---
-    let prodCounter = overlay.querySelector('.lb-prod-counter');
-    if (!prodCounter) {
-        prodCounter = document.createElement('div');
-        prodCounter.className = 'lb-prod-counter';
-        overlay.appendChild(prodCounter);
-    }
-    if (prodTotal > 1) {
-        prodCounter.style.display = 'block';
-        prodCounter.textContent = `${prodIdx + 1} / ${prodTotal}`;
-    } else {
-        prodCounter.style.display = 'none';
-    }
+    // Product counter inline in lb-meta
+    const counter = overlay.querySelector('.lb-prod-counter-inline');
+    if (counter) counter.textContent = prodTotal > 1 ? `${prodIdx + 1} / ${prodTotal}` : '';
 }

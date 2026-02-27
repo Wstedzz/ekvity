@@ -1930,31 +1930,29 @@ a:hover {
     transform: scale(1.3);
 }
 
-/* Product counter "2 / 8" — top right of lightbox */
-.lb-prod-counter {
-    position: absolute;
-    top: 16px;
-    right: 20px;
-    font-size: 0.7rem;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.4);
-    font-family: var(--font-body);
+/* Meta bar below image: category + product counter */
+.lb-meta {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 2px 0;
     pointer-events: none;
-    z-index: 10;
 }
 
-/* Category label — top left of lightbox */
-.lb-category {
-    position: absolute;
-    top: 16px;
-    left: 20px;
+.lb-category-inline {
     font-size: 0.6rem;
     letter-spacing: 3px;
     color: rgba(255,255,255,0.35);
     font-family: var(--font-body);
     font-weight: 500;
-    pointer-events: none;
-    z-index: 10;
     border-left: 1px solid rgba(255,255,255,0.2);
-    padding-left: 10px;
+    padding-left: 8px;
+}
+
+.lb-prod-counter-inline {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.3);
+    font-family: var(--font-body);
 }
