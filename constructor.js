@@ -960,29 +960,34 @@ function resetDemoFlowers() {
     updateSummary();
 }
 
+function getHexCenter(hexEl) {
+    // When body has position:fixed+top offset (iOS scroll lock),
+    // getBoundingClientRect already returns correct viewport coords — no correction needed.
+    const r = hexEl.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
 function showDemoCursorMoves(hexes, onDone) {
-    // Pick 3 pairs of hexes to drag between
     if (!hexes || hexes.length < 4) { onDone && onDone(); return; }
 
+    // 3 moves across the bouquet
+    const safeGet = i => hexes[Math.min(i, hexes.length - 1)];
     const moves = [
-        [hexes[0],  hexes[7]],
-        [hexes[3],  hexes[12]],
-        [hexes[8],  hexes[2]],
+        [safeGet(0),  safeGet(8)],
+        [safeGet(4),  safeGet(15)],
+        [safeGet(10), safeGet(3)],
     ];
 
     const cursor = document.createElement('div');
     cursor.style.cssText = `
         position: fixed;
-        width: 22px; height: 22px;
+        width: 32px; height: 32px;
         border-radius: 50%;
-        background: rgba(212,163,115,0.18);
-        border: 1.5px solid rgba(212,163,115,0.75);
-        box-shadow: 0 0 8px rgba(212,163,115,0.3);
+        background: rgba(212,163,115,0.22);
+        border: 2px solid rgba(212,163,115,0.9);
+        box-shadow: 0 0 14px rgba(212,163,115,0.55), 0 0 0 4px rgba(212,163,115,0.1);
         z-index: 10010;
         pointer-events: none;
-        transition: left 0.6s cubic-bezier(.4,0,.2,1),
-                    top  0.6s cubic-bezier(.4,0,.2,1),
-                    opacity 0.25s ease;
         transform: translate(-50%,-50%);
         opacity: 0;
     `;
@@ -990,47 +995,49 @@ function showDemoCursorMoves(hexes, onDone) {
 
     let moveIdx = 0;
 
+    function applyPos(x, y, withTransition) {
+        cursor.style.transition = withTransition
+            ? 'left 0.65s cubic-bezier(.4,0,.2,1), top 0.65s cubic-bezier(.4,0,.2,1), opacity 0.25s ease'
+            : 'opacity 0.25s ease';
+        cursor.style.left = x + 'px';
+        cursor.style.top  = y + 'px';
+    }
+
     function doMove() {
         if (!tourOverlay || moveIdx >= moves.length) {
-            // All moves done — fade out and call onDone
             cursor.style.opacity = '0';
-            setTimeout(() => { cursor.remove(); onDone && onDone(); }, 280);
+            setTimeout(() => { cursor.remove(); onDone && onDone(); }, 300);
             return;
         }
 
         const [from, to] = moves[moveIdx];
-        if (!from || !to) { moveIdx++; doMove(); return; }
+        if (!from || !to || !document.body.contains(from)) { moveIdx++; doMove(); return; }
 
-        const fr = from.getBoundingClientRect();
-        const tr = to.getBoundingClientRect();
+        const fc = getHexCenter(from);
+        const tc = getHexCenter(to);
 
-        // Move cursor to start position instantly (no transition)
-        cursor.style.transition = 'opacity 0.25s ease';
-        cursor.style.left = (fr.left + fr.width / 2) + 'px';
-        cursor.style.top  = (fr.top  + fr.height / 2) + 'px';
-        cursor.style.opacity = '1';
+        // Teleport to source (no transition), then appear
+        applyPos(fc.x, fc.y, false);
+        cursor.style.opacity = '0';
 
-        // Pause on source, then slide to target
-        setTimeout(() => {
-            cursor.style.transition = `left 0.6s cubic-bezier(.4,0,.2,1),
-                                       top  0.6s cubic-bezier(.4,0,.2,1),
-                                       opacity 0.25s ease`;
-            cursor.style.left = (tr.left + tr.width / 2) + 'px';
-            cursor.style.top  = (tr.top  + tr.height / 2) + 'px';
-
-            // Brief pause after landing, then next move
-            setTimeout(() => {
-                cursor.style.opacity = '0';
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                cursor.style.opacity = '1';
+                // Pause on source so user sees it "grab"
                 setTimeout(() => {
-                    moveIdx++;
-                    doMove();
-                }, 200);
-            }, 480);
-        }, 320);
+                    // Slide to target
+                    applyPos(tc.x, tc.y, true);
+                    // After landing
+                    setTimeout(() => {
+                        cursor.style.opacity = '0';
+                        setTimeout(() => { moveIdx++; doMove(); }, 180);
+                    }, 700);
+                }, 350);
+            });
+        });
     }
 
-    // Small delay before first move
-    setTimeout(doMove, 300);
+    setTimeout(doMove, 200);
 }
 
 function runAutoDemo() {
@@ -1045,17 +1052,17 @@ function runAutoDemo() {
         actions.push({ id: flowers[i % flowers.length].id });
     }
 
-    // Inject subtle hex fade-in animation
+    // Inject subtle hex fade-in animation — only for .hex-new class, not all hexes
     if (!document.getElementById('hex-pop-style')) {
         const s = document.createElement('style');
         s.id = 'hex-pop-style';
         s.textContent = `
             @keyframes hexFadeIn {
-                0%   { opacity: 0; transform: scale(0.75); }
+                0%   { opacity: 0; transform: scale(0.7); }
                 100% { opacity: 1; transform: scale(1); }
             }
-            .hexagon-flower:not(.ghost) {
-                animation: hexFadeIn 0.35s ease forwards;
+            .hexagon-flower.hex-new {
+                animation: hexFadeIn 0.32s ease forwards;
             }
         `;
         document.head.appendChild(s);
@@ -1068,7 +1075,24 @@ function runAutoDemo() {
         const t = setTimeout(() => {
             if (!tourOverlay) return;
 
+            // Track existing hexes before adding
+            const preview = document.getElementById('circlePreview');
+            const beforeHexes = new Set(
+                preview ? Array.from(preview.querySelectorAll('.hexagon-flower:not(.ghost)')) : []
+            );
+
             changeQty(action.id, 1);
+
+            // Mark only NEW hexes with hex-new class for animation
+            requestAnimationFrame(() => {
+                if (!preview) return;
+                preview.querySelectorAll('.hexagon-flower:not(.ghost)').forEach(h => {
+                    if (!beforeHexes.has(h)) {
+                        h.classList.add('hex-new');
+                        h.addEventListener('animationend', () => h.classList.remove('hex-new'), { once: true });
+                    }
+                });
+            });
 
             // Gold flash on qty counter
             const qtyEl = document.getElementById('qty-' + action.id);
@@ -1079,13 +1103,10 @@ function runAutoDemo() {
             }
 
             // Re-measure highlight after every 5th flower
-            if (idx % 5 === 0) {
-                const preview = document.getElementById('circlePreview');
-                if (preview && tourOverlay) {
-                    requestAnimationFrame(() => {
-                        if (tourOverlay) placeHighlightAndBox(preview, 'bottom');
-                    });
-                }
+            if (idx % 5 === 0 && tourOverlay) {
+                requestAnimationFrame(() => {
+                    if (tourOverlay) placeHighlightAndBox(preview, 'bottom');
+                });
             }
 
             // After last flower: show multi-move cursor demo, then unlock "Далі"
