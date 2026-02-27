@@ -397,23 +397,35 @@ function _renderLightbox() {
     const p = lightboxProduct;
     if (!src || !p) return;
 
-    document.getElementById('lightboxImg').src = src;
-    document.getElementById('lightboxImg').alt = p.name;
-    updateLightboxCounter('lightboxOverlay', lightboxIndex, lightboxImages.length,
-        lightboxProductIndex, lightboxProductList.length);
+    const img = document.getElementById('lightboxImg');
 
-    // Category label
-    const cat = categories.find(c => c.id === p.categoryId);
-    updateLightboxCategory('lightboxOverlay', cat ? cat.name : '');
+    const applyContent = () => {
+        img.src = src;
+        img.alt = p.name;
+        img.classList.remove('fading');
+        updateLightboxCounter('lightboxOverlay', lightboxIndex, lightboxImages.length,
+            lightboxProductIndex, lightboxProductList.length);
+        // Category label
+        const cat = categories.find(c => c.id === p.categoryId);
+        updateLightboxCategory('lightboxOverlay', cat ? cat.name : '');
+        const infoEl = document.getElementById('lightboxInfo');
+        if (infoEl) {
+            infoEl.querySelector('.lb-name').textContent = p.name;
+            infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
+            infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
+            const btn = infoEl.querySelector('.lb-order-btn');
+            if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(p.id, p.name, p.price); };
+        }
+    };
 
-    const infoEl = document.getElementById('lightboxInfo');
-    if (infoEl) {
-        infoEl.querySelector('.lb-name').textContent = p.name;
-        infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
-        infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
-        const btn = infoEl.querySelector('.lb-order-btn');
-        if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(p.id, p.name, p.price); };
+    if (_lbKatJustOpened) {
+        _lbKatJustOpened = false;
+        applyContent();
+        return;
     }
+
+    img.classList.add('fading');
+    setTimeout(applyContent, 170);
 }
 
 function showLightbox() { _renderLightbox(); } // alias for compat
