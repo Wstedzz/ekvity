@@ -874,12 +874,27 @@ function placeHighlightAndBox(el, position) {
     const left   = document.getElementById('tour-shade-left');
     const right  = document.getElementById('tour-shade-right');
 
-    // top/bottom: full width — no gaps in corners
-    // left/right: only the middle strip between top and bottom panels
-    if (top)    { top.style.left    = '0'; top.style.top    = '0';         top.style.width    = vw+'px'; top.style.height = y+'px'; }
-    if (bottom) { bottom.style.left = '0'; bottom.style.top = (y+h)+'px';  bottom.style.width = vw+'px'; bottom.style.height = (vh-y-h)+'px'; }
-    if (left)   { left.style.left   = '0'; left.style.top   = y+'px';      left.style.width   = x+'px';  left.style.height = h+'px'; }
-    if (right)  { right.style.left  = (x+w)+'px'; right.style.top = y+'px'; right.style.width = (vw-x-w)+'px'; right.style.height = h+'px'; }
+    // top/bottom: full width covers corners completely
+    // left/right: only middle strip (height of cutout)
+    // bottom panel extends to full vh to cover everything below cutout
+    if (top)    {
+        top.style.left = '0'; top.style.top = '0';
+        top.style.width = vw+'px'; top.style.height = Math.max(0,y)+'px';
+    }
+    if (bottom) {
+        // Always extend to full vh — covers any gap below cutout including under tooltip
+        bottom.style.left = '0'; bottom.style.top = (y+h)+'px';
+        bottom.style.width = vw+'px'; bottom.style.height = Math.max(0,vh-y-h)+'px';
+        bottom.style.zIndex = '10000';
+    }
+    if (left)   {
+        left.style.left = '0'; left.style.top = Math.max(0,y)+'px';
+        left.style.width = Math.max(0,x)+'px'; left.style.height = h+'px';
+    }
+    if (right)  {
+        right.style.left = (x+w)+'px'; right.style.top = Math.max(0,y)+'px';
+        right.style.width = Math.max(0,vw-x-w)+'px'; right.style.height = h+'px';
+    }
 
     // Highlight border
     tourHighlight.style.display = 'block';
@@ -889,6 +904,32 @@ function placeHighlightAndBox(el, position) {
     tourHighlight.style.height= h + 'px';
 
     positionTourBox(el, position);
+
+    // After box is positioned, cover any uncovered area beneath it with an extra shade
+    requestAnimationFrame(() => {
+        if (!tourOverlay) return;
+        const boxRect = tourBox.getBoundingClientRect();
+        let extra = document.getElementById('tour-shade-extra');
+        if (!extra) {
+            extra = document.createElement('div');
+            extra.id = 'tour-shade-extra';
+            extra.style.position = 'fixed';
+            extra.style.background = 'rgba(0,0,0,0.78)';
+            extra.style.zIndex = '10000';
+            extra.style.pointerEvents = 'none';
+            extra.style.transition = 'all 0.25s ease';
+            tourOverlay.appendChild(extra);
+        }
+        // Cover area to the left of the tooltip box if tooltip doesn't start at x=0
+        if (boxRect.left > 0) {
+            extra.style.left = '0';
+            extra.style.top = boxRect.top + 'px';
+            extra.style.width = boxRect.left + 'px';
+            extra.style.height = boxRect.height + 'px';
+        } else {
+            extra.style.width = '0';
+        }
+    });
 }
 
 function renderTourStep() {
