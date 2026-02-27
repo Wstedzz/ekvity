@@ -860,11 +860,31 @@ function positionTourBox(el, preferredPosition) {
 function placeHighlightAndBox(el, position) {
     const r = el.getBoundingClientRect();
     const PAD = 6;
+    const x = r.left - PAD;
+    const y = r.top - PAD;
+    const w = r.width + PAD * 2;
+    const h = r.height + PAD * 2;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Update 4 shade panels around the cutout
+    const top    = document.getElementById('tour-shade-top');
+    const bottom = document.getElementById('tour-shade-bottom');
+    const left   = document.getElementById('tour-shade-left');
+    const right  = document.getElementById('tour-shade-right');
+
+    if (top)    { top.style.cssText    += `; left:0; top:0; width:${vw}px; height:${y}px;`; }
+    if (bottom) { bottom.style.cssText += `; left:0; top:${y+h}px; width:${vw}px; height:${vh-(y+h)}px;`; }
+    if (left)   { left.style.cssText   += `; left:0; top:${y}px; width:${x}px; height:${h}px;`; }
+    if (right)  { right.style.cssText  += `; left:${x+w}px; top:${y}px; width:${vw-(x+w)}px; height:${h}px;`; }
+
+    // Highlight border
     tourHighlight.style.display = 'block';
-    tourHighlight.style.left = (r.left - PAD) + 'px';
-    tourHighlight.style.top = (r.top - PAD) + 'px';
-    tourHighlight.style.width = (r.width + PAD * 2) + 'px';
-    tourHighlight.style.height = (r.height + PAD * 2) + 'px';
+    tourHighlight.style.left  = x + 'px';
+    tourHighlight.style.top   = y + 'px';
+    tourHighlight.style.width = w + 'px';
+    tourHighlight.style.height= h + 'px';
+
     positionTourBox(el, position);
 }
 
@@ -913,24 +933,26 @@ function startTour() {
     if (tourOverlay) return;
     tourStep = 0;
 
-    // Dark overlay
+    // 4-panel overlay (top/bottom/left/right around highlight — true cutout)
     tourOverlay = document.createElement('div');
     tourOverlay.id = 'tourOverlay';
-    tourOverlay.style.cssText = `
-        position: fixed; inset: 0; z-index: 10000;
-        background: rgba(0,0,0,0.72);
-        pointer-events: none;
-    `;
+    tourOverlay.style.cssText = `position: fixed; inset: 0; z-index: 10000; pointer-events: none;`;
 
-    // Highlight cutout (white border box)
+    ['tour-shade-top','tour-shade-bottom','tour-shade-left','tour-shade-right'].forEach(id => {
+        const shade = document.createElement('div');
+        shade.id = id;
+        shade.style.cssText = `position: fixed; background: rgba(0,0,0,0.78); z-index: 10000; pointer-events: none; transition: all 0.25s ease;`;
+        tourOverlay.appendChild(shade);
+    });
+
+    // Highlight border only (no box-shadow — element inside is fully visible)
     tourHighlight = document.createElement('div');
     tourHighlight.style.cssText = `
         position: fixed; z-index: 10001; display: none;
         border: 2px solid rgba(212,163,115,0.9);
-        box-shadow: 0 0 0 9999px rgba(0,0,0,0.68);
         border-radius: 8px;
         pointer-events: none;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
     `;
 
     // Tooltip box
