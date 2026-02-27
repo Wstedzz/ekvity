@@ -793,22 +793,37 @@ a:hover {
 .btn-modal:hover svg { opacity: 1; }
 
 .btn-telegram {
-    border-color: rgba(33, 150, 243, 0.3) !important;
-    color: rgba(255,255,255,0.85) !important;
+    background: rgba(0, 136, 204, 0.1) !important;
+    border-color: rgba(0, 136, 204, 0.4) !important;
+    color: #e0e0e0 !important;
 }
 .btn-telegram svg { color: #29b6f6; }
+.btn-telegram:hover {
+    background: rgba(0, 136, 204, 0.2) !important;
+    border-color: rgba(0, 136, 204, 0.7) !important;
+}
 
 .btn-viber {
-    border-color: rgba(123, 97, 189, 0.3) !important;
-    color: rgba(255,255,255,0.85) !important;
+    background: rgba(115, 96, 242, 0.1) !important;
+    border-color: rgba(115, 96, 242, 0.4) !important;
+    color: #e0e0e0 !important;
 }
 .btn-viber svg { color: #9575cd; }
+.btn-viber:hover {
+    background: rgba(115, 96, 242, 0.2) !important;
+    border-color: rgba(115, 96, 242, 0.7) !important;
+}
 
 .btn-whatsapp {
+    background: rgba(37, 211, 102, 0.08) !important;
     border-color: rgba(37, 211, 102, 0.3) !important;
-    color: rgba(255,255,255,0.85) !important;
+    color: #e0e0e0 !important;
 }
 .btn-whatsapp svg { color: #4caf50; }
+.btn-whatsapp:hover {
+    background: rgba(37, 211, 102, 0.15) !important;
+    border-color: rgba(37, 211, 102, 0.6) !important;
+}
 
 .modal-contact {
     padding-top: 20px;
