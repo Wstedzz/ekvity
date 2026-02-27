@@ -465,6 +465,12 @@ function updateSummary() {
     // Show/hide placeholder
     placeholder.style.display = selected.length === 0 ? 'block' : 'none';
 
+    // Snapshot existing real hex coords before removing
+    const _existingRealKeys = new Set();
+    preview.querySelectorAll('.hexagon-flower:not(.ghost)').forEach(el => {
+        _existingRealKeys.add(el.dataset.q + ',' + el.dataset.r);
+    });
+
     // Remove old hexagons
     preview.querySelectorAll('.hexagon-flower').forEach(el => el.remove());
 
@@ -626,6 +632,14 @@ function updateSummary() {
         const hex = createHexagon(item, i, sizing.hexSize, sizing.hexWidth);
         hexElements.push(hex);
         preview.appendChild(hex);
+        // Animate only NEW real flowers (coord key not seen before this render)
+        if (!item.isGhost) {
+            const key = item.hexCoords.q + ',' + item.hexCoords.r;
+            if (!_existingRealKeys.has(key)) {
+                hex.classList.add('hex-new');
+                hex.addEventListener('animationend', () => hex.classList.remove('hex-new'), { once: true });
+            }
+        }
     });
 
     hexElements.forEach((hex, i) => {
@@ -1075,24 +1089,8 @@ function runAutoDemo() {
         const t = setTimeout(() => {
             if (!tourOverlay) return;
 
-            // Track existing hexes before adding
             const preview = document.getElementById('circlePreview');
-            const beforeHexes = new Set(
-                preview ? Array.from(preview.querySelectorAll('.hexagon-flower:not(.ghost)')) : []
-            );
-
-            changeQty(action.id, 1);
-
-            // Mark only NEW hexes with hex-new class for animation
-            requestAnimationFrame(() => {
-                if (!preview) return;
-                preview.querySelectorAll('.hexagon-flower:not(.ghost)').forEach(h => {
-                    if (!beforeHexes.has(h)) {
-                        h.classList.add('hex-new');
-                        h.addEventListener('animationend', () => h.classList.remove('hex-new'), { once: true });
-                    }
-                });
-            });
+            changeQty(action.id, 1); // animation handled in updateSummary via _existingRealKeys
 
             // Gold flash on qty counter
             const qtyEl = document.getElementById('qty-' + action.id);
