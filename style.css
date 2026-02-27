@@ -1756,6 +1756,10 @@ a:hover {
     display: block;
     user-select: none;
     -webkit-user-select: none;
+    transition: opacity 0.18s ease;
+}
+.lightbox-img.fading {
+    opacity: 0;
 }
 
 .lightbox-close:hover { opacity: 1; }
@@ -1955,4 +1959,94 @@ a:hover {
     letter-spacing: 2px;
     color: rgba(255,255,255,0.3);
     font-family: var(--font-body);
+}
+
+/* ===== FLOATING CTA (mobile only) ===== */
+.floating-cta {
+    display: none; /* hidden by default, shown via media query */
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 10px;
+    z-index: 998;
+}
+
+.fcta-main {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.fcta-main:hover,
+.fcta-main:active {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.fcta-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.fcta-tg {
+    background: rgba(0, 136, 204, 0.9);
+    transition-delay: 0.05s;
+}
+
+.fcta-wa {
+    background: rgba(37, 211, 102, 0.9);
+    transition-delay: 0s;
+}
+
+.floating-cta.open .fcta-btn {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.floating-cta.open .fcta-tg {
+    transition-delay: 0.05s;
+}
+
+.floating-cta.open .fcta-wa {
+    transition-delay: 0s;
+}
+
+@media (max-width: 768px) {
+    .floating-cta {
+        display: flex;
+    }
+}
+
+@media (min-width: 769px) {
+    .floating-cta {
+        display: none !important;
+    }
 }
