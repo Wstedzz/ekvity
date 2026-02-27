@@ -778,6 +778,7 @@ const TOUR_STEPS = [
         title: 'Замовити 💐',
         text: 'Коли букет готовий — натискай «Замовити» і надішли нам у зручний месенджер.',
         position: 'top',
+        isLast: true,
     },
 ];
 
@@ -1016,6 +1017,50 @@ function endTour(completed) {
     document.body.style.overflow = '';
     document.body.style.touchAction = '';
     localStorage.setItem('ekvity_tour_done', '1');
+
+    if (completed) {
+        pulseFirstAddButton();
+    }
+}
+
+function pulseFirstAddButton() {
+    // Scroll to flower grid
+    const grid = document.getElementById('flowerGrid');
+    if (!grid) return;
+    grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Find first + button
+    const firstPlus = grid.querySelector('.qty-btn:last-child');
+    if (!firstPlus) return;
+
+    // Inject pulse keyframe if not already there
+    if (!document.getElementById('tour-pulse-style')) {
+        const style = document.createElement('style');
+        style.id = 'tour-pulse-style';
+        style.textContent = `
+            @keyframes tourPulse {
+                0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(212,163,115,0.7); }
+                40%  { transform: scale(1.35); box-shadow: 0 0 0 10px rgba(212,163,115,0); }
+                70%  { transform: scale(1.15); box-shadow: 0 0 0 0 rgba(212,163,115,0); }
+                100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(212,163,115,0); }
+            }
+            .tour-pulse-btn {
+                animation: tourPulse 0.7s ease 3;
+                border-color: rgba(212,163,115,0.9) !important;
+                background: rgba(212,163,115,0.15) !important;
+                color: #d4a373 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Wait for scroll to settle, then pulse
+    setTimeout(() => {
+        firstPlus.classList.add('tour-pulse-btn');
+        firstPlus.addEventListener('animationend', () => {
+            firstPlus.classList.remove('tour-pulse-btn');
+        }, { once: true });
+    }, 500);
 }
 
 function injectTourButton() {
