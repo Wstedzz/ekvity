@@ -75,10 +75,30 @@ function buildCategoryTabs() {
     tabsContainer.innerHTML = html;
 }
 
+// Skeleton Loading
+function showSkeletons(gridId, count = 4) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    grid.innerHTML = Array.from({length: count}, () => `
+        <div class="skeleton-card">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+            <div class="skeleton-btn"></div>
+        </div>
+    `).join('');
+}
+
 // Render Grid
 function renderGrid() {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
+
+    if (products.length === 0) {
+        showSkeletons('productsGrid', 4);
+        return;
+    }
+
     grid.innerHTML = '';
 
     const mainCatIds = categories.filter(c => c.showOnMain).map(c => c.id);
@@ -422,6 +442,7 @@ let homeLightboxIndex = 0;    // current image index within product
 let homeLightboxProduct = null;
 let homeLightboxProductList = []; // all visible products
 let homeLightboxProductIndex = 0; // current product index
+let _lbJustOpened = false; // skip fade on first open
 
 function getProductImages(p) {
     return (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
@@ -429,6 +450,7 @@ function getProductImages(p) {
 
 window.openLightboxHome = function(productId) {
     // All products — infinite loop across all
+    _lbJustOpened = true;
     homeLightboxProductList = [...products];
 
     const idx = homeLightboxProductList.findIndex(x => x.id === productId);
@@ -451,23 +473,35 @@ function _renderLightboxContent() {
     const p = homeLightboxProduct;
     if (!src || !p) return;
 
-    document.getElementById('lightboxImg').src = src;
-    document.getElementById('lightboxImg').alt = p.name;
-    updateLightboxCounter('lightboxOverlay', homeLightboxIndex, homeLightboxImages.length,
-        homeLightboxProductIndex, homeLightboxProductList.length);
+    const img = document.getElementById('lightboxImg');
 
-    // Category label
-    const cat = categories.find(c => c.id === p.categoryId);
-    updateLightboxCategory('lightboxOverlay', cat ? cat.name : '');
+    const applyContent = () => {
+        img.src = src;
+        img.alt = p.name;
+        img.classList.remove('fading');
+        updateLightboxCounter('lightboxOverlay', homeLightboxIndex, homeLightboxImages.length,
+            homeLightboxProductIndex, homeLightboxProductList.length);
+        // Category label
+        const cat = categories.find(c => c.id === p.categoryId);
+        updateLightboxCategory('lightboxOverlay', cat ? cat.name : '');
+        const infoEl = document.getElementById('lightboxInfo');
+        if (infoEl) {
+            infoEl.querySelector('.lb-name').textContent = p.name;
+            infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
+            infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
+            const btn = infoEl.querySelector('.lb-order-btn');
+            if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(p.id, p.name, p.price); };
+        }
+    };
 
-    const infoEl = document.getElementById('lightboxInfo');
-    if (infoEl) {
-        infoEl.querySelector('.lb-name').textContent = p.name;
-        infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
-        infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
-        const btn = infoEl.querySelector('.lb-order-btn');
-        if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(p.id, p.name, p.price); };
+    if (_lbJustOpened) {
+        _lbJustOpened = false;
+        applyContent();
+        return;
     }
+
+    img.classList.add('fading');
+    setTimeout(applyContent, 170);
 }
 
 window.closeLightbox = function(e) {

@@ -141,11 +141,30 @@ function createProductCard(p, animIndex) {
     return card;
 }
 
+// Skeleton Loading
+function showSkeletons(gridId, count = 4) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    grid.innerHTML = Array.from({length: count}, () => `
+        <div class="skeleton-card">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+            <div class="skeleton-btn"></div>
+        </div>
+    `).join('');
+}
+
 function renderProducts(appendOnly = false) {
     const grid = document.getElementById('catalogGrid');
     const noResults = document.getElementById('noResults');
     const loadMoreWrap = document.getElementById('loadMoreWrap');
     const resultsInfo = document.getElementById('resultsInfo');
+
+    if (!appendOnly && products.length === 0) {
+        showSkeletons('catalogGrid', 6);
+        return;
+    }
 
     const filtered = getFilteredProducts();
     const prevCount = appendOnly ? (currentPage - 1) * PAGE_SIZE : 0;
@@ -347,6 +366,7 @@ let lightboxIndex = 0;
 let lightboxProduct = null;
 let lightboxProductList = [];
 let lightboxProductIndex = 0;
+let _lbKatJustOpened = false; // skip fade on first open
 
 function getProductImages(p) {
     return (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
@@ -354,6 +374,7 @@ function getProductImages(p) {
 
 window.openLightboxFromCard = function(productId) {
     // All products — infinite loop
+    _lbKatJustOpened = true;
     lightboxProductList = [...products];
 
     const idx = lightboxProductList.findIndex(x => x.id === productId);

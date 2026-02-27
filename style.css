@@ -2050,3 +2050,50 @@ a:hover {
         display: none !important;
     }
 }
+
+/* ===== SKELETON LOADING ===== */
+.skeleton-card {
+    display: flex;
+    flex-direction: column;
+}
+.skeleton-img {
+    width: 100%;
+    aspect-ratio: 4/5;
+    background: #111;
+    border-radius: 0;
+    overflow: hidden;
+    position: relative;
+}
+.skeleton-text {
+    height: 1.2rem;
+    background: #111;
+    border-radius: 2px;
+    margin-top: 14px;
+    position: relative;
+    overflow: hidden;
+}
+.skeleton-text.short {
+    width: 50%;
+    margin-top: 8px;
+}
+.skeleton-btn {
+    height: 42px;
+    background: #111;
+    border-radius: 0;
+    margin-top: 14px;
+    position: relative;
+    overflow: hidden;
+}
+.skeleton-img::after,
+.skeleton-text::after,
+.skeleton-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+    animation: skeleton-shimmer 1.6s infinite;
+}
+@keyframes skeleton-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
