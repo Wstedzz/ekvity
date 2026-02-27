@@ -178,16 +178,23 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Serve sitemap.xml, robots.txt and favicons from public/
-  if (pathname === '/sitemap.xml' || pathname === '/robots.txt' ||
-      pathname === '/favicon.ico' || pathname === '/favicon.png' ||
-      pathname === '/favicon-32.png' || pathname === '/favicon-192.png' || pathname === '/favicon-512.png') {
+  const staticPubFiles = ['/sitemap.xml', '/robots.txt', '/favicon.ico', '/favicon.png',
+    '/favicon-32.png', '/favicon-192.png', '/favicon-512.png'];
+  if (staticPubFiles.includes(pathname)) {
     const pubFile = path.join(PUBLIC, pathname);
     fs.readFile(pubFile, (err, data) => {
       if (err) { res.writeHead(404); res.end('not found'); return; }
       const ext = path.extname(pathname);
-      const ct = pathname.endsWith('.ico') ? 'image/x-icon' : (MIME[ext] || 'text/plain');
+      let ct;
+      if (pathname.endsWith('.ico')) ct = 'image/x-icon';
+      else if (pathname.endsWith('.xml')) ct = 'application/xml; charset=utf-8';
+      else if (pathname.endsWith('.txt')) ct = 'text/plain; charset=utf-8';
+      else ct = MIME[ext] || 'application/octet-stream';
+      // Sitemap and robots: short cache so Google gets fresh data
+      // Favicons: longer cache (they rarely change)
+      const isSeoFile = pathname === '/sitemap.xml' || pathname === '/robots.txt';
       res.setHeader('Content-Type', ct);
-      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.setHeader('Cache-Control', isSeoFile ? 'public, max-age=3600' : 'public, max-age=604800');
       res.end(data);
     });
     return;
@@ -565,6 +572,11 @@ function generateProductPage(p) {
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="ЄКвіти">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/favicon-192.png">
+<link rel="canonical" href="https://ekvity.co.ua/p/${escHtml(p.id)}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
