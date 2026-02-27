@@ -133,6 +133,31 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Product page /p/:id
+  if (pathname.startsWith('/p/')) {
+    const productId = pathname.slice(3);
+    if (!productId) {
+      res.writeHead(302, { Location: '/katalog' });
+      res.end();
+      return;
+    }
+    try {
+      const product = await supabaseFetchProduct(productId);
+      if (!product) {
+        res.writeHead(302, { Location: '/katalog' });
+        res.end();
+        return;
+      }
+      const html = generateProductPage(product);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.end(html);
+    } catch (e) {
+      res.writeHead(302, { Location: '/katalog' });
+      res.end();
+    }
+    return;
+  }
+
   // Static files
   const rewrites = {
     '/katalog': '/katalog.html',
@@ -493,4 +518,117 @@ async function waitForRun(runId, timeoutMs) {
     await new Promise(r => setTimeout(r, 3000));
   }
   throw new Error('Apify timeout');
+}
+
+async function supabaseFetchProduct(id) {
+  try {
+    const rows = await supabaseRequest('GET', `/rest/v1/products?id=eq.${encodeURIComponent(id)}&select=*&limit=1`);
+    return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function generateProductPage(p) {
+  const mainImg = (p.images && p.images.length) ? p.images[0] : (p.image || '');
+  const allImgs = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+  const price = p.price ? `${p.price} UAH` : '';
+  const desc = p.desc ? p.desc.replace(/<[^>]*>/g, '').slice(0, 160) : `${p.name} — ${price}. Замовлення через Telegram або Viber.`;
+  const tgLink = `https://t.me/ekvityua?text=${encodeURIComponent(`Вітаю! Хочу замовити:\n${p.name} (ID: ${p.id})\nЦіна: ${p.price} грн`)}`;
+  const waLink = `https://wa.me/380980488437?text=${encodeURIComponent(`Вітаю! Хочу замовити:\n${p.name} (ID: ${p.id})\nЦіна: ${p.price} грн`)}`;
+
+  const imagesHtml = allImgs.length > 1 ? `
+    <div class="prod-thumbs">
+      ${allImgs.map((src, i) => `<img src="${escHtml(src)}" class="thumb${i === 0 ? ' active' : ''}" onclick="setMainImg('${escHtml(src)}')" alt="${escHtml(p.name)}">`).join('')}
+    </div>
+  ` : '';
+
+  return `<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(p.name)} — ЄКвіти Львів</title>
+<meta name="description" content="${escHtml(desc)}">
+<meta property="og:title" content="${escHtml(p.name)} — ЄКвіти Львів">
+<meta property="og:description" content="${escHtml(desc)}">
+<meta property="og:image" content="${escHtml(mainImg)}">
+<meta property="og:url" content="https://ekvity.co.ua/p/${escHtml(p.id)}">
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="ЄКвіти">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050505;color:#e0e0e0;font-family:'Montserrat',sans-serif;font-weight:300;min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit;text-decoration:none}
+.top-bar{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:16px}
+.top-bar a{font-size:0.7rem;letter-spacing:2px;color:rgba(255,255,255,0.4);text-transform:uppercase}
+.top-bar a:hover{color:rgba(255,255,255,0.7)}
+.back-arrow{font-size:1.1rem;color:rgba(255,255,255,0.3)}
+.prod-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px 48px;max-width:520px;margin:0 auto;width:100%}
+.prod-img-wrap{width:100%;position:relative;aspect-ratio:4/5;background:#0a0a0a;overflow:hidden;margin-bottom:20px}
+.prod-img-wrap img#mainImg{width:100%;height:100%;object-fit:cover}
+.prod-thumbs{display:flex;gap:8px;margin-bottom:20px;width:100%}
+.prod-thumbs img{width:56px;height:56px;object-fit:cover;cursor:pointer;opacity:0.5;transition:opacity 0.2s;border:1px solid transparent}
+.prod-thumbs img.active,.prod-thumbs img:hover{opacity:1;border-color:rgba(255,255,255,0.3)}
+.prod-cat{font-size:0.6rem;letter-spacing:3px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:10px;border-left:1px solid rgba(255,255,255,0.15);padding-left:10px}
+.prod-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:400;color:#fff;line-height:1.15;margin-bottom:12px}
+.prod-price{font-family:'Playfair Display',serif;font-style:italic;color:#d4a373;font-size:1.2rem;margin-bottom:8px}
+.prod-id{font-size:0.65rem;color:#333;font-family:monospace;margin-bottom:20px}
+.prod-desc{font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:28px}
+.prod-actions{display:flex;flex-direction:column;gap:10px;width:100%}
+.btn-tg,.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 20px;border-radius:0;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;font-family:'Montserrat',sans-serif;font-weight:500;cursor:pointer;border:1px solid;transition:opacity 0.2s}
+.btn-tg{background:rgba(0,136,204,0.1);border-color:rgba(0,136,204,0.4);color:#e0e0e0}
+.btn-tg:hover{background:rgba(0,136,204,0.2);border-color:rgba(0,136,204,0.7)}
+.btn-wa{background:rgba(37,211,102,0.08);border-color:rgba(37,211,102,0.3);color:#e0e0e0}
+.btn-wa:hover{background:rgba(37,211,102,0.15);border-color:rgba(37,211,102,0.6)}
+.footer-bar{padding:14px;text-align:center;border-top:1px solid rgba(255,255,255,0.04)}
+.footer-bar a{font-size:0.6rem;letter-spacing:3px;color:rgba(255,255,255,0.15);text-transform:uppercase}
+.footer-bar a:hover{color:rgba(255,255,255,0.4)}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <span class="back-arrow">←</span>
+  <a href="/katalog">Каталог</a>
+  <span style="color:rgba(255,255,255,0.15)">·</span>
+  <a href="/">ЄКвіти</a>
+</div>
+<div class="prod-wrap">
+  <div class="prod-img-wrap">
+    <img id="mainImg" src="${escHtml(mainImg)}" alt="${escHtml(p.name)}">
+  </div>
+  ${imagesHtml}
+  ${p.category ? `<div class="prod-cat">${escHtml(p.category)}</div>` : ''}
+  <h1 class="prod-name">${escHtml(p.name)}</h1>
+  ${price ? `<div class="prod-price">${escHtml(price)}</div>` : ''}
+  <div class="prod-id">ID: ${escHtml(p.id)}</div>
+  ${p.desc ? `<div class="prod-desc">${p.desc.replace(/<[^>]*>/g, '')}</div>` : ''}
+  <div class="prod-actions">
+    <a class="btn-tg" href="${tgLink}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.117 13.5l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.83.959z"/></svg>
+      Замовити в Telegram
+    </a>
+    <a class="btn-wa" href="${waLink}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+      Замовити в WhatsApp
+    </a>
+  </div>
+</div>
+<div class="footer-bar"><a href="mailto:hello@avern.studio">POWERED BY AVERN.STUDIO</a></div>
+<script>
+function setMainImg(src) {
+  document.getElementById('mainImg').src = src;
+  document.querySelectorAll('.prod-thumbs img').forEach(i => i.classList.toggle('active', i.src.endsWith(src.split('/').pop())));
+}
+</script>
+</body>
+</html>`;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
