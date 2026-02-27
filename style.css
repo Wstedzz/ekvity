@@ -2042,6 +2042,11 @@ a:hover {
 
 .fcta-tg {
     background: rgba(0, 136, 204, 0.9);
+    transition-delay: 0.1s;
+}
+
+.fcta-vb {
+    background: rgba(115, 96, 242, 0.9);
     transition-delay: 0.05s;
 }
 
@@ -2056,13 +2061,9 @@ a:hover {
     pointer-events: auto;
 }
 
-.floating-cta.open .fcta-tg {
-    transition-delay: 0.05s;
-}
-
-.floating-cta.open .fcta-wa {
-    transition-delay: 0s;
-}
+.floating-cta.open .fcta-tg { transition-delay: 0.1s; }
+.floating-cta.open .fcta-vb { transition-delay: 0.05s; }
+.floating-cta.open .fcta-wa { transition-delay: 0s; }
 
 @media (max-width: 768px) {
     .floating-cta {

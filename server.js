@@ -534,8 +534,10 @@ function generateProductPage(p) {
   const allImgs = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
   const price = p.price ? `${p.price} UAH` : '';
   const desc = p.desc ? p.desc.replace(/<[^>]*>/g, '').slice(0, 160) : `${p.name} — ${price}. Замовлення через Telegram або Viber.`;
-  const tgLink = `https://t.me/ekvityua?text=${encodeURIComponent(`Вітаю! Хочу замовити:\n${p.name} (ID: ${p.id})\nЦіна: ${p.price} грн`)}`;
-  const waLink = `https://wa.me/380980488437?text=${encodeURIComponent(`Вітаю! Хочу замовити:\n${p.name} (ID: ${p.id})\nЦіна: ${p.price} грн`)}`;
+  const orderMsg = encodeURIComponent(`Вітаю! Хочу замовити:\n${p.name} (ID: ${p.id})\nЦіна: ${p.price} грн`);
+  const tgLink = `https://t.me/ekvityua?text=${orderMsg}`;
+  const waLink = `https://wa.me/380980488437?text=${orderMsg}`;
+  const vbLink = `viber://chat?number=%2B380980488437&text=${orderMsg}`;
 
   const imagesHtml = allImgs.length > 1 ? `
     <div class="prod-thumbs">
@@ -579,14 +581,17 @@ a{color:inherit;text-decoration:none}
 .prod-id{font-size:0.65rem;color:#333;font-family:monospace;margin-bottom:20px}
 .prod-desc{font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:28px}
 .prod-actions{display:flex;flex-direction:column;gap:10px;width:100%}
-.btn-tg,.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 20px;border-radius:0;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;font-family:'Montserrat',sans-serif;font-weight:500;cursor:pointer;border:1px solid;transition:opacity 0.2s}
+.btn-tg,.btn-vb,.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 20px;border-radius:0;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;font-family:'Montserrat',sans-serif;font-weight:500;cursor:pointer;border:1px solid;transition:opacity 0.2s}
 .btn-tg{background:rgba(0,136,204,0.1);border-color:rgba(0,136,204,0.4);color:#e0e0e0}
 .btn-tg:hover{background:rgba(0,136,204,0.2);border-color:rgba(0,136,204,0.7)}
+.btn-vb{background:rgba(115,96,242,0.1);border-color:rgba(115,96,242,0.4);color:#e0e0e0}
+.btn-vb:hover{background:rgba(115,96,242,0.2);border-color:rgba(115,96,242,0.7)}
 .btn-wa{background:rgba(37,211,102,0.08);border-color:rgba(37,211,102,0.3);color:#e0e0e0}
 .btn-wa:hover{background:rgba(37,211,102,0.15);border-color:rgba(37,211,102,0.6)}
 .footer-bar{padding:14px;text-align:center;border-top:1px solid rgba(255,255,255,0.04)}
 .footer-bar a{font-size:0.6rem;letter-spacing:3px;color:rgba(255,255,255,0.15);text-transform:uppercase}
 .footer-bar a:hover{color:rgba(255,255,255,0.4)}
+@media(max-width:480px){.prod-wrap{padding:20px 16px 40px}.prod-name{font-size:1.4rem}.prod-price{font-size:1rem}.btn-tg,.btn-vb,.btn-wa{padding:12px 16px;font-size:0.65rem}.top-bar{padding:14px 16px}}
 </style>
 </head>
 <body>
@@ -610,6 +615,10 @@ a{color:inherit;text-decoration:none}
     <a class="btn-tg" href="${tgLink}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.117 13.5l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.83.959z"/></svg>
       Замовити в Telegram
+    </a>
+    <a class="btn-vb" href="${vbLink}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M11.4 0C6.15.25 1.72 3.9.5 8.95c-.5 2.1-.5 4.1 0 6.2.95 4.05 4.1 7.3 8.15 8.4.55.15 1.1.25 1.65.3v2.65c0 .3.35.45.55.25l2.9-2.9c2.6-.15 5.1-1.05 7.05-2.8 2.3-2.05 3.65-5 3.65-8.05 0-1.6-.3-3.15-.9-4.6C21.3 3.55 17.05.2 12.1 0c-.25 0-.45 0-.7 0zm.2 1.5c4.4.15 8.3 3.1 9.5 7.35.4 1.35.45 2.8.2 4.2-.5 2.9-2.25 5.45-4.8 6.9-1.65.95-3.55 1.45-5.45 1.4h-.1l-2.2 2.2v-2c-.5-.05-1-.15-1.5-.3C3.6 20.1.85 17.2.2 13.6c-.4-2.15-.15-4.4.75-6.35C2.45 3.6 6.35 1.35 10.55 1.5h1.05zm1.05 3.9c-.3 0-.55.25-.55.55s.25.55.55.55c2.75.05 5 2.3 5.05 5.05 0 .3.25.55.55.55s.55-.25.55-.55c-.05-3.4-2.75-6.1-6.15-6.15zm-3.2.85c-.35-.05-.7.1-.9.4l-.75 1c-.35.45-.4 1.05-.15 1.55.55 1.1 1.3 2.1 2.2 2.95.9.9 1.95 1.65 3.1 2.2.5.25 1.1.2 1.55-.15l1-.75c.45-.35.5-1 .1-1.4l-1.25-1.25c-.35-.35-.9-.4-1.3-.1l-.55.4c-.1.07-.25.05-.35-.05-.55-.5-1.05-1.05-1.45-1.65-.07-.1-.05-.25.05-.3l.45-.45c.35-.35.4-.9.1-1.3l-1.2-1.3c-.2-.2-.45-.3-.65-.3zm3.2 1.45c-.3 0-.55.25-.55.55s.25.55.55.55c1.4.05 2.5 1.15 2.55 2.55 0 .3.25.55.55.55s.55-.25.55-.55c-.05-1.95-1.65-3.6-3.65-3.65z"/></svg>
+      Замовити у Viber
     </a>
     <a class="btn-wa" href="${waLink}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
