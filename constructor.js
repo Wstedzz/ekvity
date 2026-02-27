@@ -743,6 +743,249 @@ window.toggleMenu = function () {
     document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
 };
 
+// =============================================
+// TUTORIAL
+// =============================================
+
+const TOUR_STEPS = [
+    {
+        targetId: 'flowerGrid',
+        title: 'Оберіть квіти 🌸',
+        text: 'Натискайте «+», щоб додати квітку до букету. Можна обрати кілька видів.',
+        position: 'bottom',
+    },
+    {
+        targetSelector: '.flower-card:first-child .qty-btn:last-child',
+        title: 'Кількість',
+        text: 'Збільшуйте або зменшуйте кількість — букет будується в реальному часі.',
+        position: 'bottom',
+    },
+    {
+        targetId: 'circlePreview',
+        title: 'Ваш букет 🍯',
+        text: 'Тут з\'являються квіти. Їх можна перетягувати місцями — влаштуй свою композицію.',
+        position: 'left',
+    },
+    {
+        targetSelector: '.wrapping-section',
+        title: 'Упаковка',
+        text: 'Оберіть тип упаковки — від крафт-паперу до преміум-варіанту.',
+        position: 'top',
+    },
+    {
+        targetId: 'mobileBottomBar',
+        targetIdDesktop: 'btnOrderBouquet',
+        title: 'Замовити 💐',
+        text: 'Коли букет готовий — натискай «Замовити» і надішли нам у зручний месенджер.',
+        position: 'top',
+    },
+];
+
+let tourStep = 0;
+let tourOverlay = null;
+let tourBox = null;
+let tourHighlight = null;
+
+function getTargetEl(step) {
+    if (step.targetId) {
+        // On desktop use alternate target if defined
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile && step.targetIdDesktop) {
+            return document.getElementById(step.targetIdDesktop);
+        }
+        return document.getElementById(step.targetId);
+    }
+    if (step.targetSelector) {
+        return document.querySelector(step.targetSelector);
+    }
+    return null;
+}
+
+function positionTourBox(el, position) {
+    const MARGIN = 16;
+    const rect = el.getBoundingClientRect();
+    const boxW = Math.min(300, window.innerWidth - 32);
+    const boxH = tourBox.offsetHeight || 160;
+
+    let top, left;
+
+    if (position === 'bottom') {
+        top = rect.bottom + MARGIN;
+        left = rect.left + rect.width / 2 - boxW / 2;
+    } else if (position === 'top') {
+        top = rect.top - boxH - MARGIN;
+        left = rect.left + rect.width / 2 - boxW / 2;
+    } else if (position === 'left') {
+        top = rect.top + rect.height / 2 - boxH / 2;
+        left = rect.left - boxW - MARGIN;
+    } else {
+        top = rect.bottom + MARGIN;
+        left = rect.left + rect.width / 2 - boxW / 2;
+    }
+
+    // Clamp to viewport
+    left = Math.max(16, Math.min(left, window.innerWidth - boxW - 16));
+    top = Math.max(16, Math.min(top, window.innerHeight - boxH - 16));
+
+    tourBox.style.width = boxW + 'px';
+    tourBox.style.left = left + 'px';
+    tourBox.style.top = top + 'px';
+}
+
+function renderTourStep() {
+    if (!tourOverlay) return;
+    const step = TOUR_STEPS[tourStep];
+    const el = getTargetEl(step);
+
+    // Update text
+    tourBox.querySelector('.tour-title').textContent = step.title;
+    tourBox.querySelector('.tour-text').textContent = step.text;
+    tourBox.querySelector('.tour-counter').textContent = `${tourStep + 1} / ${TOUR_STEPS.length}`;
+    const nextBtn = tourBox.querySelector('.tour-next');
+    nextBtn.textContent = tourStep < TOUR_STEPS.length - 1 ? 'Далі →' : 'Готово ✓';
+
+    if (!el) {
+        // No element — just center the box
+        tourHighlight.style.display = 'none';
+        tourBox.style.top = '50%';
+        tourBox.style.left = '50%';
+        tourBox.style.transform = 'translate(-50%, -50%)';
+        return;
+    }
+
+    tourBox.style.transform = '';
+
+    // Scroll element into view smoothly
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Wait for scroll then position
+    setTimeout(() => {
+        if (!tourOverlay) return;
+        const r = el.getBoundingClientRect();
+        const PAD = 6;
+
+        // Position highlight cutout
+        tourHighlight.style.display = 'block';
+        tourHighlight.style.left = (r.left - PAD) + 'px';
+        tourHighlight.style.top = (r.top - PAD) + 'px';
+        tourHighlight.style.width = (r.width + PAD * 2) + 'px';
+        tourHighlight.style.height = (r.height + PAD * 2) + 'px';
+
+        positionTourBox(el, step.position);
+    }, 350);
+}
+
+function startTour() {
+    if (tourOverlay) return;
+    tourStep = 0;
+
+    // Dark overlay
+    tourOverlay = document.createElement('div');
+    tourOverlay.id = 'tourOverlay';
+    tourOverlay.style.cssText = `
+        position: fixed; inset: 0; z-index: 10000;
+        background: rgba(0,0,0,0.72);
+        pointer-events: none;
+    `;
+
+    // Highlight cutout (white border box)
+    tourHighlight = document.createElement('div');
+    tourHighlight.style.cssText = `
+        position: fixed; z-index: 10001; display: none;
+        border: 2px solid rgba(212,163,115,0.9);
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.68);
+        border-radius: 8px;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    `;
+
+    // Tooltip box
+    tourBox = document.createElement('div');
+    tourBox.style.cssText = `
+        position: fixed; z-index: 10002;
+        background: #111;
+        border: 1px solid rgba(212,163,115,0.4);
+        padding: 20px;
+        border-radius: 4px;
+        pointer-events: all;
+        transition: top 0.3s ease, left 0.3s ease;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    `;
+    tourBox.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span class="tour-title" style="font-family:'Playfair Display',serif; font-size:1rem; color:#fff; font-style:italic;"></span>
+            <span class="tour-counter" style="font-size:0.65rem; letter-spacing:2px; color:rgba(255,255,255,0.3);"></span>
+        </div>
+        <p class="tour-text" style="font-size:0.82rem; color:rgba(255,255,255,0.6); line-height:1.6; margin-bottom:18px;"></p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button class="tour-skip" style="background:none; border:none; color:rgba(255,255,255,0.25); font-size:0.7rem; letter-spacing:1px; cursor:pointer; text-transform:uppercase; font-family:'Montserrat',sans-serif;">Пропустити</button>
+            <button class="tour-next" style="background:rgba(212,163,115,0.15); border:1px solid rgba(212,163,115,0.5); color:#d4a373; font-size:0.72rem; letter-spacing:2px; text-transform:uppercase; padding:8px 16px; cursor:pointer; font-family:'Montserrat',sans-serif; transition:background 0.2s;"></button>
+        </div>
+    `;
+
+    tourBox.querySelector('.tour-next').addEventListener('mouseenter', function() {
+        this.style.background = 'rgba(212,163,115,0.28)';
+    });
+    tourBox.querySelector('.tour-next').addEventListener('mouseleave', function() {
+        this.style.background = 'rgba(212,163,115,0.15)';
+    });
+
+    tourBox.querySelector('.tour-next').addEventListener('click', () => {
+        if (tourStep < TOUR_STEPS.length - 1) {
+            tourStep++;
+            renderTourStep();
+        } else {
+            endTour(true);
+        }
+    });
+
+    tourBox.querySelector('.tour-skip').addEventListener('click', () => endTour(false));
+
+    document.body.appendChild(tourOverlay);
+    document.body.appendChild(tourHighlight);
+    document.body.appendChild(tourBox);
+
+    renderTourStep();
+}
+
+function endTour(completed) {
+    if (tourOverlay) { tourOverlay.remove(); tourOverlay = null; }
+    if (tourHighlight) { tourHighlight.remove(); tourHighlight = null; }
+    if (tourBox) { tourBox.remove(); tourBox = null; }
+    localStorage.setItem('ekvity_tour_done', '1');
+}
+
+function injectTourButton() {
+    const btn = document.createElement('button');
+    btn.id = 'tourHelpBtn';
+    btn.title = 'Показати підказки';
+    btn.innerHTML = '?';
+    btn.style.cssText = `
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(212,163,115,0.12);
+        border: 1px solid rgba(212,163,115,0.35);
+        color: #d4a373;
+        font-size: 1rem;
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
+        cursor: pointer;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    `;
+    btn.addEventListener('mouseenter', () => btn.style.background = 'rgba(212,163,115,0.25)');
+    btn.addEventListener('mouseleave', () => btn.style.background = 'rgba(212,163,115,0.12)');
+    btn.addEventListener('click', startTour);
+    document.body.appendChild(btn);
+}
+
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     loadFlowers();
@@ -757,10 +1000,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Modal close on overlay click
-    // Modal close on overlay click
     document.getElementById('orderModal').addEventListener('click', (e) => {
         if (e.target.id === 'orderModal') closeModal();
     });
+
+    // Tour button always visible
+    injectTourButton();
+
+    // Auto-start tour on first visit
+    if (!localStorage.getItem('ekvity_tour_done')) {
+        setTimeout(startTour, 800);
+    }
 });
 
 async function fetchSupabaseData() {
