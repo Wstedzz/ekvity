@@ -491,6 +491,8 @@ function _renderLightboxContent() {
             infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
             const btn = infoEl.querySelector('.lb-order-btn');
             if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(p.id, p.name, p.price); };
+            const shareLink = document.getElementById('lbShareLink');
+            if (shareLink) shareLink.href = '/p/' + encodeURIComponent(p.id);
         }
     };
 

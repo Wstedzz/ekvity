@@ -413,6 +413,8 @@ function _renderLightbox() {
             infoEl.querySelector('.lb-name').textContent = p.name;
             infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
             infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
+            const shareLink = document.getElementById('lbShareLink');
+            if (shareLink) shareLink.href = '/p/' + encodeURIComponent(p.id);
             const btn = infoEl.querySelector('.lb-order-btn');
             if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); orderProduct(p.id, p.name, p.price); };
         }

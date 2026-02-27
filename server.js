@@ -135,7 +135,7 @@ const server = http.createServer(async (req, res) => {
 
   // Product page /p/:id
   if (pathname.startsWith('/p/')) {
-    const productId = pathname.slice(3);
+    const productId = decodeURIComponent(pathname.slice(3));
     if (!productId) {
       res.writeHead(302, { Location: '/katalog' });
       res.end();

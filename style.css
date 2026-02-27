@@ -1802,6 +1802,12 @@ a:hover {
     white-space: nowrap;
 }
 
+.lb-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .lb-order-btn {
     background: white;
     color: black;
@@ -1815,9 +1821,28 @@ a:hover {
     transition: opacity 0.2s;
     white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
+    flex: 1;
 }
 
 .lb-order-btn:hover { opacity: 0.85; }
+
+.lb-share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.4);
+    transition: border-color 0.2s, color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.lb-share-btn:hover {
+    border-color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.8);
+}
 
 @media (max-width: 600px) {
     .lightbox-info {
