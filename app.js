@@ -479,8 +479,7 @@ window.closeLightboxDirect = function() {
 };
 
 // dir: -1 = left, 1 = right
-window.lightboxNav = function(dir, e) {
-    if (e) e.stopPropagation();
+window.lightboxNav = function(dir) {
     const newImgIdx = homeLightboxIndex + dir;
 
     if (newImgIdx >= 0 && newImgIdx < homeLightboxImages.length) {
@@ -507,6 +506,21 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') window.lightboxNav(-1);
     if (e.key === 'ArrowRight') window.lightboxNav(1);
 });
+
+// Touch swipe for lightbox
+(function() {
+    let tsX = 0;
+    document.addEventListener('touchstart', e => {
+        const lb = document.getElementById('lightboxOverlay');
+        if (lb && lb.classList.contains('open')) tsX = e.touches[0].clientX;
+    }, { passive: true });
+    document.addEventListener('touchend', e => {
+        const lb = document.getElementById('lightboxOverlay');
+        if (!lb || !lb.classList.contains('open')) return;
+        const dx = e.changedTouches[0].clientX - tsX;
+        if (Math.abs(dx) > 50) window.lightboxNav(dx < 0 ? 1 : -1);
+    }, { passive: true });
+})();
 
 // ===== LIGHTBOX COUNTER =====
 // Shows: image dots (if multi-image) + product counter "3 / 12"

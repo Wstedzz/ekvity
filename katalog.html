@@ -513,11 +513,11 @@
 
     <!-- Lightbox -->
     <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightboxDirect()">&times;</button>
+        <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); lightboxNav(-1)">&#8592;</button>
+        <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); lightboxNav(1)">&#8594;</button>
         <div class="lightbox-inner">
-            <button class="lightbox-close" onclick="closeLightboxDirect()">&times;</button>
-            <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1, event)">&#8592;</button>
             <img class="lightbox-img" id="lightboxImg" src="" alt="">
-            <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1, event)">&#8594;</button>
             <div class="lightbox-info" id="lightboxInfo">
                 <div class="lb-name"></div>
                 <div class="lb-price"></div>
