@@ -874,10 +874,12 @@ function placeHighlightAndBox(el, position) {
     const left   = document.getElementById('tour-shade-left');
     const right  = document.getElementById('tour-shade-right');
 
-    if (top)    { top.style.cssText    += `; left:0; top:0; width:${vw}px; height:${y}px;`; }
-    if (bottom) { bottom.style.cssText += `; left:0; top:${y+h}px; width:${vw}px; height:${vh-(y+h)}px;`; }
-    if (left)   { left.style.cssText   += `; left:0; top:${y}px; width:${x}px; height:${h}px;`; }
-    if (right)  { right.style.cssText  += `; left:${x+w}px; top:${y}px; width:${vw-(x+w)}px; height:${h}px;`; }
+    // top/bottom: full width — no gaps in corners
+    // left/right: only the middle strip between top and bottom panels
+    if (top)    { top.style.left    = '0'; top.style.top    = '0';         top.style.width    = vw+'px'; top.style.height = y+'px'; }
+    if (bottom) { bottom.style.left = '0'; bottom.style.top = (y+h)+'px';  bottom.style.width = vw+'px'; bottom.style.height = (vh-y-h)+'px'; }
+    if (left)   { left.style.left   = '0'; left.style.top   = y+'px';      left.style.width   = x+'px';  left.style.height = h+'px'; }
+    if (right)  { right.style.left  = (x+w)+'px'; right.style.top = y+'px'; right.style.width = (vw-x-w)+'px'; right.style.height = h+'px'; }
 
     // Highlight border
     tourHighlight.style.display = 'block';
@@ -942,7 +944,11 @@ function startTour() {
     ['tour-shade-top','tour-shade-bottom','tour-shade-left','tour-shade-right'].forEach(id => {
         const shade = document.createElement('div');
         shade.id = id;
-        shade.style.cssText = `position: fixed; background: rgba(0,0,0,0.78); z-index: 10000; pointer-events: none; transition: all 0.25s ease;`;
+        shade.style.position = 'fixed';
+        shade.style.background = 'rgba(0,0,0,0.78)';
+        shade.style.zIndex = '10000';
+        shade.style.pointerEvents = 'none';
+        shade.style.transition = 'top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease';
         tourOverlay.appendChild(shade);
     });
 
