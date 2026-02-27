@@ -763,8 +763,9 @@ const TOUR_STEPS = [
     {
         targetId: 'circlePreview',
         title: 'Ваш букет 🍯',
-        text: 'Тут з\'являються квіти. Їх можна перетягувати місцями — влаштуй свою композицію.',
+        text: 'Дивись — так виглядає букет у реальному часі. Квіти можна перетягувати місцями.',
         position: 'bottom',
+        autoDemo: true,
     },
     {
         targetSelector: '.wrapping-section',
@@ -786,6 +787,7 @@ let tourStep = 0;
 let tourOverlay = null;
 let tourBox = null;
 let tourHighlight = null;
+let tourDemoTimers = [];
 
 function getTargetEl(step) {
     if (step.targetId) {
@@ -932,6 +934,71 @@ function placeHighlightAndBox(el, position) {
     });
 }
 
+function clearDemoTimers() {
+    tourDemoTimers.forEach(t => clearTimeout(t));
+    tourDemoTimers = [];
+}
+
+function resetDemoFlowers() {
+    // Remove all flowers added during demo
+    flowers.forEach(f => {
+        if ((quantities[f.id] || 0) > 0) {
+            quantities[f.id] = 0;
+            const qtyEl = document.getElementById('qty-' + f.id);
+            if (qtyEl) qtyEl.textContent = '0';
+            const card = document.getElementById('card-' + f.id);
+            if (card) card.classList.remove('selected');
+        }
+    });
+    updateSummary();
+}
+
+function runAutoDemo() {
+    if (!tourOverlay) return;
+
+    // Pick up to 3 different flowers to demonstrate
+    const demoFlowers = flowers.slice(0, Math.min(3, flowers.length));
+    // Amounts to add per flower: [3, 2, 2]
+    const amounts = [3, 2, 2];
+
+    let actions = [];
+    demoFlowers.forEach((f, fi) => {
+        const count = amounts[fi] || 2;
+        for (let i = 0; i < count; i++) {
+            actions.push({ id: f.id });
+        }
+    });
+
+    // Fire each action with 380ms gap
+    actions.forEach((action, idx) => {
+        const t = setTimeout(() => {
+            if (!tourOverlay) return;
+            // Add flower
+            changeQty(action.id, 1);
+
+            // Briefly highlight the qty display
+            const qtyEl = document.getElementById('qty-' + action.id);
+            if (qtyEl) {
+                qtyEl.style.transition = 'color 0.15s';
+                qtyEl.style.color = '#d4a373';
+                setTimeout(() => {
+                    if (qtyEl) qtyEl.style.color = '';
+                }, 300);
+            }
+
+            // Re-measure highlight after each flower (preview grows)
+            const preview = document.getElementById('circlePreview');
+            if (preview && tourOverlay) {
+                requestAnimationFrame(() => {
+                    if (!tourOverlay) return;
+                    placeHighlightAndBox(preview, 'bottom');
+                });
+            }
+        }, idx * 380 + 600); // start after 600ms delay so user sees the empty state first
+        tourDemoTimers.push(t);
+    });
+}
+
 function scrollToElementAndPlace(el, position) {
     // iOS Safari: body is position:fixed during tour, so window.scrollY is frozen.
     // We need to scroll the element into view by adjusting body.top, not scrollIntoView.
@@ -988,7 +1055,16 @@ function renderTourStep() {
     tourBox.style.transform = '';
     tourHighlight.style.display = 'none'; // hide while repositioning
 
+    clearDemoTimers(); // cancel any running demo from previous step
+
     scrollToElementAndPlace(el, step.position);
+
+    // After positioning is done, start auto demo if this step requests it
+    if (step.autoDemo) {
+        // Delay slightly to let positioning settle
+        const t = setTimeout(runAutoDemo, 700);
+        tourDemoTimers.push(t);
+    }
 }
 
 function startTour() {
@@ -1060,6 +1136,11 @@ function startTour() {
     });
 
     tourBox.querySelector('.tour-next').addEventListener('click', () => {
+        clearDemoTimers();
+        // If leaving the autoDemo step, reset flowers
+        if (TOUR_STEPS[tourStep] && TOUR_STEPS[tourStep].autoDemo) {
+            resetDemoFlowers();
+        }
         if (tourStep < TOUR_STEPS.length - 1) {
             tourStep++;
             renderTourStep();
@@ -1068,7 +1149,10 @@ function startTour() {
         }
     });
 
-    tourBox.querySelector('.tour-skip').addEventListener('click', () => endTour(false));
+    tourBox.querySelector('.tour-skip').addEventListener('click', () => {
+        clearDemoTimers();
+        endTour(false);
+    });
 
     document.body.appendChild(tourOverlay);
     document.body.appendChild(tourHighlight);
@@ -1085,6 +1169,11 @@ function startTour() {
 }
 
 function endTour(completed) {
+    clearDemoTimers();
+    // If tour was on autoDemo step, clean up flowers
+    if (TOUR_STEPS[tourStep] && TOUR_STEPS[tourStep].autoDemo) {
+        resetDemoFlowers();
+    }
     if (tourOverlay) { tourOverlay.remove(); tourOverlay = null; }
     if (tourHighlight) { tourHighlight.remove(); tourHighlight = null; }
     if (tourBox) { tourBox.remove(); tourBox = null; }
