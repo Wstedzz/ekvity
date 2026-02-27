@@ -195,6 +195,11 @@ const server = http.createServer(async (req, res) => {
       const isSeoFile = pathname === '/sitemap.xml' || pathname === '/robots.txt';
       res.setHeader('Content-Type', ct);
       res.setHeader('Cache-Control', isSeoFile ? 'public, max-age=3600' : 'public, max-age=604800');
+      // Prevent Cloudflare from injecting managed content into robots.txt
+      if (pathname === '/robots.txt') {
+        res.setHeader('X-Robots-Tag', 'nosnippet');
+        res.setHeader('CF-No-Transform', '1');
+      }
       res.end(data);
     });
     return;
