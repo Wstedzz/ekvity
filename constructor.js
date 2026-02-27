@@ -960,49 +960,77 @@ function resetDemoFlowers() {
     updateSummary();
 }
 
-function showDemoCursor(fromEl, toEl, onDone) {
-    // Animated ghost cursor that moves from one hex to another
-    if (!fromEl || !toEl) { onDone && onDone(); return; }
-    const fromR = fromEl.getBoundingClientRect();
-    const toR   = toEl.getBoundingClientRect();
+function showDemoCursorMoves(hexes, onDone) {
+    // Pick 3 pairs of hexes to drag between
+    if (!hexes || hexes.length < 4) { onDone && onDone(); return; }
+
+    const moves = [
+        [hexes[0],  hexes[7]],
+        [hexes[3],  hexes[12]],
+        [hexes[8],  hexes[2]],
+    ];
 
     const cursor = document.createElement('div');
     cursor.style.cssText = `
         position: fixed;
-        width: 28px; height: 28px;
+        width: 22px; height: 22px;
         border-radius: 50%;
-        background: rgba(212,163,115,0.25);
-        border: 2px solid rgba(212,163,115,0.85);
-        box-shadow: 0 0 12px rgba(212,163,115,0.5);
+        background: rgba(212,163,115,0.18);
+        border: 1.5px solid rgba(212,163,115,0.75);
+        box-shadow: 0 0 8px rgba(212,163,115,0.3);
         z-index: 10010;
         pointer-events: none;
-        transition: left 0.55s cubic-bezier(.4,0,.2,1), top 0.55s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+        transition: left 0.6s cubic-bezier(.4,0,.2,1),
+                    top  0.6s cubic-bezier(.4,0,.2,1),
+                    opacity 0.25s ease;
         transform: translate(-50%,-50%);
+        opacity: 0;
     `;
-    const sx = fromR.left + fromR.width / 2;
-    const sy = fromR.top  + fromR.height / 2;
-    cursor.style.left = sx + 'px';
-    cursor.style.top  = sy + 'px';
-    cursor.style.opacity = '0';
     document.body.appendChild(cursor);
 
-    // Fade in
-    requestAnimationFrame(() => {
+    let moveIdx = 0;
+
+    function doMove() {
+        if (!tourOverlay || moveIdx >= moves.length) {
+            // All moves done — fade out and call onDone
+            cursor.style.opacity = '0';
+            setTimeout(() => { cursor.remove(); onDone && onDone(); }, 280);
+            return;
+        }
+
+        const [from, to] = moves[moveIdx];
+        if (!from || !to) { moveIdx++; doMove(); return; }
+
+        const fr = from.getBoundingClientRect();
+        const tr = to.getBoundingClientRect();
+
+        // Move cursor to start position instantly (no transition)
+        cursor.style.transition = 'opacity 0.25s ease';
+        cursor.style.left = (fr.left + fr.width / 2) + 'px';
+        cursor.style.top  = (fr.top  + fr.height / 2) + 'px';
         cursor.style.opacity = '1';
-        // Start move after brief pause
+
+        // Pause on source, then slide to target
         setTimeout(() => {
-            cursor.style.left = (toR.left + toR.width / 2) + 'px';
-            cursor.style.top  = (toR.top  + toR.height / 2) + 'px';
-            // Fade out after move
+            cursor.style.transition = `left 0.6s cubic-bezier(.4,0,.2,1),
+                                       top  0.6s cubic-bezier(.4,0,.2,1),
+                                       opacity 0.25s ease`;
+            cursor.style.left = (tr.left + tr.width / 2) + 'px';
+            cursor.style.top  = (tr.top  + tr.height / 2) + 'px';
+
+            // Brief pause after landing, then next move
             setTimeout(() => {
                 cursor.style.opacity = '0';
                 setTimeout(() => {
-                    cursor.remove();
-                    onDone && onDone();
-                }, 300);
-            }, 600);
-        }, 120);
-    });
+                    moveIdx++;
+                    doMove();
+                }, 200);
+            }, 480);
+        }, 320);
+    }
+
+    // Small delay before first move
+    setTimeout(doMove, 300);
 }
 
 function runAutoDemo() {
@@ -1023,19 +1051,17 @@ function runAutoDemo() {
         actions.push({ id: flowers[i % flowers.length].id });
     }
 
-    // Inject hex pop animation if not present
+    // Inject subtle hex fade-in animation
     if (!document.getElementById('hex-pop-style')) {
         const s = document.createElement('style');
         s.id = 'hex-pop-style';
         s.textContent = `
-            @keyframes hexPop {
-                0%   { opacity:0; transform: scale(0.3) rotate(-15deg); }
-                60%  { opacity:1; transform: scale(1.18) rotate(4deg); }
-                80%  { transform: scale(0.93) rotate(-2deg); }
-                100% { opacity:1; transform: scale(1) rotate(0deg); }
+            @keyframes hexFadeIn {
+                0%   { opacity: 0; transform: scale(0.75); }
+                100% { opacity: 1; transform: scale(1); }
             }
             .hexagon-flower:not(.ghost) {
-                animation: hexPop 0.42s cubic-bezier(.34,1.56,.64,1) forwards;
+                animation: hexFadeIn 0.35s ease forwards;
             }
         `;
         document.head.appendChild(s);
@@ -1068,39 +1094,35 @@ function runAutoDemo() {
                 }
             }
 
-            // After last flower: show drag cursor demo then enable "Далі"
+            // After last flower: show multi-move cursor demo, then unlock "Далі"
             if (idx === actions.length - 1) {
                 const doDragDemo = setTimeout(() => {
                     if (!tourOverlay) return;
-                    // Find first two real hexagons to demo drag
                     const preview = document.getElementById('circlePreview');
-                    if (preview) {
-                        const hexes = Array.from(preview.querySelectorAll('.hexagon-flower:not(.ghost)'));
-                        if (hexes.length >= 2) {
-                            showDemoCursor(hexes[0], hexes[5] || hexes[1], () => {
-                                if (!tourOverlay) return;
-                                // Enable Далі
-                                if (!demoFinished) {
-                                    demoFinished = true;
-                                    const btn = tourBox && tourBox.querySelector('.tour-next');
-                                    if (btn) {
-                                        btn.disabled = false;
-                                        btn.style.opacity = '';
-                                        btn.style.cursor = '';
-                                        // Pulse the button to draw attention
-                                        btn.style.transition = 'box-shadow 0.3s';
-                                        btn.style.boxShadow = '0 0 0 3px rgba(212,163,115,0.5)';
-                                        setTimeout(() => { if (btn) btn.style.boxShadow = ''; }, 600);
-                                    }
-                                }
-                            });
-                        } else {
-                            demoFinished = true;
-                            const btn = tourBox && tourBox.querySelector('.tour-next');
-                            if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+                    const hexes = preview
+                        ? Array.from(preview.querySelectorAll('.hexagon-flower:not(.ghost)'))
+                        : [];
+
+                    const unlockNext = () => {
+                        if (!tourOverlay || demoFinished) return;
+                        demoFinished = true;
+                        const btn = tourBox && tourBox.querySelector('.tour-next');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.style.opacity = '';
+                            btn.style.cursor = '';
+                            btn.style.transition = 'box-shadow 0.3s';
+                            btn.style.boxShadow = '0 0 0 3px rgba(212,163,115,0.45)';
+                            setTimeout(() => { if (btn) btn.style.boxShadow = ''; }, 700);
                         }
+                    };
+
+                    if (hexes.length >= 4) {
+                        showDemoCursorMoves(hexes, unlockNext);
+                    } else {
+                        unlockNext();
                     }
-                }, 400);
+                }, 350);
                 tourDemoTimers.push(doDragDemo);
             }
 
