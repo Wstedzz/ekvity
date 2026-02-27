@@ -932,6 +932,39 @@ function placeHighlightAndBox(el, position) {
     });
 }
 
+function scrollToElementAndPlace(el, position) {
+    // iOS Safari: body is position:fixed during tour, so window.scrollY is frozen.
+    // We need to scroll the element into view by adjusting body.top, not scrollIntoView.
+    const r = el.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const PAD = 60; // px from viewport edge
+
+    const isInView = r.top >= PAD && r.bottom <= (vh - PAD);
+    if (isInView) {
+        placeHighlightAndBox(el, position);
+        return;
+    }
+
+    // Calculate how much to shift body.top to center the element
+    const currentTop = parseInt(document.body.style.top || '0'); // negative value
+    const elCenter = r.top + r.height / 2;
+    const vpCenter = vh / 2;
+    const delta = elCenter - vpCenter;
+    const newTop = currentTop - delta;
+
+    document.body.style.top = newTop + 'px';
+    // Save updated scroll position
+    document.body.dataset.scrollY = -newTop;
+
+    // Wait one frame for layout to update after body.top change
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            if (!tourOverlay) return;
+            placeHighlightAndBox(el, position);
+        });
+    });
+}
+
 function renderTourStep() {
     if (!tourOverlay) return;
     const step = TOUR_STEPS[tourStep];
@@ -953,24 +986,9 @@ function renderTourStep() {
     }
 
     tourBox.style.transform = '';
+    tourHighlight.style.display = 'none'; // hide while repositioning
 
-    // Hide highlight while scrolling
-    tourHighlight.style.display = 'none';
-
-    const r = el.getBoundingClientRect();
-    const inView = r.top >= 0 && r.bottom <= window.innerHeight;
-
-    if (inView) {
-        placeHighlightAndBox(el, step.position);
-    } else {
-        // Instant scroll (no smooth — avoids the element being off-screen after timeout)
-        el.scrollIntoView({ behavior: 'instant', block: 'center' });
-        // rAF x2 ensures layout is settled after scroll
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-            if (!tourOverlay) return;
-            placeHighlightAndBox(el, step.position);
-        }));
-    }
+    scrollToElementAndPlace(el, step.position);
 }
 
 function startTour() {
@@ -980,7 +998,14 @@ function startTour() {
     // 4-panel overlay (top/bottom/left/right around highlight — true cutout)
     tourOverlay = document.createElement('div');
     tourOverlay.id = 'tourOverlay';
-    tourOverlay.style.cssText = `position: fixed; inset: 0; z-index: 10000; pointer-events: none;`;
+    // Avoid 'inset' — not supported on older Safari
+    tourOverlay.style.position = 'fixed';
+    tourOverlay.style.top = '0';
+    tourOverlay.style.left = '0';
+    tourOverlay.style.right = '0';
+    tourOverlay.style.bottom = '0';
+    tourOverlay.style.zIndex = '10000';
+    tourOverlay.style.pointerEvents = 'none';
 
     ['tour-shade-top','tour-shade-bottom','tour-shade-left','tour-shade-right'].forEach(id => {
         const shade = document.createElement('div');
@@ -1077,14 +1102,13 @@ function endTour(completed) {
 }
 
 function pulseFirstAddButton() {
-    // Scroll to flower grid
     const grid = document.getElementById('flowerGrid');
     if (!grid) return;
-    grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    // Find first + button
     const firstPlus = grid.querySelector('.qty-btn:last-child');
     if (!firstPlus) return;
+
+    // Scroll to first + button (body is no longer fixed at this point)
+    firstPlus.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     // Inject pulse keyframe if not already there
     if (!document.getElementById('tour-pulse-style')) {
@@ -1107,7 +1131,7 @@ function pulseFirstAddButton() {
         document.head.appendChild(style);
     }
 
-    // Wait for scroll to settle, then pulse
+    // Wait for smooth scroll to settle (~600ms), then pulse
     setTimeout(() => {
         firstPlus.classList.add('tour-pulse-btn');
         firstPlus.addEventListener('animationend', () => {
