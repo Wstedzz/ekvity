@@ -177,14 +177,17 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Serve sitemap.xml and robots.txt from public/
-  if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
+  // Serve sitemap.xml, robots.txt and favicons from public/
+  if (pathname === '/sitemap.xml' || pathname === '/robots.txt' ||
+      pathname === '/favicon.ico' || pathname === '/favicon.png' ||
+      pathname === '/favicon-32.png' || pathname === '/favicon-192.png' || pathname === '/favicon-512.png') {
     const pubFile = path.join(PUBLIC, pathname);
     fs.readFile(pubFile, (err, data) => {
       if (err) { res.writeHead(404); res.end('not found'); return; }
       const ext = path.extname(pathname);
-      res.setHeader('Content-Type', MIME[ext] || 'text/plain');
-      res.setHeader('Cache-Control', 'public, max-age=3600');
+      const ct = pathname.endsWith('.ico') ? 'image/x-icon' : (MIME[ext] || 'text/plain');
+      res.setHeader('Content-Type', ct);
+      res.setHeader('Cache-Control', 'public, max-age=86400');
       res.end(data);
     });
     return;
