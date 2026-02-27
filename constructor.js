@@ -1049,9 +1049,12 @@ function startTour() {
     document.body.appendChild(tourHighlight);
     document.body.appendChild(tourBox);
 
-    // Block scroll on body during tour
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
+    // Block scroll on body during tour (iOS Safari needs position:fixed trick)
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.dataset.scrollY = scrollY;
 
     renderTourStep();
 }
@@ -1060,9 +1063,12 @@ function endTour(completed) {
     if (tourOverlay) { tourOverlay.remove(); tourOverlay = null; }
     if (tourHighlight) { tourHighlight.remove(); tourHighlight = null; }
     if (tourBox) { tourBox.remove(); tourBox = null; }
-    // Restore scroll
-    document.body.style.overflow = '';
-    document.body.style.touchAction = '';
+    // Restore scroll (iOS Safari fix)
+    const savedY = parseInt(document.body.dataset.scrollY || '0');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedY);
     localStorage.setItem('ekvity_tour_done', '1');
 
     if (completed) {
@@ -1111,32 +1117,37 @@ function pulseFirstAddButton() {
 }
 
 function injectTourButton() {
+    // Small floating "?" — only visible on mobile (desktop has hero button)
     const btn = document.createElement('button');
     btn.id = 'tourHelpBtn';
     btn.title = 'Показати підказки';
     btn.innerHTML = '?';
     btn.style.cssText = `
         position: fixed;
-        bottom: 90px;
-        right: 20px;
-        width: 36px;
-        height: 36px;
+        bottom: 160px;
+        right: 18px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
-        background: rgba(212,163,115,0.12);
-        border: 1px solid rgba(212,163,115,0.35);
+        background: rgba(10,10,10,0.92);
+        border: 1px solid rgba(212,163,115,0.45);
         color: #d4a373;
         font-size: 1rem;
         font-family: 'Playfair Display', serif;
         font-style: italic;
         cursor: pointer;
-        z-index: 999;
-        display: flex;
+        z-index: 998;
+        display: none;
         align-items: center;
         justify-content: center;
         transition: background 0.2s;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.4);
     `;
-    btn.addEventListener('mouseenter', () => btn.style.background = 'rgba(212,163,115,0.25)');
-    btn.addEventListener('mouseleave', () => btn.style.background = 'rgba(212,163,115,0.12)');
+    // Show only on mobile
+    if (window.innerWidth <= 768) btn.style.display = 'flex';
+    window.addEventListener('resize', () => {
+        btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+    });
     btn.addEventListener('click', startTour);
     document.body.appendChild(btn);
 }
