@@ -764,7 +764,7 @@ const TOUR_STEPS = [
         targetId: 'circlePreview',
         title: 'Ваш букет 🍯',
         text: 'Тут з\'являються квіти. Їх можна перетягувати місцями — влаштуй свою композицію.',
-        position: 'left',
+        position: 'bottom',
     },
     {
         targetSelector: '.wrapping-section',
@@ -801,33 +801,58 @@ function getTargetEl(step) {
     return null;
 }
 
-function positionTourBox(el, position) {
-    const MARGIN = 16;
+function positionTourBox(el, preferredPosition) {
+    const MARGIN = 14;
+    const PAD = 6;
     const rect = el.getBoundingClientRect();
     const boxW = Math.min(300, window.innerWidth - 32);
+    tourBox.style.width = boxW + 'px';
+    // Force layout so offsetHeight is accurate
+    tourBox.style.visibility = 'hidden';
+    tourBox.style.display = 'block';
     const boxH = tourBox.offsetHeight || 160;
+    tourBox.style.visibility = '';
+
+    const highlightBottom = rect.bottom + PAD;
+    const highlightTop = rect.top - PAD;
+    const spaceBelow = window.innerHeight - highlightBottom - MARGIN;
+    const spaceAbove = highlightTop - MARGIN;
+
+    // Auto-pick position: prefer requested, fallback if no space
+    let position = preferredPosition;
+    if (position === 'bottom' && spaceBelow < boxH) position = 'top';
+    if (position === 'top' && spaceAbove < boxH) position = 'bottom';
+    // Last resort: just center in viewport
+    if (position === 'bottom' && spaceBelow < boxH && position === 'top' && spaceAbove < boxH) {
+        position = 'center';
+    }
 
     let top, left;
 
     if (position === 'bottom') {
-        top = rect.bottom + MARGIN;
+        top = highlightBottom + MARGIN;
         left = rect.left + rect.width / 2 - boxW / 2;
     } else if (position === 'top') {
-        top = rect.top - boxH - MARGIN;
+        top = highlightTop - boxH - MARGIN;
         left = rect.left + rect.width / 2 - boxW / 2;
     } else if (position === 'left') {
         top = rect.top + rect.height / 2 - boxH / 2;
-        left = rect.left - boxW - MARGIN;
+        left = rect.left - boxW - PAD - MARGIN;
+        // Fallback to bottom if no space on left
+        if (left < 16) {
+            top = highlightBottom + MARGIN;
+            left = rect.left + rect.width / 2 - boxW / 2;
+        }
     } else {
-        top = rect.bottom + MARGIN;
-        left = rect.left + rect.width / 2 - boxW / 2;
+        // center
+        top = window.innerHeight / 2 - boxH / 2;
+        left = window.innerWidth / 2 - boxW / 2;
     }
 
     // Clamp to viewport
     left = Math.max(16, Math.min(left, window.innerWidth - boxW - 16));
     top = Math.max(16, Math.min(top, window.innerHeight - boxH - 16));
 
-    tourBox.style.width = boxW + 'px';
     tourBox.style.left = left + 'px';
     tourBox.style.top = top + 'px';
 }
