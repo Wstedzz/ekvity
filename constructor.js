@@ -1199,7 +1199,9 @@ function renderTourStep() {
     }
 }
 
-function startTour() {
+window.startTour = function() { _startTour(); };
+function startTour() { _startTour(); }
+function _startTour() {
     if (tourOverlay) return;
     tourStep = 0;
 
