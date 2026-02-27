@@ -1922,3 +1922,19 @@ a:hover {
     pointer-events: none;
     z-index: 10;
 }
+
+/* Category label — top left of lightbox */
+.lb-category {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+    font-family: var(--font-body);
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 10;
+    border-left: 1px solid rgba(255,255,255,0.2);
+    padding-left: 10px;
+}

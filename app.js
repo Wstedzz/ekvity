@@ -428,10 +428,8 @@ function getProductImages(p) {
 }
 
 window.openLightboxHome = function(productId) {
-    // Build product list from currently visible cards
-    const cards = document.querySelectorAll('#productsGrid .product-card');
-    const visibleIds = Array.from(cards).map(c => c.dataset.productId);
-    homeLightboxProductList = visibleIds.map(id => products.find(x => x.id === id)).filter(Boolean);
+    // All products — infinite loop across all
+    homeLightboxProductList = [...products];
 
     const idx = homeLightboxProductList.findIndex(x => x.id === productId);
     homeLightboxProductIndex = idx >= 0 ? idx : 0;
@@ -457,6 +455,10 @@ function _renderLightboxContent() {
     document.getElementById('lightboxImg').alt = p.name;
     updateLightboxCounter('lightboxOverlay', homeLightboxIndex, homeLightboxImages.length,
         homeLightboxProductIndex, homeLightboxProductList.length);
+
+    // Category label
+    const cat = categories.find(c => c.id === p.categoryId);
+    updateLightboxCategory('lightboxOverlay', cat ? cat.name : '');
 
     const infoEl = document.getElementById('lightboxInfo');
     if (infoEl) {
@@ -487,11 +489,9 @@ window.lightboxNav = function(dir) {
         homeLightboxIndex = newImgIdx;
         _renderLightboxContent();
     } else {
-        // Jump to next/prev product
-        const newProdIdx = homeLightboxProductIndex + dir;
-        if (newProdIdx < 0 || newProdIdx >= homeLightboxProductList.length) return;
-        homeLightboxProductIndex = newProdIdx;
-        // Enter next product from its first image; prev product from its last image
+        // Jump to next/prev product — infinite wrap
+        const total = homeLightboxProductList.length;
+        homeLightboxProductIndex = (homeLightboxProductIndex + dir + total) % total;
         const nextP = homeLightboxProductList[homeLightboxProductIndex];
         const nextImgs = getProductImages(nextP);
         const startImg = dir === 1 ? 0 : nextImgs.length - 1;
@@ -521,6 +521,20 @@ document.addEventListener('keydown', (e) => {
         if (Math.abs(dx) > 50) window.lightboxNav(dx < 0 ? 1 : -1);
     }, { passive: true });
 })();
+
+// ===== LIGHTBOX CATEGORY LABEL =====
+function updateLightboxCategory(overlayId, catName) {
+    const overlay = document.getElementById(overlayId);
+    if (!overlay) return;
+    let el = overlay.querySelector('.lb-category');
+    if (!el) {
+        el = document.createElement('div');
+        el.className = 'lb-category';
+        overlay.appendChild(el);
+    }
+    el.textContent = catName ? catName.toUpperCase() : '';
+    el.style.display = catName ? 'block' : 'none';
+}
 
 // ===== LIGHTBOX COUNTER =====
 // Shows: image dots (if multi-image) + product counter "3 / 12"

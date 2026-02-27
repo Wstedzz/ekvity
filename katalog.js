@@ -353,9 +353,8 @@ function getProductImages(p) {
 }
 
 window.openLightboxFromCard = function(productId) {
-    const cards = document.querySelectorAll('#catalogGrid .product-card');
-    const visibleIds = Array.from(cards).map(c => c.dataset.productId);
-    lightboxProductList = visibleIds.map(id => products.find(x => x.id === id)).filter(Boolean);
+    // All products — infinite loop
+    lightboxProductList = [...products];
 
     const idx = lightboxProductList.findIndex(x => x.id === productId);
     lightboxProductIndex = idx >= 0 ? idx : 0;
@@ -381,6 +380,10 @@ function _renderLightbox() {
     document.getElementById('lightboxImg').alt = p.name;
     updateLightboxCounter('lightboxOverlay', lightboxIndex, lightboxImages.length,
         lightboxProductIndex, lightboxProductList.length);
+
+    // Category label
+    const cat = categories.find(c => c.id === p.categoryId);
+    updateLightboxCategory('lightboxOverlay', cat ? cat.name : '');
 
     const infoEl = document.getElementById('lightboxInfo');
     if (infoEl) {
@@ -411,9 +414,9 @@ window.lightboxNav = function(dir) {
         lightboxIndex = newImgIdx;
         _renderLightbox();
     } else {
-        const newProdIdx = lightboxProductIndex + dir;
-        if (newProdIdx < 0 || newProdIdx >= lightboxProductList.length) return;
-        lightboxProductIndex = newProdIdx;
+        // Infinite wrap across all products
+        const total = lightboxProductList.length;
+        lightboxProductIndex = (lightboxProductIndex + dir + total) % total;
         const nextP = lightboxProductList[lightboxProductIndex];
         const nextImgs = getProductImages(nextP);
         const startImg = dir === 1 ? 0 : nextImgs.length - 1;
@@ -443,6 +446,20 @@ document.addEventListener('keydown', (e) => {
         if (Math.abs(dx) > 50) window.lightboxNav(dx < 0 ? 1 : -1);
     }, { passive: true });
 })();
+
+// ===== LIGHTBOX CATEGORY LABEL =====
+function updateLightboxCategory(overlayId, catName) {
+    const overlay = document.getElementById(overlayId);
+    if (!overlay) return;
+    let el = overlay.querySelector('.lb-category');
+    if (!el) {
+        el = document.createElement('div');
+        el.className = 'lb-category';
+        overlay.appendChild(el);
+    }
+    el.textContent = catName ? catName.toUpperCase() : '';
+    el.style.display = catName ? 'block' : 'none';
+}
 
 // ===== LIGHTBOX COUNTER =====
 function updateLightboxCounter(overlayId, imgIdx, imgTotal, prodIdx, prodTotal) {
