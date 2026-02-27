@@ -937,6 +937,13 @@ function placeHighlightAndBox(el, position) {
 function clearDemoTimers() {
     tourDemoTimers.forEach(t => clearTimeout(t));
     tourDemoTimers = [];
+    // Remove any lingering ghost cursor
+    document.querySelectorAll('[data-tour-cursor]').forEach(el => el.remove());
+    // Re-enable next button if it was locked
+    if (tourBox) {
+        const btn = tourBox.querySelector('.tour-next');
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+    }
 }
 
 function resetDemoFlowers() {
@@ -953,48 +960,151 @@ function resetDemoFlowers() {
     updateSummary();
 }
 
+function showDemoCursor(fromEl, toEl, onDone) {
+    // Animated ghost cursor that moves from one hex to another
+    if (!fromEl || !toEl) { onDone && onDone(); return; }
+    const fromR = fromEl.getBoundingClientRect();
+    const toR   = toEl.getBoundingClientRect();
+
+    const cursor = document.createElement('div');
+    cursor.style.cssText = `
+        position: fixed;
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: rgba(212,163,115,0.25);
+        border: 2px solid rgba(212,163,115,0.85);
+        box-shadow: 0 0 12px rgba(212,163,115,0.5);
+        z-index: 10010;
+        pointer-events: none;
+        transition: left 0.55s cubic-bezier(.4,0,.2,1), top 0.55s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+        transform: translate(-50%,-50%);
+    `;
+    const sx = fromR.left + fromR.width / 2;
+    const sy = fromR.top  + fromR.height / 2;
+    cursor.style.left = sx + 'px';
+    cursor.style.top  = sy + 'px';
+    cursor.style.opacity = '0';
+    document.body.appendChild(cursor);
+
+    // Fade in
+    requestAnimationFrame(() => {
+        cursor.style.opacity = '1';
+        // Start move after brief pause
+        setTimeout(() => {
+            cursor.style.left = (toR.left + toR.width / 2) + 'px';
+            cursor.style.top  = (toR.top  + toR.height / 2) + 'px';
+            // Fade out after move
+            setTimeout(() => {
+                cursor.style.opacity = '0';
+                setTimeout(() => {
+                    cursor.remove();
+                    onDone && onDone();
+                }, 300);
+            }, 600);
+        }, 120);
+    });
+}
+
 function runAutoDemo() {
     if (!tourOverlay) return;
 
-    // Pick up to 3 different flowers to demonstrate
-    const demoFlowers = flowers.slice(0, Math.min(3, flowers.length));
-    // Amounts to add per flower: [3, 2, 2]
-    const amounts = [3, 2, 2];
+    // Disable "Далі" until demo finishes
+    const nextBtn = tourBox && tourBox.querySelector('.tour-next');
+    if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.cursor = 'not-allowed';
+    }
 
-    let actions = [];
-    demoFlowers.forEach((f, fi) => {
-        const count = amounts[fi] || 2;
-        for (let i = 0; i < count; i++) {
-            actions.push({ id: f.id });
-        }
-    });
+    // Build 31-flower sequence cycling through all available flowers
+    const total = 31;
+    const actions = [];
+    for (let i = 0; i < total; i++) {
+        actions.push({ id: flowers[i % flowers.length].id });
+    }
 
-    // Fire each action with 380ms gap
+    // Inject hex pop animation if not present
+    if (!document.getElementById('hex-pop-style')) {
+        const s = document.createElement('style');
+        s.id = 'hex-pop-style';
+        s.textContent = `
+            @keyframes hexPop {
+                0%   { opacity:0; transform: scale(0.3) rotate(-15deg); }
+                60%  { opacity:1; transform: scale(1.18) rotate(4deg); }
+                80%  { transform: scale(0.93) rotate(-2deg); }
+                100% { opacity:1; transform: scale(1) rotate(0deg); }
+            }
+            .hexagon-flower:not(.ghost) {
+                animation: hexPop 0.42s cubic-bezier(.34,1.56,.64,1) forwards;
+            }
+        `;
+        document.head.appendChild(s);
+    }
+
+    const INTERVAL = 220; // ms between each flower
+    let demoFinished = false;
+
     actions.forEach((action, idx) => {
         const t = setTimeout(() => {
             if (!tourOverlay) return;
-            // Add flower
+
             changeQty(action.id, 1);
 
-            // Briefly highlight the qty display
+            // Gold flash on qty counter
             const qtyEl = document.getElementById('qty-' + action.id);
             if (qtyEl) {
-                qtyEl.style.transition = 'color 0.15s';
+                qtyEl.style.transition = 'color 0.12s';
                 qtyEl.style.color = '#d4a373';
-                setTimeout(() => {
-                    if (qtyEl) qtyEl.style.color = '';
-                }, 300);
+                setTimeout(() => { if (qtyEl) qtyEl.style.color = ''; }, 250);
             }
 
-            // Re-measure highlight after each flower (preview grows)
-            const preview = document.getElementById('circlePreview');
-            if (preview && tourOverlay) {
-                requestAnimationFrame(() => {
-                    if (!tourOverlay) return;
-                    placeHighlightAndBox(preview, 'bottom');
-                });
+            // Re-measure highlight after every 5th flower
+            if (idx % 5 === 0) {
+                const preview = document.getElementById('circlePreview');
+                if (preview && tourOverlay) {
+                    requestAnimationFrame(() => {
+                        if (tourOverlay) placeHighlightAndBox(preview, 'bottom');
+                    });
+                }
             }
-        }, idx * 380 + 600); // start after 600ms delay so user sees the empty state first
+
+            // After last flower: show drag cursor demo then enable "Далі"
+            if (idx === actions.length - 1) {
+                const doDragDemo = setTimeout(() => {
+                    if (!tourOverlay) return;
+                    // Find first two real hexagons to demo drag
+                    const preview = document.getElementById('circlePreview');
+                    if (preview) {
+                        const hexes = Array.from(preview.querySelectorAll('.hexagon-flower:not(.ghost)'));
+                        if (hexes.length >= 2) {
+                            showDemoCursor(hexes[0], hexes[5] || hexes[1], () => {
+                                if (!tourOverlay) return;
+                                // Enable Далі
+                                if (!demoFinished) {
+                                    demoFinished = true;
+                                    const btn = tourBox && tourBox.querySelector('.tour-next');
+                                    if (btn) {
+                                        btn.disabled = false;
+                                        btn.style.opacity = '';
+                                        btn.style.cursor = '';
+                                        // Pulse the button to draw attention
+                                        btn.style.transition = 'box-shadow 0.3s';
+                                        btn.style.boxShadow = '0 0 0 3px rgba(212,163,115,0.5)';
+                                        setTimeout(() => { if (btn) btn.style.boxShadow = ''; }, 600);
+                                    }
+                                }
+                            });
+                        } else {
+                            demoFinished = true;
+                            const btn = tourBox && tourBox.querySelector('.tour-next');
+                            if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+                        }
+                    }
+                }, 400);
+                tourDemoTimers.push(doDragDemo);
+            }
+
+        }, idx * INTERVAL + 300);
         tourDemoTimers.push(t);
     });
 }
