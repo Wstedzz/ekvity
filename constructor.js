@@ -832,6 +832,17 @@ function positionTourBox(el, position) {
     tourBox.style.top = top + 'px';
 }
 
+function placeHighlightAndBox(el, position) {
+    const r = el.getBoundingClientRect();
+    const PAD = 6;
+    tourHighlight.style.display = 'block';
+    tourHighlight.style.left = (r.left - PAD) + 'px';
+    tourHighlight.style.top = (r.top - PAD) + 'px';
+    tourHighlight.style.width = (r.width + PAD * 2) + 'px';
+    tourHighlight.style.height = (r.height + PAD * 2) + 'px';
+    positionTourBox(el, position);
+}
+
 function renderTourStep() {
     if (!tourOverlay) return;
     const step = TOUR_STEPS[tourStep];
@@ -845,7 +856,6 @@ function renderTourStep() {
     nextBtn.textContent = tourStep < TOUR_STEPS.length - 1 ? 'Далі →' : 'Готово ✓';
 
     if (!el) {
-        // No element — just center the box
         tourHighlight.style.display = 'none';
         tourBox.style.top = '50%';
         tourBox.style.left = '50%';
@@ -855,24 +865,23 @@ function renderTourStep() {
 
     tourBox.style.transform = '';
 
-    // Scroll element into view smoothly
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Hide highlight while scrolling
+    tourHighlight.style.display = 'none';
 
-    // Wait for scroll then position
-    setTimeout(() => {
-        if (!tourOverlay) return;
-        const r = el.getBoundingClientRect();
-        const PAD = 6;
+    const r = el.getBoundingClientRect();
+    const inView = r.top >= 0 && r.bottom <= window.innerHeight;
 
-        // Position highlight cutout
-        tourHighlight.style.display = 'block';
-        tourHighlight.style.left = (r.left - PAD) + 'px';
-        tourHighlight.style.top = (r.top - PAD) + 'px';
-        tourHighlight.style.width = (r.width + PAD * 2) + 'px';
-        tourHighlight.style.height = (r.height + PAD * 2) + 'px';
-
-        positionTourBox(el, step.position);
-    }, 350);
+    if (inView) {
+        placeHighlightAndBox(el, step.position);
+    } else {
+        // Instant scroll (no smooth — avoids the element being off-screen after timeout)
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        // rAF x2 ensures layout is settled after scroll
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (!tourOverlay) return;
+            placeHighlightAndBox(el, step.position);
+        }));
+    }
 }
 
 function startTour() {
@@ -945,6 +954,10 @@ function startTour() {
     document.body.appendChild(tourHighlight);
     document.body.appendChild(tourBox);
 
+    // Block scroll on body during tour
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
     renderTourStep();
 }
 
@@ -952,6 +965,9 @@ function endTour(completed) {
     if (tourOverlay) { tourOverlay.remove(); tourOverlay = null; }
     if (tourHighlight) { tourHighlight.remove(); tourHighlight = null; }
     if (tourBox) { tourBox.remove(); tourBox = null; }
+    // Restore scroll
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
     localStorage.setItem('ekvity_tour_done', '1');
 }
 
