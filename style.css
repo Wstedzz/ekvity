@@ -515,10 +515,13 @@ a:hover {
 }
 
 .product-price {
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: var(--gold);
     font-family: var(--font-heading);
-    font-style: italic;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 8px;
+    display: block;
 }
 
 .btn-order {
@@ -1803,10 +1806,12 @@ a:hover {
 
 .lb-price {
     font-family: var(--font-heading);
-    font-size: 0.95rem;
+    font-size: 1.4rem;
     color: var(--gold);
-    font-style: italic;
+    font-weight: 600;
+    letter-spacing: 1.5px;
     white-space: nowrap;
+    margin: 5px 0;
 }
 
 .lb-id {
