@@ -2220,38 +2220,44 @@ a:hover {
     100% { transform: translateX(100%); }
 }
 
-/* FINAL UI FIXES - OVERRIDE */
+/* FINAL UI FIXES - COMPACT OVERRIDE */
 .product-card {
     height: 100%;
-    margin-bottom: 20px !important;
+    margin-bottom: 25px !important;
 }
 
 .card-content {
     display: flex !important;
     flex-direction: column !important;
     height: 100% !important;
-    justify-content: flex-start !important;
+    padding: 0 !important;
 }
 
 .product-name {
-    min-height: 2.8rem !important;
-    margin-bottom: 4px !important;
-    font-size: 0.8rem !important;
+    min-height: 2.3rem !important; /* Ściśnięte na maxa dla 2 linii */
+    margin-bottom: 2px !important;
+    font-size: 0.78rem !important;
+    line-height: 1.2 !important;
 }
 
 .product-sku {
-    min-height: 1rem !important;
-    margin-bottom: 15px !important;
+    min-height: 0.7rem !important; /* Minimalna wysokość na ID */
+    margin-bottom: 12px !important;
+    font-size: 0.6rem !important;
 }
 
 .card-footer {
     margin-top: auto !important;
-    padding-top: 15px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
-/* Lightbox Sync */
-.lb-price {
-    font-family: var(--font-body) !important;
-    color: #e5c994 !important;
+.product-price {
+    font-size: 1.05rem !important;
     font-weight: 600 !important;
+}
+
+.btn-order {
+    padding: 6px 12px !important;
+    font-size: 0.58rem !important;
 }
