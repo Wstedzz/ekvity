@@ -57,10 +57,10 @@ function renderFlowerGrid() {
             </div>
         `;
         grid.appendChild(card);
-        // Force reflow and add reveal class
-        requestAnimationFrame(() => {
+        // Ensure the reveal class is added after a small delay to trigger CSS transition
+        setTimeout(() => {
             card.classList.add('reveal');
-        });
+        }, 100 + (index * 40));
     });
 }
 
