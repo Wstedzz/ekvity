@@ -2491,56 +2491,57 @@ a:hover {
     font-weight: 600 !important;
     white-space: nowrap !important;
 }
-/* UI SYSTEM: TIGHT LUXURY CARD */
+/* UI SYSTEM: PRO LUXURY GRID */
+.container {
+    max-width: var(--spacing-container);
+    margin: 0 auto;
+    padding: 0 15px !important; /* Mniejsze marginesy boczne = większe zdjęcia */
+}
+
+.grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* Sztywne 2 kolumny */
+    gap: 25px 15px !important;
+    align-items: stretch !important; /* Ważne dla równych wysokości */
+}
+
 .product-card {
     display: flex !important;
     flex-direction: column !important;
-    margin-bottom: 30px !important;
-    background: transparent !important;
-    padding: 0 8px !important; /* Oddech "obok" */
+    height: 100% !important; /* Karta zajmuje całą wysokość rzędu */
+    margin-bottom: 0 !important;
 }
 
 .card-image-wrapper {
-    aspect-ratio: 4/5 !important;
+    aspect-ratio: 1/1 !important; /* Kwadrat lepiej wypełnia przestrzeń przy 2 kolumnach */
     margin-bottom: 12px !important;
-    border: 1px solid rgba(255,255,255,0.03) !important;
-    overflow: hidden !important;
 }
 
 .product-name {
-    font-family: var(--font-body) !important;
-    font-size: 0.8rem !important;
+    font-size: 0.9rem !important; /* Większy font */
     font-weight: 500 !important;
-    color: #fff !important;
-    text-transform: uppercase !important;
-    line-height: 1.3 !important;
     margin-bottom: 4px !important;
-    min-height: unset !important; /* Koniec z dziurami */
+    min-height: unset !important;
     height: auto !important;
+    line-height: 1.2 !important;
 }
 
 .product-sku {
-    font-size: 0.6rem !important;
-    color: rgba(255,255,255,0.4) !important;
-    letter-spacing: 1px !important;
-    margin-bottom: 12px !important; /* Mniejszy odstęp */
+    font-size: 0.65rem !important;
+    margin-bottom: 15px !important;
 }
 
 .card-footer {
-    margin-top: 0 !important; /* Stopka leci zaraz pod SKU */
+    margin-top: auto !important; /* To wyrównuje stopki do dołu, tworząc równe linie */
     padding-top: 12px !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 10px !important;
 }
 
 .product-price {
-    font-size: 1.15rem !important;
-    color: #e5c994 !important;
-    font-weight: 600 !important;
+    font-size: 1.25rem !important; /* Mocniejsza cena */
+    margin-bottom: 8px !important;
 }
+
 
 .btn-order {
     width: 100% !important;
