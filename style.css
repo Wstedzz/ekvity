@@ -503,57 +503,111 @@ a:hover {
 }
 
 /* Product Info */
-.product-info {
-    padding: 20px 0;
-    text-align: left;
+/* Redesign Product Card (Luxury UX) */
+.product-card {
+    background: transparent;
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    border: none;
+    margin-bottom: 20px;
+}
+
+.card-image-wrapper {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4/5; /* Standard dla fashion/luxury */
+    background: #111;
+}
+
+.card-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.product-card:hover .card-image-wrapper img {
+    transform: scale(1.05);
+}
+
+.featured-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: white;
+    color: black;
+    padding: 6px 12px;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    z-index: 2;
+}
+
+.card-content {
+    padding: 15px 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-name {
     font-family: var(--font-body);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 400;
     color: var(--text-mid);
-    margin-bottom: 12px;
-    line-height: 1.4;
-    letter-spacing: 0.5px;
     text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    order: 1;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+    order: 2;
 }
 
 .product-price {
     font-family: var(--font-body);
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 500;
     color: var(--gold);
-    letter-spacing: -0.2px;
-    padding-top: 15px;
-    margin-bottom: 20px;
-    display: block;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
 }
 
 .product-price span {
-    font-size: 0.85rem;
-    margin-left: 3px;
+    font-size: 0.8rem;
+    margin-left: 4px;
     opacity: 0.6;
 }
 
 .btn-order {
-    background: transparent;
-    color: var(--text-mid);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 12px;
-    text-transform: uppercase;
+    background: white;
+    color: black;
+    border: none;
+    padding: 8px 16px;
     font-size: 0.65rem;
-    letter-spacing: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
     cursor: pointer;
-    width: 100%;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: all 0.3s;
 }
 
 .btn-order:hover {
     background: var(--gold);
-    color: black;
-    border-color: var(--gold);
+    color: white;
 }
+
+/* Hide legacy elements if any */
+.card-actions { display: none; }
+
 
 /* Manifesto */
 .manifesto {
