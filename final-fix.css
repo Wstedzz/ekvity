@@ -1,0 +1,72 @@
+/* 
+   ========================================================
+   CLEAN UI RESET - NO OVERLAPS
+   ======================================================== 
+*/
+
+.product-card {
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 35px !important;
+    background: #000 !important;
+}
+
+.card-image-wrapper {
+    width: 100% !important;
+    aspect-ratio: 4/5 !important;
+    margin-bottom: 15px !important;
+}
+
+.card-content {
+    display: block !important; /* Wracamy do podstaw, żeby uniknąć nakładania flexa */
+    padding: 0 5px !important;
+}
+
+.product-name {
+    display: block !important;
+    font-family: var(--font-body) !important;
+    font-size: 0.85rem !important;
+    color: #fff !important;
+    text-transform: uppercase !important;
+    line-height: 1.4 !important;
+    margin: 0 0 5px 0 !important;
+    height: 2.5rem !important; /* Stałe miejsce na 2 linie */
+    overflow: hidden !important;
+}
+
+.product-sku {
+    display: block !important;
+    font-size: 0.6rem !important;
+    color: rgba(255,255,255,0.4) !important;
+    margin-bottom: 15px !important;
+    letter-spacing: 1px !important;
+}
+
+.card-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-top: 12px !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.product-price {
+    font-size: 1.1rem !important;
+    color: #e5c994 !important;
+    font-weight: 600 !important;
+}
+
+.btn-order {
+    background: transparent !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    padding: 7px 15px !important;
+    font-size: 0.6rem !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+}
+
+.btn-order:hover {
+    background: #fff !important;
+    color: #000 !important;
+}
