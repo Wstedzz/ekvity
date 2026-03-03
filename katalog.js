@@ -120,7 +120,10 @@ function createProductCard(p, animIndex) {
     card.style.transitionDelay = `${animIndex * 0.08}s`;
     const catName = getCategoryName(p.categoryId);
     const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
-    const mainImg = (p.images && p.images.length) ? p.images[0] : (p.image || '');
+    let mainImg = (p.images && p.images.length) ? p.images[0] : (p.image || '');
+    if (mainImg && !mainImg.startsWith('http') && !mainImg.startsWith('/')) {
+        mainImg = '/' + mainImg;
+    }
     card.innerHTML = `
         <div class="card-image-wrapper" onclick="openLightboxFromCard('${p.id}')">
             ${featuredBadge}

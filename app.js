@@ -118,7 +118,10 @@ function renderGrid() {
         card.dataset.productName = p.name;
         card.dataset.productPrice = p.price;
 
-        const mainImg = (p.images && p.images.length) ? p.images[0] : (p.image || '');
+        let mainImg = (p.images && p.images.length) ? p.images[0] : (p.image || '');
+        if (mainImg && !mainImg.startsWith('http') && !mainImg.startsWith('/')) {
+            mainImg = '/' + mainImg;
+        }
         const featuredBadge = p.featured ? `<div class="featured-badge">Рекомендуємо</div>` : '';
         card.innerHTML = `
             <div class="card-image-wrapper" onclick="openLightboxHome('${p.id}')">
