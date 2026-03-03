@@ -130,7 +130,7 @@ function renderGrid() {
             </div>
             <div class="card-content">
                 <h3 class="product-name">${p.name}</h3>
-                <p class="product-price">${p.price} ₴</p>
+                <p class="product-price">${p.price} <span>₴</span></p>
                 <div class="card-actions">
                     <button class="btn-order" onclick="event.stopPropagation(); order('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
                         Замовити
