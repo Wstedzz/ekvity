@@ -2286,93 +2286,66 @@ a:hover {
     color: #000 !important;
 }
 
-/* 
-   ==========================================================================
-   THE DEFINITIVE PRODUCT CARD FIX (Pixel Perfect)
-   ========================================================================== 
-*/
-
+/* UI SYSTEM: COMPACT LUXURY CARD */
 .product-card {
     display: flex !important;
     flex-direction: column !important;
-    background: #000 !important;
-    margin-bottom: 40px !important;
-    width: 100% !important;
+    background: transparent !important;
+    margin-bottom: 25px !important;
+    height: 100% !important;
 }
 
 .card-image-wrapper {
     aspect-ratio: 4/5 !important;
-    overflow: hidden !important;
-    margin-bottom: 15px !important;
+    margin-bottom: 10px !important;
     background: #111 !important;
 }
 
 .card-content {
     display: flex !important;
     flex-direction: column !important;
-    padding: 0 5px !important; /* Minimalny margines boczny */
+    flex-grow: 1 !important;
+    padding: 0 !important;
 }
 
-/* Sztywne rzędy dla uniknięcia rozjazdów */
 .product-name {
-    height: 2.8rem !important; /* Sztywno na dwie linie */
-    font-size: 0.82rem !important;
-    line-height: 1.4 !important;
+    font-size: 0.8rem !important;
+    line-height: 1.2 !important;
     margin-bottom: 4px !important;
+    min-height: 2.4rem !important; /* Max 2 linie, ale bez dziury */
     color: #fff !important;
     text-transform: uppercase !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
     overflow: hidden !important;
 }
 
 .product-sku {
-    height: 1rem !important; /* Sztywna wysokość dla ID */
     font-size: 0.6rem !important;
     color: rgba(255,255,255,0.4) !important;
-    margin-bottom: 15px !important;
-    text-transform: uppercase !important;
+    margin-bottom: 10px !important;
     letter-spacing: 1px !important;
+    min-height: 0.8rem !important;
 }
 
 .card-footer {
-    display: grid !important;
-    grid-template-columns: 1fr auto !important; /* Cena zajmuje resztę, przycisk tylko tyle ile musi */
+    display: flex !important;
+    justify-content: space-between !important;
     align-items: center !important;
     border-top: 1px solid rgba(255,255,255,0.1) !important;
-    padding-top: 15px !important;
-    gap: 10px !important;
+    padding-top: 10px !important;
+    margin-top: auto !important; /* Trzyma stopkę na dole, ale bez pustki */
 }
 
 .product-price {
     font-size: 1.1rem !important;
     color: #e5c994 !important;
     font-weight: 600 !important;
-    white-space: nowrap !important;
 }
 
 .btn-order {
     background: transparent !important;
     color: #fff !important;
     border: 1px solid rgba(255,255,255,0.3) !important;
-    padding: 8px 12px !important;
+    padding: 6px 12px !important;
     font-size: 0.6rem !important;
-    text-transform: uppercase !important;
-    white-space: nowrap !important;
     font-weight: 600 !important;
-    transition: all 0.3s !important;
-}
-
-.btn-order:hover {
-    background: #fff !important;
-    color: #000 !important;
-}
-
-.featured-badge {
-    background: #e5c994 !important;
-    color: #000 !important;
-    font-weight: 700 !important;
-    padding: 4px 10px !important;
-    font-size: 0.6rem !important;
 }
