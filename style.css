@@ -2220,44 +2220,69 @@ a:hover {
     100% { transform: translateX(100%); }
 }
 
-/* FINAL UI FIXES - COMPACT OVERRIDE */
+/* FINAL UI FIXES - COMPACT & CONNECTED */
 .product-card {
-    height: 100%;
-    margin-bottom: 25px !important;
+    height: auto !important;
+    margin-bottom: 40px !important;
+    background: rgba(255,255,255,0.01); /* Subtelne tło karty dla domknięcia */
+    padding: 0 0 15px 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.03); /* Domknięcie od dołu */
 }
 
 .card-content {
     display: flex !important;
     flex-direction: column !important;
-    height: 100% !important;
-    padding: 0 !important;
+    padding: 10px 10px 0 10px !important; /* Oddech wewnątrz karty */
 }
 
 .product-name {
-    min-height: 2.3rem !important; /* Ściśnięte na maxa dla 2 linii */
-    margin-bottom: 2px !important;
-    font-size: 0.78rem !important;
-    line-height: 1.2 !important;
+    min-height: unset !important; /* Wywalam sztywne wysokości, postawię na padding */
+    height: auto !important;
+    margin-bottom: 4px !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    color: #fff !important;
 }
 
 .product-sku {
-    min-height: 0.7rem !important; /* Minimalna wysokość na ID */
-    margin-bottom: 12px !important;
+    min-height: unset !important;
+    margin-bottom: 15px !important;
     font-size: 0.6rem !important;
+    opacity: 0.4 !important;
 }
 
 .card-footer {
-    margin-top: auto !important;
-    padding-top: 10px !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    margin-top: 0 !important; /* Przyciągam do góry */
+    padding-top: 15px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
 }
 
 .product-price {
-    font-size: 1.05rem !important;
+    font-size: 1.1rem !important;
+    color: #e5c994 !important;
     font-weight: 600 !important;
 }
 
 .btn-order {
-    padding: 6px 12px !important;
-    font-size: 0.58rem !important;
+    background: transparent !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    padding: 8px 14px !important;
+    font-size: 0.6rem !important;
+    transition: all 0.3s ease !important;
 }
+
+.btn-order:hover {
+    background: #e5c994 !important;
+    color: #000 !important;
+    border-color: #e5c994 !important;
+}
+
+.featured-badge {
+    background: #e5c994 !important; /* Złoty badge dla odróżnienia od przycisku */
+    color: #000 !important;
+}
+
