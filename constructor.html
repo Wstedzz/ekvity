@@ -72,7 +72,14 @@
             border-radius: 12px;
             padding: 15px;
             text-align: center;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .flower-card.reveal {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .flower-card.selected {

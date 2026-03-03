@@ -40,11 +40,12 @@ function loadFlowers() {
 function renderFlowerGrid() {
     const grid = document.getElementById('flowerGrid');
     grid.innerHTML = '';
-    flowers.forEach(f => {
+    flowers.forEach((f, index) => {
         quantities[f.id] = quantities[f.id] || 0;
         const card = document.createElement('div');
         card.className = 'flower-card' + (quantities[f.id] > 0 ? ' selected' : '');
         card.id = 'card-' + f.id;
+        card.style.transitionDelay = (index * 0.05) + 's';
         card.innerHTML = `
             <img src="${f.image}" alt="${f.name}" class="flower-card-img" loading="lazy">
             <p class="flower-card-name">${f.name}</p>
@@ -56,6 +57,10 @@ function renderFlowerGrid() {
             </div>
         `;
         grid.appendChild(card);
+        // Force reflow and add reveal class
+        requestAnimationFrame(() => {
+            card.classList.add('reveal');
+        });
     });
 }
 
