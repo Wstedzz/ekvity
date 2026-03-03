@@ -515,13 +515,14 @@ a:hover {
 }
 
 .product-price {
-    font-size: 1.2rem;
-    color: var(--gold);
-    font-family: var(--font-heading);
-    font-weight: 600;
-    letter-spacing: 1px;
-    margin-top: 8px;
+    font-family: var(--font-body);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffd700; /* Klasyczne jasne złoto */
+    letter-spacing: -0.5px;
+    margin: 10px 0;
     display: block;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
 }
 
 .btn-order {

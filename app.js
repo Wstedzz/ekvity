@@ -130,7 +130,7 @@ function renderGrid() {
             </div>
             <div class="card-content">
                 <h3 class="product-name">${p.name}</h3>
-                <p class="product-price">${p.price} <span>UAH</span></p>
+                <p class="product-price">${p.price} ₴</p>
                 <div class="card-actions">
                     <button class="btn-order" onclick="event.stopPropagation(); order('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
                         Замовити
@@ -487,7 +487,7 @@ function _renderLightboxContent() {
         const infoEl = document.getElementById('lightboxInfo');
         if (infoEl) {
             infoEl.querySelector('.lb-name').textContent = p.name;
-            infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
+            infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' ₴' : '';
             infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
             const btn = infoEl.querySelector('.lb-order-btn');
             if (btn) btn.onclick = (e) => { e.stopPropagation(); window.closeLightboxDirect(); order(p.id, p.name, p.price); };

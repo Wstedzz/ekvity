@@ -132,7 +132,7 @@ function createProductCard(p, animIndex) {
         <div class="card-content">
             <div class="product-category">${catName}</div>
             <h3 class="product-name">${p.name}</h3>
-            <p class="product-price">${p.price} <span>UAH</span></p>
+            <p class="product-price">${p.price} ₴</p>
             <div class="card-actions">
                 <button class="btn-order" onclick="event.stopPropagation(); orderProduct('${p.id}','${p.name.replace(/'/g, "\\'")}',${p.price})">Замовити</button>
             </div>
@@ -411,7 +411,7 @@ function _renderLightbox() {
         const infoEl = document.getElementById('lightboxInfo');
         if (infoEl) {
             infoEl.querySelector('.lb-name').textContent = p.name;
-            infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' UAH' : '';
+            infoEl.querySelector('.lb-price').textContent = p.price ? p.price + ' ₴' : '';
             infoEl.querySelector('.lb-id').textContent = 'ID: ' + p.id;
             const shareLink = document.getElementById('lbShareLink');
             if (shareLink) shareLink.href = '/p/' + encodeURIComponent(p.id);
