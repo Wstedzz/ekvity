@@ -545,63 +545,69 @@ a:hover {
 }
 
 .card-content {
-    padding: 12px 0; /* Zmniejszony odstęp */
+    padding: 8px 0 12px; /* Bardziej zwarte */
     display: flex;
     flex-direction: column;
 }
 
 .product-name {
     font-family: var(--font-body);
-    font-size: 0.8rem;
-    font-weight: 400;
+    font-size: 0.75rem; /* Odrobinę mniejszy dla elegancji */
+    font-weight: 500;
     color: var(--text-mid);
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
     line-height: 1.3;
-    min-height: 2.6rem; /* Stała wysokość na 2 linijki tekstu - KLUCZ DO RÓWNYCH LINII */
+    min-height: 2.2rem; /* Dopasowane do mniejszego fontu */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
+.product-sku {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+
 .card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     padding-top: 10px;
-    margin-top: auto; /* Pcha stopkę na dół, gdyby karta była wyższa */
+    margin-top: 4px;
 }
 
 .product-price {
     font-family: var(--font-body);
-    font-size: 1.15rem;
-    font-weight: 600; /* Żywsza, mocniejsza cena */
-    color: #d4af37; /* Jaśniejsze, szlachetne złoto */
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e5c994; /* Subtelniejsze złoto */
     margin: 0 !important;
-    display: flex;
-    align-items: center;
-}
-
-.product-price span {
-    font-size: 0.85rem;
-    margin-left: 4px;
-    opacity: 0.7;
 }
 
 .btn-order {
     background: white;
     color: black;
     border: none;
-    padding: 6px 14px; /* Bardziej zwarty przycisk */
-    font-size: 0.6rem;
+    padding: 6px 12px;
+    font-size: 0.55rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
+    letter-spacing: 1.5px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+}
+
+.btn-order:hover {
+    background: #e5c994;
+    color: black;
 }
 
 .btn-order:hover {

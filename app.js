@@ -130,6 +130,7 @@ function renderGrid() {
             </div>
             <div class="card-content">
                 <h3 class="product-name">${p.name}</h3>
+                <div class="product-sku">ID: ${p.id}</div>
                 <div class="card-footer">
                     <span class="product-price">${p.price} <span>₴</span></span>
                     <button class="btn-order" onclick="event.stopPropagation(); order('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
