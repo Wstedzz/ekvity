@@ -2491,56 +2491,35 @@ a:hover {
     font-weight: 600 !important;
     white-space: nowrap !important;
 }
-/* UI SYSTEM: PRO LUXURY GRID */
-.container {
-    max-width: var(--spacing-container);
-    margin: 0 auto;
-    padding: 0 15px !important; /* Mniejsze marginesy boczne = większe zdjęcia */
-}
-
-.grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important; /* Sztywne 2 kolumny */
-    gap: 25px 15px !important;
-    align-items: stretch !important; /* Ważne dla równych wysokości */
-}
-
+/* UI SYSTEM: VIBRANT LUXURY GRID */
 .product-card {
     display: flex !important;
     flex-direction: column !important;
-    height: 100% !important; /* Karta zajmuje całą wysokość rzędu */
+    background: transparent !important; /* Wywalam czarne pudełka */
+    height: 100% !important;
     margin-bottom: 0 !important;
+    padding: 0 !important;
 }
 
-.card-image-wrapper {
-    aspect-ratio: 1/1 !important; /* Kwadrat lepiej wypełnia przestrzeń przy 2 kolumnach */
-    margin-bottom: 12px !important;
-}
-
-.product-name {
-    font-size: 0.9rem !important; /* Większy font */
-    font-weight: 500 !important;
-    margin-bottom: 4px !important;
-    min-height: unset !important;
-    height: auto !important;
-    line-height: 1.2 !important;
-}
-
-.product-sku {
+.btn-order {
+    background: #d4af37 !important; /* Żywe, szlachetne złoto */
+    color: #000 !important; /* Czarny tekst dla czytelności */
+    border: none !important;
+    padding: 8px 16px !important;
     font-size: 0.65rem !important;
-    margin-bottom: 15px !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    border-radius: 2px !important;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2) !important; /* Lekki złoty blask */
 }
 
-.card-footer {
-    margin-top: auto !important; /* To wyrównuje stopki do dołu, tworząc równe linie */
-    padding-top: 12px !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+.btn-order:hover {
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3) !important;
 }
 
-.product-price {
-    font-size: 1.25rem !important; /* Mocniejsza cena */
-    margin-bottom: 8px !important;
-}
 
 
 .btn-order {
